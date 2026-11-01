@@ -46,11 +46,11 @@ void session_init(game_session *session);
  * @brief Swaps out the active module. Cleans up the old game if it's there,
  *        plugs in the new one, and runs its init function safely.
  * @param session Pointer to the active game session.
- * @param module Pointer to the new game_module you're loading in.
  * @param runtime Pointer to the new module's private data state.
+ * @param size of runtime.
  * @return void
  */
-void session_set_module(game_session *session, const game_module *module, void *runtime);
+void session_set_module(game_session *session, const game_module *module, size_t runtime_size);
 
 /**
  * @brief Starts main engine loop, running updates and rendering

@@ -37,6 +37,7 @@
 			<Add option="-fsanitize=address" />
 		</Linker>
 		<Unit filename="include/engine/canvas.h" />
+		<Unit filename="include/engine/guard.h" />
 		<Unit filename="include/engine/session.h" />
 		<Unit filename="include/engine/terminal.h" />
 		<Unit filename="include/engine/utils.h" />
