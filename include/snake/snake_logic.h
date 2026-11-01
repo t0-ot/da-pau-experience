@@ -27,7 +27,7 @@ typedef struct {
     Canvas visuals;
 } fruitData;
 
-int movementInputHandler(Point prevDirInput[]);
+int movementInputHandler(Point prevDirInput[], char input);
 int snakeDirectionHandler(Point snake[], Point lastDir[]);
 void shiftSnakeSegments(snakeData *snakeInfo);
 int checkLife(ViewPointList snakeView, int playWidthBoundary, int playHeightBoundary);

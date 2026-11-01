@@ -1,4 +1,4 @@
-#include "../../include/snake/game_render.h"
+#include "../../include/snake/snake_render.h"
 #include "../../include/snake/snake_logic.h"
 
 void snakeStamper(void *data, Canvas cellview[][GAME_WIDTH]) {

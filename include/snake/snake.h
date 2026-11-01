@@ -2,8 +2,15 @@
 #define GAME_H
 
 #include "../../include/engine/canvas.h"
+#include "../../include/engine/session.h"
 #include "../../include/snake/snake_logic.h"
 
+/**
+ * @brief The public module interface for the Snake game.
+ */
+extern const game_module snake_module;
+
+//Full runtime struct for snake game and it's world
 typedef struct {
     Canvas cell[GAME_HEIGHT][GAME_WIDTH];
     BaseText titleText;
@@ -24,14 +31,13 @@ typedef struct {
     int totalRenderList;
     int currentHiScore;
     int isRunning;
-} GameSession;
+} snake_runtime;
 
 int hiScoreCounter(int currentScore, int *highestScore);
-int mainMenu(BaseText *gameTitle);
-int menuInputHandler(int *menuChoice, int optionAmount);
-void gameUpdateLogic(GameSession *session);
-int gameInit(GameSession *session);
-int gameRunLoop(GameSession *session);
-int gameCleanUp(GameSession *session);
+void gameUpdateLogic(snake_runtime *session);
+void snake_init(void *data);
+module_action snake_upd(void *runtime_data);
+void snake_render(void *runtime_data);
+void snake_clean_up(void *runtime_data);
 
 #endif // GAME_H

@@ -7,7 +7,7 @@
 	<time.h>
 	<string.h>
 
-1793411294 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/main.c
+1793415624 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/main.c
 	<stdlib.h>
 	<time.h>
 	"../../include/snake/game.h"
@@ -28,15 +28,15 @@
 1793282309 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/engine/utils.h
 	"../../include/engine/canvas.h"
 
-1793280823 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/engine/terminal.h
+1793446984 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/engine/terminal.h
 
-1793409554 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/engine/terminal.c
+1793446985 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/engine/terminal.c
 	<stdio.h>
 	<termios.h>
 	<unistd.h>
 	"../../include/engine/terminal.h"
 
-1793283594 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/snake_logic.c
+1793535749 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/snake_logic.c
 	<string.h>
 	<stdio.h>
 	<stdlib.h>
@@ -45,7 +45,7 @@
 	"../../include/engine/utils.h"
 	"../../include/snake/snake_logic.h"
 
-1793283612 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/snake/snake_logic.h
+1793535761 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/snake/snake_logic.h
 
 1793284113 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/game_render.c
 	"../../include/snake/game_render.h"
@@ -54,11 +54,11 @@
 1793284028 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/snake/game_render.h
 	"../../include/engine/canvas.h"
 
-1793411089 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/snake/game.h
+1793460687 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/snake/game.h
 	"../../include/engine/canvas.h"
 	"../../include/snake/snake_logic.h"
 
-1793409041 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/game.c
+1793446986 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/game.c
 	<stdio.h>
 	<stdlib.h>
 	<termios.h>
@@ -68,4 +68,56 @@
 	"../../include/engine/terminal.h"
 	"../../include/engine/utils.h"
 	"../../include/snake/game_render.h"
+
+1793535809 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/main.c
+	<stdlib.h>
+	<time.h>
+	"../include/menu/menu.h"
+	"../include/snake/snake.h"
+	"../include/engine/session.h"
+
+1793525152 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/engine/session.c
+	<string.h>
+	<assert.h>
+	"../../include/engine/session.h"
+
+1793525087 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/engine/session.h
+
+1793524064 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/snake/snake.h
+	"../../include/engine/canvas.h"
+	"../../include/engine/session.h"
+	"../../include/snake/snake_logic.h"
+
+1793536041 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/snake.c
+	<stdio.h>
+	<stdlib.h>
+	<termios.h>
+	<unistd.h>
+	"../../include/snake/snake.h"
+	"../../include/engine/canvas.h"
+	"../../include/engine/terminal.h"
+	"../../include/engine/utils.h"
+	"../../include/engine/session.h"
+	"../../include/snake/snake_render.h"
+
+1793284028 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/snake/snake_render.h
+	"../../include/engine/canvas.h"
+
+1793460864 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/snake/snake_render.c
+	"../../include/snake/snake_render.h"
+	"../../include/snake/snake_logic.h"
+
+1793536088 source:/home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/src/menu/menu.c
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	"../../include/menu/menu.h"
+	"../../include/engine/canvas.h"
+	"../../include/engine/terminal.h"
+	"../../include/engine/session.h"
+	"../../include/engine/utils.h"
+
+1793539296 /home/t0-ot/Documents/GitHub/Da-Pau-Eating-Experience/include/menu/menu.h
+	"../../include/engine/session.h"
+	"../../include/engine/canvas.h"
 

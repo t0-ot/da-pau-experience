@@ -6,9 +6,8 @@
 #include "../../include/engine/utils.h"
 #include "../../include/snake/snake_logic.h"
 
-int movementInputHandler(Point prevDirInput[]) {
+int movementInputHandler(Point prevDirInput[], char input) {
     int8_t dx = 0, dy = 0;
-    char input = inputHandler();
 
     if (input == '\0') return 0;
 

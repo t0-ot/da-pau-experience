@@ -32,3 +32,23 @@ char inputHandler() {
     if (latest_ch == 0) return '\0';
     return latest_ch;
 }
+
+int menuInputHandler(int *menuChoice, int optionAmount) {
+    char input = inputHandler();
+
+    if (input == '\0') return 0;
+
+    switch (input) {
+        case 'w':
+            if (*menuChoice - 1 >= 0)
+                (*menuChoice)--;
+            break;
+        case 's':
+            if (*menuChoice + 1 < optionAmount)
+                (*menuChoice)++;
+            break;
+        case '\n':
+            return 1;
+    }
+    return 0;
+}

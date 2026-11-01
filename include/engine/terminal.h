@@ -4,5 +4,6 @@
 void enable_raw_mode();
 void disable_raw_mode();
 char inputHandler();
+int menuInputHandler(int *menuChoice, int optionAmount);
 
 #endif // TERMINAL_H
