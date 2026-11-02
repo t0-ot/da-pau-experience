@@ -27,8 +27,8 @@ int movementInputHandler(Point prevDirInput[], char input) {
     return 0;
 }
 
-int snakeDirectionHandler(Point snake[], Point lastDir[]) {
-    if (snake[0].posX + lastDir[0].posX > 0 && snake[0].posX + lastDir[0].posX < 39 && snake[0].posY + lastDir[0].posY > 0 && snake[0].posY + lastDir[0].posY < 19) {
+int snakeDirectionHandler(Point snake[], Point lastDir[], int play_width, int play_height) {
+    if (snake[0].posX + lastDir[0].posX > 0 && snake[0].posX + lastDir[0].posX < play_width && snake[0].posY + lastDir[0].posY > 0 && snake[0].posY + lastDir[0].posY < play_height) {
         snake[0].posX += lastDir[0].posX;
         snake[0].posY += lastDir[0].posY;
         return 1;
@@ -50,9 +50,9 @@ int checkLife(ViewPointList snakeView, int playWidthBoundary, int playHeightBoun
     return 1;
 }
 
-void handleDeath(snakeData *snake1, ViewPointList *fruit, Point *lastDirInput){
-    snake1->pointList.points[0].posX = 20;
-    snake1->pointList.points[0].posY = 10;
+void handleDeath(snakeData *snake1, ViewPointList *fruit, Point *lastDirInput, int play_width, int play_height){
+    snake1->pointList.points[0].posX = play_width / 2;
+    snake1->pointList.points[0].posY = play_height / 2;
     lastDirInput[0].posY = 0;
     lastDirInput[0].posX = 0;
     snake1->pointList.amt = 2;
@@ -60,7 +60,7 @@ void handleDeath(snakeData *snake1, ViewPointList *fruit, Point *lastDirInput){
     fruit->amt = 1;
     objectPointResize(&snake1->pointList);
     objectPointResize(fruit);
-    spawnFruit(*fruit,  0, snake1->pointList, 39, 19);
+    spawnFruit(*fruit,  0, snake1->pointList, play_width, play_height);
 }
 
 void spawnFruit(ViewPointList fruitView, int fruitNumber, ViewPointList snakeView, int spawnWidth, int spawnHeight) {
@@ -74,17 +74,17 @@ void baseEat(void *fruit, snakeData *snake) {
     snake->pointList.amt += ((defaultFruit *)((fruitData *)fruit)->fruitType)->scoreAmt;
 }
 
-void handleMilestoneFruit(fruitData *fruitAwardTarget, ViewPointList *snakeScore) {
+void handleMilestoneFruit(fruitData *fruitAwardTarget, ViewPointList *snakeScore, int play_width, int play_height) {
     if (((snakeScore->amt -2) % 10) != 0)
         return;
     fruitAwardTarget->pointList.amt++;
     objectPointResize(&fruitAwardTarget->pointList);
-    spawnFruit(fruitAwardTarget->pointList, fruitAwardTarget->pointList.amt-1, *snakeScore, 39, 19);
+    spawnFruit(fruitAwardTarget->pointList, fruitAwardTarget->pointList.amt-1, *snakeScore, play_width, play_height);
 }
 
-void handleFruitCollision(fruitData *collidedFruitData, snakeData *snakeInfo, int collidedFruitNum) {
+void handleFruitCollision(fruitData *collidedFruitData, snakeData *snakeInfo, int collidedFruitNum, int play_width, int play_height) {
     collidedFruitData->onEat(collidedFruitData, snakeInfo);
     objectPointResize(&snakeInfo->pointList);
-    handleMilestoneFruit(collidedFruitData, &snakeInfo->pointList);
-    spawnFruit(collidedFruitData->pointList, collidedFruitNum-1, snakeInfo->pointList, 39, 19);
+    handleMilestoneFruit(collidedFruitData, &snakeInfo->pointList, play_width, play_height);
+    spawnFruit(collidedFruitData->pointList, collidedFruitNum-1, snakeInfo->pointList, play_width, play_height);
 }

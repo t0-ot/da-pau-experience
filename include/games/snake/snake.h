@@ -30,6 +30,8 @@ typedef struct {
     int totalRenderList;
     int currentHiScore;
     int isRunning;
+    int play_width;
+    int play_height;
 } snake_runtime;
 
 int hiScoreCounter(int currentScore, int *highestScore);

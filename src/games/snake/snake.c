@@ -13,8 +13,8 @@ void snake_init(void *runtime_data) {
     *runtime = (snake_runtime){
         .titleText = {
             .text = GAME_NAME,
-            .startX = 48,
-            .startY = 3,
+            .startX = (3 * snake_module.game_width / 4) - 12,
+            .startY = (snake_module.game_height * 3) / 20,
             .color = {
                 {.r = 255, .g = 105, .b = 180},
                 {.r = 255, .g = 215, .b = 0}
@@ -22,11 +22,11 @@ void snake_init(void *runtime_data) {
         },
         .scoreTexts = {
             [0].text = "-== SCORE ==-",
-            [0].startX = 53,
-            [0].startY = 9,
+            [0].startX = (3 * snake_module.game_width / 4) - (13 / 2),
+            [0].startY = (snake_module.game_height * 9) / 20,
             [1].text = "-+== HI-SCORE ==+-",
-            [1].startX = 50,
-            [1].startY = 13,
+            [1].startX = (3 * snake_module.game_width / 4) - (18 / 2),
+            [1].startY = (snake_module.game_height * 13) / 20,
             [0 ... 1].color = {
                 [0].r = 255,
                 [0].g = 215,
@@ -49,9 +49,9 @@ void snake_init(void *runtime_data) {
         },
         .scoreNumbers = {
             [0 ... 1].score = 0,
-            [0].y = 8,
-            [1].y = 12,
-            [0 ... 1].x = 58
+            [0].y = (snake_module.game_height * 8) / 20,
+            [1].y = (snake_module.game_height * 12) / 20,
+            [0 ... 1].x = (3 * snake_module.game_width / 4) - (3 / 2)
         },
         .scoreNumObj = {
             .stamp = canvasScoreStamper
@@ -73,7 +73,9 @@ void snake_init(void *runtime_data) {
         },
         .lastDirInput = {{0, 0}},
         .currentHiScore = 0,
-        .isRunning = 1
+        .isRunning = 1,
+        .play_width = (snake_module.game_width)/2,
+        .play_height = (snake_module.game_height) - 1
     };
 
     runtime->scoreTextObj.data = &runtime->scoreTexts[0];
@@ -94,8 +96,8 @@ void snake_init(void *runtime_data) {
     runtime->totalRenderList = sizeof(runtime->screenRenderList) / sizeof(runtime->screenRenderList[0]);
 
     runtime->snake1.pointList.points = malloc(runtime->snake1.pointList.amt * sizeof(Point));
-    runtime->snake1.pointList.points->posX = 20;
-    runtime->snake1.pointList.points->posY = 10;
+    runtime->snake1.pointList.points->posX = runtime->play_width / 2;
+    runtime->snake1.pointList.points->posY = runtime->play_height / 2;
 
     runtime->normalFruitSet.fruitType = &runtime->baseFruit;
     runtime->normalFruitSet.pointList.points = malloc(runtime->normalFruitSet.pointList.amt * sizeof(Point));
@@ -114,14 +116,14 @@ module_action snake_upd(void *runtime_data) {
     int moveBlocked = movementInputHandler(runtime->lastDirInput, input);
     int collideWithFruit = collisionCheckOne(&runtime->normalFruitSet.pointList, &runtime->snake1.pointList, 0, 0);
     if (collideWithFruit > 0)
-        handleFruitCollision(&runtime->normalFruitSet, &runtime->snake1, collideWithFruit);
+        handleFruitCollision(&runtime->normalFruitSet, &runtime->snake1, collideWithFruit, runtime->play_width, runtime->play_height);
 
     shiftSnakeSegments(&runtime->snake1);
-    snakeDirectionHandler(runtime->snake1.pointList.points, runtime->lastDirInput);
-    runtime->snake1.alive = checkLife(runtime->snake1.pointList, 79, 39);
+    snakeDirectionHandler(runtime->snake1.pointList.points, runtime->lastDirInput, runtime->play_width, runtime->play_height);
+    runtime->snake1.alive = checkLife(runtime->snake1.pointList, runtime->play_width, runtime->play_height);
 
     if (!(runtime->snake1.alive) && !moveBlocked && !(runtime->lastDirInput->posX == 0 && runtime->lastDirInput->posY == 0))
-        handleDeath(&runtime->snake1, &runtime->normalFruitSet.pointList, runtime->lastDirInput);
+        handleDeath(&runtime->snake1, &runtime->normalFruitSet.pointList, runtime->lastDirInput, runtime->play_width, runtime->play_height);
     runtime->scoreNumbers[0].score = runtime->snake1.pointList.amt;
     runtime->scoreNumbers[1].score = hiScoreCounter(runtime->snake1.pointList.amt, &runtime->currentHiScore);
     return MODULE_CONTINUE;
@@ -130,7 +132,7 @@ module_action snake_upd(void *runtime_data) {
 void snake_render(void *runtime_data, CanvasBuffer *canvas) {
     snake_runtime *runtime = (snake_runtime *)runtime_data;
     printf("\033[?25l");
-    renderFrame(canvas, runtime->screenRenderList, runtime->totalRenderList);
+    renderFrame(canvas, runtime->screenRenderList, runtime->totalRenderList, (canvas->width / 2));
     printf("W - UP, S - DOWN, A - LEFT, D - RIGHT\n");
     fflush(stdout);
     usleep(100000);

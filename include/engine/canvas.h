@@ -63,7 +63,7 @@ static inline Canvas *canvas_get(CanvasBuffer *canvas, int x, int y) {
 CanvasBuffer *canvas_create(int width, int height);
 void canvas_destroy(CanvasBuffer *canvas);
 void canvasIntializer(CanvasBuffer *canvas, int dividerPos);
-void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList);
+void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList, int div_pos);
 void optionChoiceStamper(void *data, CanvasBuffer *canvas);
 void canvasTextStamperGradient(void *data, CanvasBuffer *canvas);
 void canvasTextStamper(void *data, CanvasBuffer *canvas);

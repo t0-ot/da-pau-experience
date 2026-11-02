@@ -28,13 +28,13 @@ typedef struct {
 } fruitData;
 
 int movementInputHandler(Point prevDirInput[], char input);
-int snakeDirectionHandler(Point snake[], Point lastDir[]);
+int snakeDirectionHandler(Point snake[], Point lastDir[], int play_width, int play_height);
 void shiftSnakeSegments(snakeData *snakeInfo);
 int checkLife(ViewPointList snakeView, int playWidthBoundary, int playHeightBoundary);
-void handleDeath(snakeData *snake1, ViewPointList *fruit, Point *lastDirInput);
+void handleDeath(snakeData *snake1, ViewPointList *fruit, Point *lastDirInput, int play_width, int play_height);
 void spawnFruit(ViewPointList fruitView, int fruitNumber, ViewPointList snakeView, int spawnWidth, int spawnHeight);
 void baseEat(void *fruit, snakeData *snake);
-void handleMilestoneFruit(fruitData *fruitAwardTarget, ViewPointList *snakeScore);
-void handleFruitCollision(fruitData *collidedFruitData, snakeData *snakeInfo, int collidedFruitNum);
+void handleMilestoneFruit(fruitData *fruitAwardTarget, ViewPointList *snakeScore, int play_width, int play_height);
+void handleFruitCollision(fruitData *collidedFruitData, snakeData *snakeInfo, int collidedFruitNum, int play_width, int play_height);
 
 #endif // SNAKE_LOGIC_H

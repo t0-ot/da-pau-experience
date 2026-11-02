@@ -100,9 +100,9 @@ void canvasTextStamper(void *data, CanvasBuffer *canvas) {
         cellColorAssignment(canvas, text->startX+i, text->startY, text->text[i], text->color[0].r, text->color[0].g, text->color[0].b);
 }
 
-void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList) {
+void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList, int div_pos) {
     printf("\033[H");
-    canvasIntializer(canvas, canvas->width - 41);
+    canvasIntializer(canvas, div_pos);
     for (int i = 0; i < totalRenderList; i++)
         screenRenderList[i]->stamp(screenRenderList[i]->data, canvas);
     canvasViewPrint(canvas);
