@@ -1,5 +1,5 @@
-#include "../../include/snake/snake_render.h"
-#include "../../include/snake/snake_logic.h"
+#include "games/snake/snake_render.h"
+#include "games/snake/snake_logic.h"
 
 void snakeStamper(void *data, Canvas cellview[][GAME_WIDTH]) {
     snakeData *p = (snakeData *)data;

@@ -1,9 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "../../include/engine/canvas.h"
-#include "../../include/engine/session.h"
-#include "../../include/snake/snake_logic.h"
+#include "engine/canvas.h"
+#include "engine/session.h"
+#include "games/snake/snake_logic.h"
 
 /**
  * @brief The public module interface for the Snake game.

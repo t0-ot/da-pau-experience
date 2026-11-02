@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../../include/engine/canvas.h"
+#include "engine/canvas.h"
 
 void canvasScoreStamper(void *data, Canvas cellView[][GAME_WIDTH]) {
     ScoreText *scoreDat = (ScoreText *)data;

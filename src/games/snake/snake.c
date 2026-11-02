@@ -1,13 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h>
 #include <unistd.h>
-#include "../../include/snake/snake.h"
-#include "../../include/engine/canvas.h"
-#include "../../include/engine/terminal.h"
-#include "../../include/engine/utils.h"
-#include "../../include/engine/session.h"
-#include "../../include/snake/snake_render.h"
+#include "games/snake/snake.h"
+#include "engine/terminal.h"
+#include "engine/utils.h"
+#include "games/snake/snake_render.h"
 
 #define GAME_NAME "Da Pau Eating Experience"
 
@@ -104,7 +101,7 @@ void snake_init(void *runtime_data) {
     runtime->normalFruitSet.pointList.points = malloc(runtime->normalFruitSet.pointList.amt * sizeof(Point));
     for (int i = 0; i < runtime->normalFruitSet.pointList.amt; i++)
         spawnFruit(runtime->normalFruitSet.pointList, i, runtime->snake1.pointList, GAME_WIDTH - 41, GAME_HEIGHT - 1);
-    enable_raw_mode();
+    set_raw_mode(1);
 }
 
 module_action snake_upd(void *runtime_data) {
@@ -144,8 +141,7 @@ void snake_clean_up(void *runtime_data) {
     free(runtime->snake1.pointList.points);
     free(runtime->normalFruitSet.pointList.points);
     free(runtime);
-    disable_raw_mode();
-    printf("\033[?25h");
+    set_raw_mode(0);
 }
 
 const game_module snake_module = {

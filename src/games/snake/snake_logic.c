@@ -1,10 +1,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/engine/terminal.h"
-#include "../../include/engine/canvas.h"
-#include "../../include/engine/utils.h"
-#include "../../include/snake/snake_logic.h"
+#include "engine/terminal.h"
+#include "engine/canvas.h"
+#include "engine/utils.h"
+#include "games/snake/snake_logic.h"
 
 int movementInputHandler(Point prevDirInput[], char input) {
     int8_t dx = 0, dy = 0;

@@ -1,28 +1,48 @@
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
-#include "../../include/engine/terminal.h"
+#include "engine/terminal.h"
 
 struct termios original_term;
+int is_raw_enabled = 0;
 
-void enable_raw_mode() {
-    struct termios raw;
-    tcgetattr(STDIN_FILENO, &original_term);
-    raw = original_term;
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include "engine/terminal.h"
 
-    raw.c_lflag &= ~(ICANON | ECHO);
+void set_raw_mode(int enable) {
+    static struct termios original_term;
+    static int is_raw_enabled = 0;
 
-    raw.c_cc[VMIN] = 0;
-    raw.c_cc[VTIME] = 0;
+    if (enable) {
+        if (is_raw_enabled) return;
 
-    tcsetattr(STDIN_FILENO, TCSANOW, &raw);
-    printf("\033[?25l");
+        struct termios raw;
+        tcgetattr(STDIN_FILENO, &original_term);
+        raw = original_term;
+
+        raw.c_lflag &= ~(ICANON | ECHO);
+        raw.c_cc[VMIN] = 0;
+        raw.c_cc[VTIME] = 0;
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &raw);
+        printf("\033[?25l");
+        fflush(stdout);
+
+        is_raw_enabled = 1;
+    } else {
+        if (!is_raw_enabled) return;
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &original_term);
+        printf("\033[?25h");
+        fflush(stdout);
+
+        is_raw_enabled = 0;
+    }
 }
 
-void disable_raw_mode() {
-    tcsetattr(STDIN_FILENO, TCSANOW, &original_term);
-    printf("\033[?25h");
-}
+
 
 char inputHandler() {
     char latest_ch = 0, temp_ch;

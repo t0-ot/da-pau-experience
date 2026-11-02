@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "../../include/engine/canvas.h"
+#include "engine/canvas.h"
 
 float ease(float time, float startValue, float change, float duration);
 int objectPointResize(ViewPointList *data);

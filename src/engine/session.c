@@ -5,12 +5,13 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "../../include/engine/session.h"
-#include "../../include/engine/guard.h"
+#include "engine/session.h"
+#include "engine/guard.h"
 
 void session_init(game_session *session) {
     REQUIRE_NOT_NULLED(session);
     memset(session, 0, sizeof(game_session));
+    session->is_running = 1;
 }
 
 void session_set_module(game_session *session, const game_module *module, size_t runtime_size) {
@@ -39,7 +40,6 @@ void session_set_module(game_session *session, const game_module *module, size_t
 module_action session_run(game_session *session) {
     REQUIRE_NOT_NULLED(session);
     REQUIRE_NOT_NULLED(session->current_module);
-    session->is_running = 1;
 
     while (session->is_running) {
 
@@ -56,6 +56,7 @@ module_action session_run(game_session *session) {
 void session_cleanup(game_session *session) {
     if (session == NULL)
         return;
+    session->is_running = 0;
 
     if (session->current_module != NULL) {
         if (session->current_module->clean_up != NULL && session->current_runtime != NULL)

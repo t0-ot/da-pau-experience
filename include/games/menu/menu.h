@@ -6,17 +6,20 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include "../../include/engine/session.h"
-#include "../../include/engine/canvas.h"
+#include "engine/session.h"
+#include "engine/canvas.h"
 
 /**
  * @brief The public module interface for the main menu state.
  */
 extern const game_module menu_module;
 
+/**
+ * @brief The choice flags. Order is important for the games
+ */
 typedef enum {
-    MENU_CHOICE_NONE,
     MENU_CHOICE_PLAY_SNAKE,
+    MENU_CHOICE_NONE,
     MENU_CHOICE_QUIT
 } menu_choice_type;
 

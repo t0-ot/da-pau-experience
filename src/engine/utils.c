@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/engine/utils.h"
+#include "engine/utils.h"
 
 float ease(float time, float startValue, float change, float duration) {
      time /= duration / 2;

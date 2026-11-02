@@ -36,17 +36,19 @@
 		<Linker>
 			<Add option="-fsanitize=address" />
 		</Linker>
+		<Unit filename="include/core/game_registry.h" />
 		<Unit filename="include/engine/canvas.h" />
 		<Unit filename="include/engine/guard.h" />
 		<Unit filename="include/engine/session.h" />
 		<Unit filename="include/engine/terminal.h" />
 		<Unit filename="include/engine/utils.h" />
-		<Unit filename="include/menu/menu.h" />
-		<Unit filename="include/snake/game.h" />
-		<Unit filename="include/snake/game_render.h" />
-		<Unit filename="include/snake/snake.h" />
-		<Unit filename="include/snake/snake_logic.h" />
-		<Unit filename="include/snake/snake_render.h" />
+		<Unit filename="include/games/menu/menu.h" />
+		<Unit filename="include/games/snake/snake.h" />
+		<Unit filename="include/games/snake/snake_logic.h" />
+		<Unit filename="include/games/snake/snake_render.h" />
+		<Unit filename="src/core/game_registry.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/engine/canvas.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -59,19 +61,19 @@
 		<Unit filename="src/engine/utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/games/menu/menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/snake/snake.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/snake/snake_logic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/snake/snake_render.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/main.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/menu/menu.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/snake/snake.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/snake/snake_logic.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/snake/snake_render.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

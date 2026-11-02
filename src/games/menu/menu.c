@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../../include/menu/menu.h"
-#include "../../include/engine/canvas.h"
-#include "../../include/engine/terminal.h"
-#include "../../include/engine/session.h"
-#include "../../include/engine/utils.h"
+#include "games/menu/menu.h"
+#include "engine/terminal.h"
+#include "engine/utils.h"
 
 #define MODULE_NAME "Da Pau Launching Experience"
 
@@ -48,7 +46,7 @@ void menu_init(void *runtime_data) {
     runtime->highlighted_choice = 0;
     runtime->isAnimatingOut = 0;
 
-    enable_raw_mode();
+    set_raw_mode(1);
 }
 
 module_action menu_upd(void *runtime_data) {
@@ -68,7 +66,7 @@ module_action menu_upd(void *runtime_data) {
         // User pressed enter/selected an option, trigger transition out
         runtime->isAnimatingOut = 1;
 
-        // Record what the user chose so main.c can introspect it later
+        // Record what the user chose so game_registry can interpret it later
         if (runtime->highlighted_choice == (runtime->total_choices-1)) {
             runtime->selected_choice = MENU_CHOICE_QUIT;
             return MODULE_QUIT;
@@ -115,7 +113,7 @@ void menu_render(void *runtime_data) {
 
 void menu_clean_up(void *runtime_data) {
     if (runtime_data == NULL) return;
-    disable_raw_mode();
+    set_raw_mode(0);
 
     free(runtime_data);
 }

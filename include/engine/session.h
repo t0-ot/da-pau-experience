@@ -5,6 +5,7 @@
 
 #ifndef SESSION_H
 #define SESSION_H
+#include <stddef.h>
 
 /**
  * @brief Actions that a game module can return to tell the session what to do next.
