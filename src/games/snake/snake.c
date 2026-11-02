@@ -13,7 +13,7 @@ void snake_init(void *runtime_data) {
     *runtime = (snake_runtime){
         .titleText = {
             .text = GAME_NAME,
-            .startX = HALF_GAMEVIEW_BOUNDARY + 9,
+            .startX = 48,
             .startY = 3,
             .color = {
                 {.r = 255, .g = 105, .b = 180},
@@ -100,7 +100,7 @@ void snake_init(void *runtime_data) {
     runtime->normalFruitSet.fruitType = &runtime->baseFruit;
     runtime->normalFruitSet.pointList.points = malloc(runtime->normalFruitSet.pointList.amt * sizeof(Point));
     for (int i = 0; i < runtime->normalFruitSet.pointList.amt; i++)
-        spawnFruit(runtime->normalFruitSet.pointList, i, runtime->snake1.pointList, GAME_WIDTH - 41, GAME_HEIGHT - 1);
+        spawnFruit(runtime->normalFruitSet.pointList, i, runtime->snake1.pointList, 39, 19);
     set_raw_mode(1);
 }
 
@@ -118,7 +118,7 @@ module_action snake_upd(void *runtime_data) {
 
     shiftSnakeSegments(&runtime->snake1);
     snakeDirectionHandler(runtime->snake1.pointList.points, runtime->lastDirInput);
-    runtime->snake1.alive = checkLife(runtime->snake1.pointList, GAME_WIDTH - 1, HALF_GAMEVIEW_BOUNDARY);
+    runtime->snake1.alive = checkLife(runtime->snake1.pointList, 79, 39);
 
     if (!(runtime->snake1.alive) && !moveBlocked && !(runtime->lastDirInput->posX == 0 && runtime->lastDirInput->posY == 0))
         handleDeath(&runtime->snake1, &runtime->normalFruitSet.pointList, runtime->lastDirInput);
@@ -127,10 +127,10 @@ module_action snake_upd(void *runtime_data) {
     return MODULE_CONTINUE;
 }
 
-void snake_render(void *runtime_data) {
+void snake_render(void *runtime_data, CanvasBuffer *canvas) {
     snake_runtime *runtime = (snake_runtime *)runtime_data;
     printf("\033[?25l");
-    renderFrame(runtime->cell, runtime->screenRenderList, runtime->totalRenderList);
+    renderFrame(canvas, runtime->screenRenderList, runtime->totalRenderList);
     printf("W - UP, S - DOWN, A - LEFT, D - RIGHT\n");
     fflush(stdout);
     usleep(100000);
@@ -145,6 +145,8 @@ void snake_clean_up(void *runtime_data) {
 }
 
 const game_module snake_module = {
+    .game_width = 80,
+    .game_height = 20,
     .init = snake_init,
     .upd = snake_upd,
     .render = snake_render,

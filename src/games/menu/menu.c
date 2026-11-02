@@ -12,7 +12,7 @@ void menu_init(void *runtime_data) {
 
     runtime->titleText = (BaseText){
         .text = MODULE_NAME,
-        .startX = HALF_GAMEVIEW_BOUNDARY - 12,
+        .startX = 27,
         .startY = 3,
         .color = {
             {.r = 255, .g = 105, .b = 180},
@@ -22,7 +22,7 @@ void menu_init(void *runtime_data) {
 
     runtime->optionChoices[0] = (OptionText){
         .textData.text = "PLAY!",
-        .textData.startX = HALF_GAMEVIEW_BOUNDARY - 2,
+        .textData.startX = 37,
         .textData.startY = 10,
         .optionAmt = 2,
         .textData.color = {{0, 255, 0}, {255, 255, 255}}
@@ -30,7 +30,7 @@ void menu_init(void *runtime_data) {
 
     runtime->optionChoices[1] = (OptionText){
         .textData.text = "QUIT GAME",
-        .textData.startX = HALF_GAMEVIEW_BOUNDARY - 4,
+        .textData.startX = 35,
         .textData.startY = 12,
         .optionAmt = 2,
         .textData.color = {{0, 255, 0}, {255, 255, 255}}
@@ -89,22 +89,22 @@ module_action menu_upd(void *runtime_data) {
     return MODULE_CONTINUE;
 }
 
-void menu_render(void *runtime_data) {
+void menu_render(void *runtime_data, CanvasBuffer *canvas) {
     menu_runtime *runtime = (menu_runtime *)runtime_data;
     printf("\033[H");
 
     if (runtime->isAnimatingOut) {
         int currentPos = (int)ease(runtime->time, runtime->startPos, runtime->change, runtime->duration);
-        runtime->titleText.startX = (int)ease(runtime->time, (HALF_GAMEVIEW_BOUNDARY - 11), 21, runtime->duration);
+        runtime->titleText.startX = (int)ease(runtime->time, 28, 21, runtime->duration);
 
-        canvasIntializer(runtime->menuCell, currentPos);
-        canvasTextStamperGradient(&runtime->titleText, runtime->menuCell);
-        canvasViewPrint(runtime->menuCell);
+        canvasIntializer(canvas, currentPos);
+        canvasTextStamperGradient(&runtime->titleText, canvas);
+        canvasViewPrint(canvas);
     } else {
-        canvasIntializer(runtime->menuCell, runtime->startPos);
-        optionChoiceStamper(runtime->optionChoices, runtime->menuCell);
-        canvasTextStamperGradient(&runtime->titleText, runtime->menuCell);
-        canvasViewPrint(runtime->menuCell);
+        canvasIntializer(canvas, runtime->startPos);
+        optionChoiceStamper(runtime->optionChoices, canvas);
+        canvasTextStamperGradient(&runtime->titleText, canvas);
+        canvasViewPrint(canvas);
     }
 
     fflush(stdout);
@@ -124,6 +124,8 @@ menu_choice_type menu_get_exit_choice(void *runtime_data) {
 }
 
 const game_module menu_module = {
+    .game_width = 80,
+    .game_height = 20,
     .init = menu_init,
     .upd = menu_upd,
     .render = menu_render,

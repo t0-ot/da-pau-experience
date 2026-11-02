@@ -24,6 +24,13 @@ void session_set_module(game_session *session, const game_module *module, size_t
         session->current_runtime = NULL;
     }
 
+    if (session->canvas != NULL) {
+        canvas_destroy(session->canvas);
+        session->canvas = NULL;
+    }
+
+    session->canvas = canvas_create(module->game_width, module->game_height);
+
     void *runtime_data = malloc(runtime_size);
     REQUIRE_NOT_NULLED(runtime_data);
 
@@ -48,7 +55,7 @@ module_action session_run(game_session *session) {
         if (action != MODULE_CONTINUE)
             return action;
 
-        session->current_module->render(session->current_runtime);
+        session->current_module->render(session->current_runtime, session->canvas);
     }
     return MODULE_QUIT;
 }
@@ -64,5 +71,9 @@ void session_cleanup(game_session *session) {
 
         session->current_module = NULL;
         session->current_runtime = NULL;
+    }
+    if (session->canvas != NULL) {
+        canvas_destroy(session->canvas);
+        session->canvas = NULL;
     }
 }

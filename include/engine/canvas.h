@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#define GAME_WIDTH 80
-#define GAME_HEIGHT 20
-#define HALF_GAMEVIEW_BOUNDARY (GAME_WIDTH / 2) - 1
 #define MAX_STATES 2
 
 typedef struct {
@@ -27,7 +24,13 @@ typedef struct {
     RGB color;
 } Canvas;
 
-typedef void(*StampFunc)(void *data, Canvas cellView[][GAME_WIDTH]);
+typedef struct {
+    int width;
+    int height;
+    Canvas *cells;
+} CanvasBuffer;
+
+typedef void(*StampFunc)(void *data, CanvasBuffer *canvas);
 
 typedef struct {
     void *data;
@@ -53,14 +56,19 @@ typedef struct {
     int8_t optionAmt;
 } OptionText;
 
-void canvasIntializer(Canvas cellView[][GAME_WIDTH], int dividerPos);
-void renderFrame(Canvas cell[][GAME_WIDTH], RenderObj* screenRenderList[], int totalRenderList);
-void optionChoiceStamper(void *data, Canvas cellView[][GAME_WIDTH]);
-void canvasTextStamperGradient(void *data, Canvas cellView[][GAME_WIDTH]);
-void canvasTextStamper(void *data, Canvas cellView[][GAME_WIDTH]);
-void canvasScoreStamper(void *data, Canvas cellView[][GAME_WIDTH]);
-void canvasViewPrint(Canvas cellView[][GAME_WIDTH]);
-void cellColorAssignment(Canvas cellView[][GAME_WIDTH], int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b);
-void spawnFruit(ViewPointList fruitView, int fruitNumber, ViewPointList snakeView, int spawnWidth, int spawnHeight);
+
+static inline Canvas *canvas_get(CanvasBuffer *canvas, int x, int y) {
+    return &canvas->cells[y * canvas->width + x];
+}
+CanvasBuffer *canvas_create(int width, int height);
+void canvas_destroy(CanvasBuffer *canvas);
+void canvasIntializer(CanvasBuffer *canvas, int dividerPos);
+void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList);
+void optionChoiceStamper(void *data, CanvasBuffer *canvas);
+void canvasTextStamperGradient(void *data, CanvasBuffer *canvas);
+void canvasTextStamper(void *data, CanvasBuffer *canvas);
+void canvasScoreStamper(void *data, CanvasBuffer *canvas);
+void canvasViewPrint(CanvasBuffer *canvas);
+void cellColorAssignment(CanvasBuffer *canvas, int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b);
 
 #endif // CANVAS_H

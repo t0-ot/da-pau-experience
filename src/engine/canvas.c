@@ -1,7 +1,23 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "engine/canvas.h"
 
-void canvasScoreStamper(void *data, Canvas cellView[][GAME_WIDTH]) {
+CanvasBuffer *canvas_create(int width, int height) {
+    CanvasBuffer *canvas = malloc(sizeof(CanvasBuffer));
+    canvas->width = width;
+    canvas->height = height;
+    canvas->cells = malloc(width * height * sizeof(Canvas)); // Allocates the flat grid!
+    return canvas;
+}
+
+void canvas_destroy(CanvasBuffer *canvas) {
+    if (canvas) {
+        free(canvas->cells);
+        free(canvas);
+    }
+}
+
+void canvasScoreStamper(void *data, CanvasBuffer *canvas) {
     ScoreText *scoreDat = (ScoreText *)data;
     int score = scoreDat->score - 2;
     if (score < 0)
@@ -11,34 +27,33 @@ void canvasScoreStamper(void *data, Canvas cellView[][GAME_WIDTH]) {
     int tens     = (score / 10) % 10;
     int units    = score % 10;
 
-    cellColorAssignment(cellView, scoreDat->x,     scoreDat->y, hundreds + '0', 255, 215, 0);
-    cellColorAssignment(cellView, scoreDat->x + 1, scoreDat->y, tens     + '0', 255, 215, 0);
-    cellColorAssignment(cellView, scoreDat->x + 2, scoreDat->y, units    + '0', 255, 215, 0);
+    cellColorAssignment(canvas, scoreDat->x,     scoreDat->y, hundreds + '0', 255, 215, 0);
+    cellColorAssignment(canvas, scoreDat->x + 1, scoreDat->y, tens     + '0', 255, 215, 0);
+    cellColorAssignment(canvas, scoreDat->x + 2, scoreDat->y, units    + '0', 255, 215, 0);
 }
 
-void cellColorAssignment(Canvas cellView[][GAME_WIDTH], int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b) {
-    cellView[y][x].sym = ch;
-    cellView[y][x].color.r = r;
-    cellView[y][x].color.g = g;
-    cellView[y][x].color.b = b;
+void cellColorAssignment(CanvasBuffer *canvas, int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b) {
+    canvas_get(canvas, x, y)->sym = ch;
+    canvas_get(canvas, x, y)->color.r = r;
+    canvas_get(canvas, x, y)->color.g = g;
+    canvas_get(canvas, x, y)->color.b = b;
 }
 
-void canvasIntializer(Canvas cellView[][GAME_WIDTH], int dividerPos) {
-    int x, y;
-
-    for (y = 0; y < GAME_HEIGHT; y++)
-        for (x = 0; x < GAME_WIDTH; x++) {
-            if (x == 0 || x == dividerPos || y == 0 || y == GAME_HEIGHT - 1 || x == GAME_WIDTH - 1) {
-                cellColorAssignment(cellView, x, y, '#', 255, 105, 180);
+void canvasIntializer(CanvasBuffer *canvas, int dividerPos) {
+    for (int y = 0; y < canvas->height; y++) {
+        for (int x = 0; x < canvas->width; x++) {
+            if (x == 0 || x == dividerPos || y == 0 || y == canvas->height - 1 || x == canvas->width - 1) {
+                cellColorAssignment(canvas, x, y, '#', 255, 105, 180);
             } else if (x < dividerPos) {
-                cellColorAssignment(cellView, x, y, '.', 255, 182, 193);
+                cellColorAssignment(canvas, x, y, '.', 255, 182, 193);
             } else {
-                cellColorAssignment(cellView, x, y, ' ', 255, 255, 255);
+                cellColorAssignment(canvas, x, y, ' ', 255, 255, 255);
             }
         }
+    }
 }
 
-void optionChoiceStamper(void *data, Canvas cellView[][GAME_WIDTH]) {
+void optionChoiceStamper(void *data, CanvasBuffer *canvas) {
     OptionText *optionChoice = (OptionText *)data;
 
     for (int k = 0; k < optionChoice->optionAmt; k++) {
@@ -48,7 +63,7 @@ void optionChoiceStamper(void *data, Canvas cellView[][GAME_WIDTH]) {
         int g = optionChoice[k].textData.color[hoverState].g;
         int b = optionChoice[k].textData.color[hoverState].b;
         for (int i = 0; i < len; i++)
-            cellColorAssignment(cellView, optionChoice[k].textData.startX+i, optionChoice[k].textData.startY, optionChoice[k].textData.text[i], r, g, b);
+            cellColorAssignment(canvas, optionChoice[k].textData.startX+i, optionChoice[k].textData.startY, optionChoice[k].textData.text[i], r, g, b);
         if (!(hoverState))
             continue;
         BaseText hoverArrow[2] = {
@@ -61,11 +76,11 @@ void optionChoiceStamper(void *data, Canvas cellView[][GAME_WIDTH]) {
         hoverArrow[0].startX -= 3;
         hoverArrow[1].startX += len+2;
         for (int j = 0; j < 2; j++)
-            canvasTextStamper(&hoverArrow[j], cellView);
+            canvasTextStamper(&hoverArrow[j], canvas);
     }
 }
 
-void canvasTextStamperGradient(void *data, Canvas cellView[][GAME_WIDTH]) {
+void canvasTextStamperGradient(void *data, CanvasBuffer *canvas) {
     BaseText *text = (BaseText *)data;
     int len = strlen(text->text);
 
@@ -73,32 +88,35 @@ void canvasTextStamperGradient(void *data, Canvas cellView[][GAME_WIDTH]) {
         int r = text->color[0].r + (text->color[1].r - text->color[0].r) * i / (len - 1);
         int g = text->color[0].g + (text->color[1].g - text->color[0].g) * i / (len - 1);
         int b = text->color[0].b + (text->color[1].b - text->color[0].b) * i / (len - 1);
-        cellColorAssignment(cellView, text->startX+i, text->startY, text->text[i], r, g, b);
+        cellColorAssignment(canvas, text->startX+i, text->startY, text->text[i], r, g, b);
     }
 }
 
-void canvasTextStamper(void *data, Canvas cellView[][GAME_WIDTH]) {
+void canvasTextStamper(void *data, CanvasBuffer *canvas) {
     BaseText *text = (BaseText *)data;
     int len = strlen(text->text);
 
     for (int i = 0; i < len; i++)
-        cellColorAssignment(cellView, text->startX+i, text->startY, text->text[i], text->color[0].r, text->color[0].g, text->color[0].b);
+        cellColorAssignment(canvas, text->startX+i, text->startY, text->text[i], text->color[0].r, text->color[0].g, text->color[0].b);
 }
 
-void renderFrame(Canvas cell[][GAME_WIDTH], RenderObj* screenRenderList[], int totalRenderList) {
+void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList) {
     printf("\033[H");
-    canvasIntializer(cell, GAME_WIDTH - 41);
+    canvasIntializer(canvas, canvas->width - 41);
     for (int i = 0; i < totalRenderList; i++)
-        screenRenderList[i]->stamp(screenRenderList[i]->data, cell);
-    canvasViewPrint(cell);
+        screenRenderList[i]->stamp(screenRenderList[i]->data, canvas);
+    canvasViewPrint(canvas);
 }
 
-void canvasViewPrint(Canvas cellView[][GAME_WIDTH]) {
+void canvasViewPrint(CanvasBuffer *canvas) {
     int bufferPos = 0;
-    char buffer[(GAME_WIDTH * 30) * GAME_HEIGHT];
-    for (int y = 0; y < GAME_HEIGHT; y++) {
-        for (int x = 0; x < GAME_WIDTH; x++)
-            bufferPos += sprintf(buffer + bufferPos, "\033[38;2;%d;%d;%dm%c\033[0m", cellView[y][x].color.r, cellView[y][x].color.g, cellView[y][x].color.b, cellView[y][x].sym);
+    char buffer[(canvas->width * 30) * canvas->height];
+    for (int y = 0; y < canvas->height; y++) {
+        for (int x = 0; x < canvas->width; x++) {
+            Canvas *cell = canvas_get(canvas, x, y);
+            bufferPos += sprintf(buffer + bufferPos, "\033[38;2;%d;%d;%dm%c\033[0m",
+                                 cell->color.r, cell->color.g, cell->color.b, cell->sym);
+        }
         sprintf(buffer + bufferPos, "\n");
         bufferPos++;
     }

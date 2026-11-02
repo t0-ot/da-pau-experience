@@ -1,25 +1,27 @@
 #include "games/snake/snake_render.h"
 #include "games/snake/snake_logic.h"
 
-void snakeStamper(void *data, Canvas cellview[][GAME_WIDTH]) {
+void snakeStamper(void *data, CanvasBuffer *canvas) {
     snakeData *p = (snakeData *)data;
     for (int i = p->pointList.amt - 1; i >= 0; i--) {
-        cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].color.r = 0;
-        cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].color.g = 255;
-        cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].color.b = 0;
-        if (i == 0)
-            cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].sym = 'M';
-        else
-            cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].sym = 'O';
+        int x = p->pointList.points[i].posX;
+        int y = p->pointList.points[i].posY;
+        char sym = (i == 0) ? 'M' : 'O';
+
+        // Use your cellColorAssignment helper with the session's canvas!
+        cellColorAssignment(canvas, x, y, sym, 0, 255, 0);
     }
 }
 
-void fruitStamper(void *data, Canvas cellview[][GAME_WIDTH]) {
+void fruitStamper(void *data, CanvasBuffer *canvas) {
     fruitData *p = (fruitData *)data;
     for (int i = 0; i < p->pointList.amt; i++) {
-        cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].sym = p->visuals.sym;
-        cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].color.r = p->visuals.color.r;
-        cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].color.g = p->visuals.color.g;
-        cellview[p->pointList.points[i].posY][p->pointList.points[i].posX].color.b = p->visuals.color.b;
+        int x = p->pointList.points[i].posX;
+        int y = p->pointList.points[i].posY;
+
+        cellColorAssignment(canvas, x, y, p->visuals.sym,
+                            p->visuals.color.r,
+                            p->visuals.color.g,
+                            p->visuals.color.b);
     }
 }

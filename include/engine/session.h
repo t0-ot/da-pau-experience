@@ -6,6 +6,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 #include <stddef.h>
+#include "engine/canvas.h"
 
 /**
  * @brief Actions that a game module can return to tell the session what to do next.
@@ -20,9 +21,11 @@ typedef enum {
  * @brief Agnostic game module structure defining the interface for a game state.
  */
 typedef struct {
+    int game_width;
+    int game_height;
     void (*init)(void *runtime_data);
     module_action (*upd)(void *runtime_data);
-    void (*render)(void *runtime_data);
+    void (*render)(void *runtime_data, CanvasBuffer *canvas);
     void (*clean_up)(void *runtime_data);
 } game_module;
 
@@ -32,6 +35,7 @@ typedef struct {
 typedef struct {
     const game_module *current_module;
     void *current_runtime;
+    CanvasBuffer *canvas;
     int is_running;
 } game_session;
 

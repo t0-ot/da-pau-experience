@@ -12,7 +12,6 @@ extern const game_module snake_module;
 
 //Full runtime struct for snake game and it's world
 typedef struct {
-    Canvas cell[GAME_HEIGHT][GAME_WIDTH];
     BaseText titleText;
     BaseText scoreTexts[2];
     ScoreText scoreNumbers[2];
@@ -37,7 +36,7 @@ int hiScoreCounter(int currentScore, int *highestScore);
 void gameUpdateLogic(snake_runtime *session);
 void snake_init(void *data);
 module_action snake_upd(void *runtime_data);
-void snake_render(void *runtime_data);
+void snake_render(void *runtime_data, CanvasBuffer *canvas);
 void snake_clean_up(void *runtime_data);
 
 #endif // GAME_H

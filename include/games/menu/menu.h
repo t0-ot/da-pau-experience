@@ -27,7 +27,6 @@ typedef enum {
  * @brief Private runtime data keeping track of menu state, rendering elements, and animations.
  */
 typedef struct {
-    Canvas menuCell[GAME_HEIGHT][GAME_WIDTH];
     OptionText optionChoices[2];
     BaseText titleText;
     float time;
