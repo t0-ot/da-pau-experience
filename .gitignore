@@ -1,8 +1,9 @@
-
+obj/
+bin/
 *.o
-SNAKE
-bin/Debug/Da-Pau-Eating-Experience
-/bin
-ValgrindOut.xml
+*.exe
+*.out
+*.a
+*.so
 *.layout
 *.depend

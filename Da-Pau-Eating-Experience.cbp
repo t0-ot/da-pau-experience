@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-g" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -27,15 +28,24 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
+			<Target title="DEBUG_LINUX_ASAN">
+				<Option output="bin/Debug/Da-Pau-Eating-Experience" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-g -fsanitize=address" />
+				</Compiler>
+				<Linker>
+					<Add option="-fsanitize=address" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-g -fsanitize=address" />
 			<Add directory="include" />
 		</Compiler>
-		<Linker>
-			<Add option="-fsanitize=address" />
-		</Linker>
 		<Unit filename="include/core/game_registry.h" />
 		<Unit filename="include/engine/canvas.h" />
 		<Unit filename="include/engine/guard.h" />

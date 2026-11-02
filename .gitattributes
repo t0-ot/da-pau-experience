@@ -1,0 +1,24 @@
+# Set the default behavior to handle text files automatically and force LF
+* text=auto eol=lf
+
+# Force C source and header files to ALWAYS use LF
+*.c text eol=lf
+*.h text eol=lf
+
+# Force Code::Blocks project files and workspace files to use LF
+*.cbp text eol=lf
+*.workspace text eol=lf
+
+# Ensure Linux shell scripts always use LF
+*.sh text eol=lf
+
+# Ensure Windows batch files use CRLF so they don't break on Windows
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Keep binary/executable files safe from Git modification
+*.exe binary
+*.o binary
+*.a binary
+*.so binary
+*.dll binary
