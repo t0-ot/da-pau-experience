@@ -126,6 +126,7 @@ menu_choice_type menu_get_exit_choice(void *runtime_data) {
 const game_module menu_module = {
     .game_width = 80,
     .game_height = 20,
+    .runtime_size = sizeof(menu_runtime),
     .init = menu_init,
     .upd = menu_upd,
     .render = menu_render,

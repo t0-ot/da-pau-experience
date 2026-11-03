@@ -23,6 +23,7 @@ typedef enum {
 typedef struct {
     int game_width;
     int game_height;
+    size_t runtime_size;
     void (*init)(void *runtime_data);
     module_action (*upd)(void *runtime_data);
     void (*render)(void *runtime_data, CanvasBuffer *canvas);
@@ -55,7 +56,7 @@ void session_init(game_session *session);
  * @param size of runtime.
  * @return void
  */
-void session_set_module(game_session *session, const game_module *module, size_t runtime_size);
+void session_set_module(game_session *session, const game_module *module);
 
 /**
  * @brief Starts main engine loop, running updates and rendering

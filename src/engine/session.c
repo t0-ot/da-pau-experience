@@ -14,7 +14,7 @@ void session_init(game_session *session) {
     session->is_running = 1;
 }
 
-void session_set_module(game_session *session, const game_module *module, size_t runtime_size) {
+void session_set_module(game_session *session, const game_module *module) {
     REQUIRE_NOT_NULLED(session);
     REQUIRE_NOT_NULLED(module);
 
@@ -31,7 +31,7 @@ void session_set_module(game_session *session, const game_module *module, size_t
 
     session->canvas = canvas_create(module->game_width, module->game_height);
 
-    void *runtime_data = malloc(runtime_size);
+    void *runtime_data = malloc(module->runtime_size);
     REQUIRE_NOT_NULLED(runtime_data);
 
 

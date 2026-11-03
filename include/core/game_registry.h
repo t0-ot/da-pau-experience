@@ -18,7 +18,6 @@
 typedef struct {
     menu_choice_type choice;
     const game_module *module;
-    size_t runtime_size;
 } Game_Entry;
 
 /**

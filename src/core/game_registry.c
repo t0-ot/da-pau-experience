@@ -4,14 +4,13 @@
 
 // Registry table mapping menu choice selections to their respective modules and runtime sizes
 static const Game_Entry GAME_ENTRIES[] = {
-    { MENU_CHOICE_PLAY_SNAKE, &snake_module, sizeof(snake_runtime) },
+    { MENU_CHOICE_PLAY_SNAKE, &snake_module },
 };
 
 // Static definition for the root game launcher/menu module
 static const Game_Entry MENU_LAUNCHER = {
     .choice = MENU_CHOICE_NONE,
-    .module = &menu_module,
-    .runtime_size = sizeof(menu_runtime)
+    .module = &menu_module
 };
 
 #define NUM_GAMES (sizeof(GAME_ENTRIES) / sizeof(Game_Entry))

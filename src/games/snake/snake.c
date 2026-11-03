@@ -149,6 +149,7 @@ void snake_clean_up(void *runtime_data) {
 const game_module snake_module = {
     .game_width = 80,
     .game_height = 20,
+    .runtime_size = sizeof(snake_runtime),
     .init = snake_init,
     .upd = snake_upd,
     .render = snake_render,

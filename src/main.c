@@ -12,7 +12,7 @@ int main(void) {
 
     while (session.is_running && retrieved_game != NULL) {
         // session_set_module automatically cleans up the PREVIOUS module & canvas!
-        session_set_module(&session, retrieved_game->module, retrieved_game->runtime_size);
+        session_set_module(&session, retrieved_game->module);
 
         module_action action = session_run(&session);
 
