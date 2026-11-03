@@ -8,6 +8,32 @@
 
 #define GAME_NAME "Da Pau Snake Game"
 
+/**
+ * @brief Private runtime data keeping track of snake game, rendering elements, and it's world.
+ */
+typedef struct {
+    BaseText titleText;
+    BaseText scoreTexts[2];
+    ScoreText scoreNumbers[2];
+    RenderObj scoreTextObj;
+    RenderObj scoreNumObj;
+    RenderObj hiScoreTextObj;
+    RenderObj hiScoreNumObj;
+    RenderObj titleTextObj;
+    snakeData snake1;
+    defaultFruit baseFruit;
+    fruitData normalFruitSet;
+    RenderObj snakeObj1;
+    RenderObj normFruitSetObj;
+    RenderObj* screenRenderList[7];
+    Point lastDirInput[1];
+    int totalRenderList;
+    int currentHiScore;
+    int isRunning;
+    int play_width;
+    int play_height;
+} snake_runtime;
+
 void snake_init(void *runtime_data) {
     snake_runtime *runtime = (snake_runtime *)runtime_data;
     *runtime = (snake_runtime){
@@ -155,9 +181,3 @@ const game_module snake_module = {
     .render = snake_render,
     .clean_up = snake_clean_up
 };
-
-int hiScoreCounter(int currentScore, int *highestScore) {
-    if (currentScore > *highestScore)
-        *highestScore = currentScore;
-    return *highestScore;
-}

@@ -88,3 +88,9 @@ void handleFruitCollision(fruitData *collidedFruitData, snakeData *snakeInfo, in
     handleMilestoneFruit(collidedFruitData, &snakeInfo->pointList, play_width, play_height);
     spawnFruit(collidedFruitData->pointList, collidedFruitNum-1, snakeInfo->pointList, play_width, play_height);
 }
+
+int hiScoreCounter(int currentScore, int *highestScore) {
+    if (currentScore > *highestScore)
+        *highestScore = currentScore;
+    return *highestScore;
+}

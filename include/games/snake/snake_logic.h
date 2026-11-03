@@ -28,6 +28,7 @@ typedef struct {
 } fruitData;
 
 int movementInputHandler(Point prevDirInput[], char input);
+int hiScoreCounter(int currentScore, int *highestScore);
 int snakeDirectionHandler(Point snake[], Point lastDir[], int play_width, int play_height);
 void shiftSnakeSegments(snakeData *snakeInfo);
 int checkLife(ViewPointList snakeView, int playWidthBoundary, int playHeightBoundary);

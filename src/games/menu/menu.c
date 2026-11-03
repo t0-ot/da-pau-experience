@@ -7,6 +7,23 @@
 
 #define MODULE_NAME "Da Pau Launching Experience"
 
+/**
+ * @brief Private runtime data keeping track of menu state, rendering elements, and animations.
+ */
+typedef struct {
+    OptionText optionChoices[2];
+    BaseText titleText;
+    float time;
+    float duration;
+    float startPos;
+    float targetPos;
+    float change;
+    int total_choices;
+    int highlighted_choice;
+    int isAnimatingOut;
+    menu_choice_type selected_choice;
+} menu_runtime;
+
 void menu_init(void *runtime_data) {
     menu_runtime *runtime = (menu_runtime *)runtime_data;
 

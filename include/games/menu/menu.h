@@ -24,23 +24,6 @@ typedef enum {
 } menu_choice_type;
 
 /**
- * @brief Private runtime data keeping track of menu state, rendering elements, and animations.
- */
-typedef struct {
-    OptionText optionChoices[2];
-    BaseText titleText;
-    float time;
-    float duration;
-    float startPos;
-    float targetPos;
-    float change;
-    int total_choices;
-    int highlighted_choice;
-    int isAnimatingOut;
-    menu_choice_type selected_choice;
-} menu_runtime;
-
-/**
  * @brief Retrieves the final menu choice selected by the user before exiting the menu module.
  *
  * @param runtime_data Pointer to the active menu runtime data structure.
