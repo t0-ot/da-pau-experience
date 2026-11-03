@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include "core/game_registry.h"
 #include "games/snake/snake.h"
+#include "games/tron/tron.h"
 
 // Registry table mapping menu choice selections to their respective modules and runtime sizes
 static const Game_Entry GAME_ENTRIES[] = {
     { MENU_CHOICE_PLAY_SNAKE, &snake_module },
+    { MENU_CHOICE_PLAY_TRON, &tron_module }
 };
 
 // Static definition for the root game launcher/menu module

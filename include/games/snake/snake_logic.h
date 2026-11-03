@@ -1,6 +1,8 @@
 #ifndef SNAKE_LOGIC_H
 #define SNAKE_LOGIC_H
 
+#include "engine/canvas.h"
+
 typedef struct {
     int8_t scoreAmt;
 } defaultFruit;

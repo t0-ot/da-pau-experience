@@ -53,8 +53,12 @@ typedef struct {
 typedef struct {
     BaseText textData;
     bool isSelected;
-    int8_t optionAmt;
 } OptionText;
+
+typedef struct {
+    OptionText *option_choice;
+    int option_amt;
+} option_list;
 
 
 static inline Canvas *canvas_get(CanvasBuffer *canvas, int x, int y) {

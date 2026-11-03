@@ -19,6 +19,7 @@ extern const game_module menu_module;
  */
 typedef enum {
     MENU_CHOICE_PLAY_SNAKE,
+    MENU_CHOICE_PLAY_TRON,
     MENU_CHOICE_NONE,
     MENU_CHOICE_QUIT
 } menu_choice_type;

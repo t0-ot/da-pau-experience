@@ -55,24 +55,27 @@ void canvasIntializer(CanvasBuffer *canvas, int dividerPos) {
 }
 
 void optionChoiceStamper(void *data, CanvasBuffer *canvas) {
-    OptionText *optionChoice = (OptionText *)data;
+    option_list *option_list_data = (option_list *)data;
 
-    for (int k = 0; k < optionChoice->optionAmt; k++) {
-        int len = strlen(optionChoice[k].textData.text);
-        int hoverState = optionChoice[k].isSelected;
-        int r = optionChoice[k].textData.color[hoverState].r;
-        int g = optionChoice[k].textData.color[hoverState].g;
-        int b = optionChoice[k].textData.color[hoverState].b;
+    for (int k = 0; k < option_list_data->option_amt; k++) {
+        int len = strlen(option_list_data->option_choice[k].textData.text);
+        int hoverState = option_list_data->option_choice[k].isSelected;
+        int r = option_list_data->option_choice[k].textData.color[hoverState].r;
+        int g = option_list_data->option_choice[k].textData.color[hoverState].g;
+        int b = option_list_data->option_choice[k].textData.color[hoverState].b;
         for (int i = 0; i < len; i++)
-            cellColorAssignment(canvas, optionChoice[k].textData.startX+i, optionChoice[k].textData.startY, optionChoice[k].textData.text[i], r, g, b);
+            cellColorAssignment(canvas, option_list_data->option_choice[k].textData.startX+i,
+                                option_list_data->option_choice[k].textData.startY,
+                                option_list_data->option_choice[k].textData.text[i],
+                                r, g, b);
         if (!(hoverState))
             continue;
         BaseText hoverArrow[2] = {
             [0].text = ">",
             [1].text = "<",
             [0 ... 1].color = { {255, 255, 255} },
-            [0 ... 1].startX = optionChoice[k].textData.startX,
-            [0 ... 1].startY = optionChoice[k].textData.startY
+            [0 ... 1].startX = option_list_data->option_choice[k].textData.startX,
+            [0 ... 1].startY = option_list_data->option_choice[k].textData.startY
         };
         hoverArrow[0].startX -= 3;
         hoverArrow[1].startX += len+2;
@@ -104,8 +107,10 @@ void canvasTextStamper(void *data, CanvasBuffer *canvas) {
 void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList, int div_pos) {
     printf("\033[H");
     canvasIntializer(canvas, div_pos);
-    for (int i = 0; i < totalRenderList; i++)
-        screenRenderList[i]->stamp(screenRenderList[i]->data, canvas);
+    for (int i = 0; i < totalRenderList; i++) {
+        if (screenRenderList[i] != NULL)
+            screenRenderList[i]->stamp(screenRenderList[i]->data, canvas);
+    }
     canvasViewPrint(canvas);
 }
 

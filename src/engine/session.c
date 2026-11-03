@@ -16,7 +16,7 @@ void session_init(game_session *session) {
 
 void session_set_module(game_session *session, const game_module *module) {
     REQUIRE_NOT_NULLED(session);
-    REQUIRE_NOT_NULLED(module);
+    REQUIRE_VALID_MODULE(module);
 
     //If there was a game before we clean it up first.
     if (session->current_module != NULL && session->current_module->clean_up != NULL) {
@@ -46,7 +46,7 @@ void session_set_module(game_session *session, const game_module *module) {
 
 module_action session_run(game_session *session) {
     REQUIRE_NOT_NULLED(session);
-    REQUIRE_NOT_NULLED(session->current_module);
+    REQUIRE_VALID_MODULE(session->current_module);
 
     while (session->is_running) {
 

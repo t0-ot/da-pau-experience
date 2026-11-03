@@ -27,4 +27,12 @@
         } \
     } while(0)
 
+#define REQUIRE_VALID_MODULE(mod) do { \
+    REQUIRE_NOT_NULLED(mod); \
+    REQUIRE_NOT_NULLED((mod)->init); \
+    REQUIRE_NOT_NULLED((mod)->upd); \
+    REQUIRE_NOT_NULLED((mod)->render); \
+    REQUIRE_NOT_NULLED((mod)->clean_up); \
+} while(0)
+
 #endif // GUARD_H_INCLUDED
