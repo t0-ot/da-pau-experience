@@ -28,6 +28,16 @@ int objectPointResize(ViewPointList *data) {
     return 1;
 }
 
+int get_centered_x(int left_wall, int right_wall, int text_length) {
+    int region_width = right_wall - left_wall;
+    return left_wall + ((region_width - text_length) / 2);
+}
+
+int get_centered_y(int top_wall, int bottom_wall, int text_length) {
+    int region_height = bottom_wall - top_wall;
+    return top_wall + ((region_height - text_length) / 2);
+}
+
 int collisionCheckOne(ViewPointList *objView1, ViewPointList *objView2, int countFrom, int checkIndexObj2) {
     for (int i = countFrom; i < objView1->amt; i++) {
         if (objView1 == objView2 && i == checkIndexObj2)

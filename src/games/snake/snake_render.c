@@ -8,7 +8,7 @@ void snakeStamper(void *data, CanvasBuffer *canvas) {
         int y = p->pointList.points[i].posY;
         char sym = (i == 0) ? 'M' : 'O';
 
-        // Use your cellColorAssignment helper with the session's canvas!
+        // Use cellColorAssignment helper with the session's canvas
         cellColorAssignment(canvas, x, y, sym, 0, 255, 0);
     }
 }

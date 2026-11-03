@@ -13,7 +13,7 @@ void snake_init(void *runtime_data) {
     *runtime = (snake_runtime){
         .titleText = {
             .text = GAME_NAME,
-            .startX = (3 * snake_module.game_width / 4) - 12,
+            .startX = get_centered_x(snake_module.game_width/2, snake_module.game_width, 24),
             .startY = (snake_module.game_height * 3) / 20,
             .color = {
                 {.r = 255, .g = 105, .b = 180},
@@ -22,10 +22,10 @@ void snake_init(void *runtime_data) {
         },
         .scoreTexts = {
             [0].text = "-== SCORE ==-",
-            [0].startX = (3 * snake_module.game_width / 4) - (13 / 2),
+            [0].startX = get_centered_x(snake_module.game_width/2, snake_module.game_width, 13),
             [0].startY = (snake_module.game_height * 9) / 20,
             [1].text = "-+== HI-SCORE ==+-",
-            [1].startX = (3 * snake_module.game_width / 4) - (18 / 2),
+            [1].startX = get_centered_x(snake_module.game_width/2, snake_module.game_width, 18),
             [1].startY = (snake_module.game_height * 13) / 20,
             [0 ... 1].color = {
                 [0].r = 255,
@@ -51,7 +51,7 @@ void snake_init(void *runtime_data) {
             [0 ... 1].score = 0,
             [0].y = (snake_module.game_height * 8) / 20,
             [1].y = (snake_module.game_height * 12) / 20,
-            [0 ... 1].x = (3 * snake_module.game_width / 4) - (3 / 2)
+            [0 ... 1].x = get_centered_x(snake_module.game_width/2, snake_module.game_width, 3)
         },
         .scoreNumObj = {
             .stamp = canvasScoreStamper

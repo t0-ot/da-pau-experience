@@ -12,8 +12,8 @@ void menu_init(void *runtime_data) {
 
     runtime->titleText = (BaseText){
         .text = MODULE_NAME,
-        .startX = 27,
-        .startY = 3,
+        .startX = get_centered_x(0, menu_module.game_width, 27),
+        .startY = (menu_module.game_height * 3) / 20,
         .color = {
             {.r = 255, .g = 105, .b = 180},
             {.r = 255, .g = 215, .b = 0}
@@ -21,17 +21,17 @@ void menu_init(void *runtime_data) {
     };
 
     runtime->optionChoices[0] = (OptionText){
-        .textData.text = "PLAY!",
-        .textData.startX = 37,
-        .textData.startY = 10,
+        .textData.text = "SNAKE",
+        .textData.startX = get_centered_x(0, menu_module.game_width, 5),
+        .textData.startY = get_centered_y(0, menu_module.game_height, 1),
         .optionAmt = 2,
         .textData.color = {{0, 255, 0}, {255, 255, 255}}
     };
 
     runtime->optionChoices[1] = (OptionText){
         .textData.text = "QUIT GAME",
-        .textData.startX = 35,
-        .textData.startY = 12,
+        .textData.startX = get_centered_x(0, menu_module.game_width, 9),
+        .textData.startY = get_centered_y(1, menu_module.game_height, 1) + 1,
         .optionAmt = 2,
         .textData.color = {{0, 255, 0}, {255, 255, 255}}
     };
