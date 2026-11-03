@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Fallback for compilers in case they don't support __FILE_NAME__ (like MSVC or older GCC) */
+#ifndef __FILE_NAME__
+#define __FILE_NAME__ __FILE__
+#endif
+
 #define REQUIRE_NOT_NULLED(ptr) \
     do { \
         if ((ptr) == NULL) { \

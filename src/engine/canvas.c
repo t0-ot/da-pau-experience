@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "engine/canvas.h"
 
 CanvasBuffer *canvas_create(int width, int height) {

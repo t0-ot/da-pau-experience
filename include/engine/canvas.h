@@ -2,7 +2,7 @@
 #define CANVAS_H
 
 #include <stdint.h>
-#include <string.h>
+#include <stdbool.h>
 #define MAX_STATES 2
 
 typedef struct {
