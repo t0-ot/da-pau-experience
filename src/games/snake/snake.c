@@ -6,14 +6,14 @@
 #include "engine/utils.h"
 #include "games/snake/snake_render.h"
 
-#define GAME_NAME "Da Pau Eating Experience"
+#define GAME_NAME "Da Pau Snake Game"
 
 void snake_init(void *runtime_data) {
     snake_runtime *runtime = (snake_runtime *)runtime_data;
     *runtime = (snake_runtime){
         .titleText = {
             .text = GAME_NAME,
-            .startX = get_centered_x(snake_module.game_width/2, snake_module.game_width, 24),
+            .startX = get_centered_x(snake_module.game_width/2, snake_module.game_width, 17),
             .startY = (snake_module.game_height * 3) / 20,
             .color = {
                 {.r = 255, .g = 105, .b = 180},
