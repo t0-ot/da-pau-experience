@@ -13,7 +13,6 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add option="-g" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -56,6 +55,7 @@
 		<Unit filename="include/games/snake/snake.h" />
 		<Unit filename="include/games/snake/snake_logic.h" />
 		<Unit filename="include/games/snake/snake_render.h" />
+		<Unit filename="include/games/tron/tron.h" />
 		<Unit filename="src/core/game_registry.c">
 			<Option compilerVar="CC" />
 		</Unit>
