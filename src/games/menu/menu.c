@@ -28,6 +28,23 @@ typedef struct {
     menu_choice_type selected_choice;
 } menu_runtime;
 
+typedef struct {
+    const char *text;
+    menu_choice_type choice;
+    int width;    // Used for centering math
+    int y_offset; // Relative spacing modifier
+} MenuConfig;
+
+// Define menu structure sequentially
+static const MenuConfig MENU_REGISTRY[] = {
+    { .text = "SNAKE",     .choice = MENU_CHOICE_PLAY_SNAKE, .width = 5, .y_offset = 0 },
+    { .text = "TRON",      .choice = MENU_CHOICE_PLAY_TRON,  .width = 4, .y_offset = 1 },
+    { .text = "QUIT GAME", .choice = MENU_CHOICE_QUIT,       .width = 9, .y_offset = 3 }
+};
+
+#define TOTAL_MENU_ITEMS (sizeof(MENU_REGISTRY) / sizeof(MENU_REGISTRY[0]))
+
+
 void menu_init(void *runtime_data) {
     menu_runtime *runtime = (menu_runtime *)runtime_data;
 
@@ -35,46 +52,32 @@ void menu_init(void *runtime_data) {
         .text = MODULE_NAME,
         .startX = get_centered_x(0, menu_module.game_width, 27),
         .startY = (menu_module.game_height * 3) / 20,
-        .color = {
-            {.r = 255, .g = 105, .b = 180},
-            {.r = 255, .g = 215, .b = 0}
-        }
-    };
-    runtime->title_text_obj = (RenderObj){
-        .stamp = canvasTextStamperGradient
-    },
-    runtime->option_choices_obj = (RenderObj){
-        .stamp = optionChoiceStamper
+        .color = { {.r = 255, .g = 105, .b = 180}, {.r = 255, .g = 215, .b = 0} }
     };
 
-    runtime->optionChoices[0] = (OptionText){
-        .textData.text = "SNAKE",
-        .textData.startX = get_centered_x(0, menu_module.game_width, 5),
-        .textData.startY = get_centered_y(0, menu_module.game_height, 1),
-        .textData.color = {{0, 255, 0}, {255, 255, 255}}
-    };
+    runtime->title_text_obj = (RenderObj){ .stamp = canvasTextStamperGradient };
+    runtime->option_choices_obj = (RenderObj){ .stamp = optionChoiceStamper };
 
-    runtime->optionChoices[1] = (OptionText){
-        .textData.text = "TRON",
-        .textData.startX = get_centered_x(0, menu_module.game_width, 4),
-        .textData.startY = get_centered_y(1, menu_module.game_height, 1) + 1,
-        .textData.color = {{0, 255, 0}, {255, 255, 255}}
-    };
-    runtime->optionChoices[2] = (OptionText){
-        .textData.text = "QUIT GAME",
-        .textData.startX = get_centered_x(0, menu_module.game_width, 9),
-        .textData.startY = get_centered_y(1, menu_module.game_height, 1) + 3,
-        .textData.color = {{0, 255, 0}, {255, 255, 255}}
-    };
+    // Dynamic Initialization Loop
+    for (int i = 0; i < TOTAL_MENU_ITEMS; i++) {
+        runtime->optionChoices[i] = (OptionText){
+            .textData.text = MENU_REGISTRY[i].text,
+            .textData.startX = get_centered_x(0, menu_module.game_width, MENU_REGISTRY[i].width),
+            // Calculates height scaling based on your y_offset properties
+            .textData.startY = get_centered_y(i == 0 ? 0 : 1, menu_module.game_height, 1) + MENU_REGISTRY[i].y_offset,
+            .textData.color = {{0, 255, 0}, {255, 255, 255}}
+        };
+    }
+
     runtime->title_text_obj.data = &runtime->titleText;
     runtime->option_choices_obj.data = &runtime->total_option_list;
-
     runtime->render_list[0] = &runtime->title_text_obj;
     runtime->render_list[1] = &runtime->option_choices_obj;
     runtime->total_render_list = sizeof(runtime->render_list) / sizeof(runtime->render_list[0]);
 
     runtime->total_option_list.option_choice = runtime->optionChoices;
-    runtime->total_option_list.option_amt = sizeof(runtime->optionChoices) / sizeof(runtime->optionChoices[0]);
+    runtime->total_option_list.option_amt = TOTAL_MENU_ITEMS;
+
     runtime->time = 0.0f;
     runtime->duration = 1.0f;
     runtime->startPos = 0.0f;
@@ -87,10 +90,10 @@ void menu_init(void *runtime_data) {
     set_raw_mode(1);
 }
 
+
 module_action menu_upd(void *runtime_data) {
     menu_runtime *runtime = (menu_runtime *)runtime_data;
 
-    // If we finished the selection and are running the exit transition
     if (runtime->isAnimatingOut) {
         if (runtime->time <= runtime->duration) {
             runtime->time += 0.03f;
@@ -99,33 +102,20 @@ module_action menu_upd(void *runtime_data) {
         return MODULE_FINISHED;
     }
 
-    // Normal interactive menu loop
     if (menuInputHandler(&runtime->highlighted_choice, runtime->total_option_list.option_amt)) {
-        // User pressed enter/selected an option, trigger transition out
         runtime->isAnimatingOut = 1;
 
-        // Record what the user chose so game_registry can interpret it later
-        if (runtime->highlighted_choice == (runtime->total_option_list.option_amt-1)) {
-            runtime->selected_choice = MENU_CHOICE_QUIT;
-            return MODULE_QUIT;
-        } else {
-            switch (runtime->highlighted_choice) {
-                case 0:
-                    runtime->selected_choice = MENU_CHOICE_PLAY_SNAKE;
-                    break;
-                case 1:
-                    runtime->selected_choice = MENU_CHOICE_PLAY_TRON;
-                    break;
-            }
-        }
+        // Dynamic mapping assignment
+        runtime->selected_choice = MENU_REGISTRY[runtime->highlighted_choice].choice;
 
+        if (runtime->selected_choice == MENU_CHOICE_QUIT) {
+            return MODULE_QUIT;
+        }
         return MODULE_CONTINUE;
     }
 
     for (int i = 0; i < runtime->total_option_list.option_amt; i++) {
-        runtime->optionChoices[i].isSelected = 0;
-        if (i == runtime->highlighted_choice)
-            runtime->optionChoices[i].isSelected = 1;
+        runtime->optionChoices[i].isSelected = (i == runtime->highlighted_choice);
     }
 
     return MODULE_CONTINUE;
