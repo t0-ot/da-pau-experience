@@ -1,5 +1,5 @@
-# Da Pau Eating Experience 😋
-> An Unbeaten Eating Experience
+# Da Pau Launching Experience 😋
+> An Unbeaten Launching Experience
 
 A Code::Blocks C terminal application game for me to practice writing C code and a fun side project at the same time.
 
