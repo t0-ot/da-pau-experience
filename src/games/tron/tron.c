@@ -1,17 +1,22 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include "engine/terminal.h"
 #include "engine/utils.h"
 #include "games/tron/tron.h"
 #include "games/snake/snake_logic.h"
+#include "games/snake/snake_render.h"
 
 #define GAME_NAME "Da Pau Tron Game"
 
 typedef struct {
     BaseText title_text;
     snakeData player;
+    snakeData enemy;
     RenderObj player_obj;
+    RenderObj enemy_obj;
     RenderObj title_text_obj;
-    RenderObj* screen_render_list[2];
+    RenderObj* screen_render_list[3];
     int total_render_list;
 } tron_runtime;
 
@@ -31,19 +36,42 @@ void tron_init(void *runtime_data) {
             .pointList.amt = 1,
             .alive = 1
         },
+        .enemy = {
+            .pointList.amt = 1,
+            .alive = 1
+        },
 
     };
+    runtime->player.pointList.points = malloc(runtime->player.pointList.amt * sizeof(Point));
+    runtime->player.pointList.points->posX = 25;
+    runtime->player.pointList.points->posY = 15;
+
+    runtime->enemy.pointList.points = malloc(runtime->enemy.pointList.amt * sizeof(Point));
+    runtime->enemy.pointList.points->posX = 10;
+    runtime->enemy.pointList.points->posY = 5;
+
     runtime->title_text_obj.data = &runtime->title_text;
     runtime->player_obj.data = &runtime->player;
+    runtime->enemy_obj.data = &runtime->enemy;
+    runtime->title_text_obj.stamp = canvasTextStamperGradient;
+    runtime->player_obj.stamp = snakeStamper;
+    runtime->enemy_obj.stamp = snakeStamper;
 
     runtime->screen_render_list[0] = &runtime->title_text_obj;
     runtime->screen_render_list[1] = &runtime->player_obj;
+    runtime->screen_render_list[2] = &runtime->enemy_obj;
     runtime->total_render_list = sizeof(runtime->screen_render_list) / sizeof(runtime->screen_render_list[0]);
 
 }
 
 module_action tron_upd(void *runtime_data) {
     tron_runtime *runtime = (tron_runtime *)runtime_data;
+
+    char input = inputHandler();
+    if (input == 'q')
+        return MODULE_FINISHED;
+
+    return MODULE_CONTINUE;
 }
 
 void tron_render(void *runtime_data, CanvasBuffer *canvas) {
@@ -58,9 +86,12 @@ void tron_render(void *runtime_data, CanvasBuffer *canvas) {
 void tron_cleanup(void *runtime_data) {
     tron_runtime *runtime = (tron_runtime *)runtime_data;
 }
-
 const game_module tron_module = {
     .game_width = 80,
     .game_height = 20,
-    .runtime_size = sizeof(tron_runtime)
+    .runtime_size = sizeof(tron_runtime),
+    .init = tron_init,
+    .upd = tron_upd,
+    .render =tron_render,
+    .clean_up = tron_cleanup
 };
