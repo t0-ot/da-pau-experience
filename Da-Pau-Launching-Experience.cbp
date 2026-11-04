@@ -34,10 +34,10 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add option="-g -fsanitize=address" />
+					<Add option="-g -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract" />
 				</Compiler>
 				<Linker>
-					<Add option="-fsanitize=address" />
+					<Add option="-fsanitize=address,undefined,leak,pointer-compare,pointer-subtract" />
 				</Linker>
 			</Target>
 		</Build>
