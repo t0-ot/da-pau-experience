@@ -82,6 +82,13 @@ void tron_render(void *runtime_data, CanvasBuffer *canvas) {
     usleep(100000);
 }
 
+
+/**
+ * @brief brief description of what tron_cleanup is doing
+ *
+ * @param what is the input of tron_cleanup?
+ * @return what does it return?
+ */
 void tron_cleanup(void *runtime_data) {
     tron_runtime *runtime = (tron_runtime *)runtime_data;
 }
