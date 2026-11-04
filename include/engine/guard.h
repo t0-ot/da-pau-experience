@@ -18,15 +18,6 @@
         } \
     } while(0)
 
-#define REQUIRE_NULLED(ptr) \
-    do { \
-        if ((ptr) != NULL) { \
-            fprintf(stderr, "\n[FATAL] Memory address of: '%s' is NOT NULL at %s:%d when it should be!\n\n", \
-                    #ptr, __FILE_NAME__, __LINE__); \
-            abort(); \
-        } \
-    } while(0)
-
 #define REQUIRE_VALID_MODULE(mod) do { \
     REQUIRE_NOT_NULLED(mod); \
     REQUIRE_NOT_NULLED((mod)->init); \
