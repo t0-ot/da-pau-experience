@@ -61,7 +61,7 @@ void tron_init(void *runtime_data) {
     runtime->screen_render_list[1] = &runtime->player_obj;
     runtime->screen_render_list[2] = &runtime->enemy_obj;
     runtime->total_render_list = sizeof(runtime->screen_render_list) / sizeof(runtime->screen_render_list[0]);
-
+    set_raw_mode(1);
 }
 
 module_action tron_upd(void *runtime_data) {
@@ -76,7 +76,6 @@ module_action tron_upd(void *runtime_data) {
 
 void tron_render(void *runtime_data, CanvasBuffer *canvas) {
     tron_runtime *runtime = (tron_runtime *)runtime_data;
-    printf("\033[?25l");
     renderFrame(canvas, runtime->screen_render_list, runtime->total_render_list, (canvas->width / 2));
     printf("W - UP, S - DOWN, A - LEFT, D - RIGHT\n");
     fflush(stdout);

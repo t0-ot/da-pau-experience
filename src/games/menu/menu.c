@@ -61,7 +61,7 @@ void menu_init(void *runtime_data) {
     // Dynamic Initialization Loop
     for (int i = 0; i < TOTAL_MENU_ITEMS; i++) {
         runtime->optionChoices[i] = (OptionText){
-            .textData.text = MENU_REGISTRY[i].text,
+            .textData.text = (char *)MENU_REGISTRY[i].text,
             .textData.startX = get_centered_x(0, menu_module.game_width, MENU_REGISTRY[i].width),
             // Calculates height scaling based on your y_offset properties
             .textData.startY = get_centered_y(i == 0 ? 0 : 1, menu_module.game_height, 1) + MENU_REGISTRY[i].y_offset,

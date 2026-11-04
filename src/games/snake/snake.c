@@ -157,7 +157,6 @@ module_action snake_upd(void *runtime_data) {
 
 void snake_render(void *runtime_data, CanvasBuffer *canvas) {
     snake_runtime *runtime = (snake_runtime *)runtime_data;
-    printf("\033[?25l");
     renderFrame(canvas, runtime->screenRenderList, runtime->totalRenderList, (canvas->width / 2));
     printf("W - UP, S - DOWN, A - LEFT, D - RIGHT\n");
     fflush(stdout);
