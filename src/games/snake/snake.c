@@ -165,6 +165,7 @@ void snake_render(void *runtime_data, CanvasBuffer *canvas) {
 
 void snake_clean_up(void *runtime_data) {
     snake_runtime *runtime = (snake_runtime *)runtime_data;
+
     free(runtime->snake1.pointList.points);
     free(runtime->normalFruitSet.pointList.points);
     free(runtime);
