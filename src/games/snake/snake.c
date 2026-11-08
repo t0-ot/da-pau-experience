@@ -5,6 +5,7 @@
 #include "games/snake/snake_logic.h"
 #include "games/snake/snake_render.h"
 #include "engine/core/game_input.h"
+#include "engine/storage/highscore.h"
 #include "engine/utils.h"
 
 #define SNAKE_WIDTH 22
@@ -60,7 +61,7 @@ static void snake_init(void *state) {
     runtime->play_height = SNAKE_HEIGHT;
     runtime->move_interval = SNAKE_MOVE_INTERVAL;
     runtime->move_timer = 0.0f;
-    runtime->currentHiScore = 0;
+    runtime->currentHiScore = highscore_load("snake");
 
     runtime->snake.segments.amt = 2;
     runtime->snake.segments.points =

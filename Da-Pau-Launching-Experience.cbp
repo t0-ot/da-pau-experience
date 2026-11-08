@@ -111,6 +111,8 @@
 		<Unit filename="include/engine/entity.h" />
 		<Unit filename="include/engine/renderer/renderer.h" />
 		<Unit filename="include/engine/session.h" />
+		<Unit filename="include/engine/storage/highscore.h" />
+		<Unit filename="include/engine/storage/storage_path.h" />
 		<Unit filename="include/engine/utils.h" />
 		<Unit filename="include/games/menu/menu.h" />
 		<Unit filename="include/games/snake/snake.h" />
@@ -133,6 +135,12 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/session.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/storage/highscore.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/storage/storage_path.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/utils.c">

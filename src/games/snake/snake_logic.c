@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "engine/utils.h"
+#include "engine/storage/highscore.h"
 #include "games/snake/snake_logic.h"
 
 void handleDeath(Segmented_entity *snake1, Point_list *fruit, Point *lastDirInput, int play_width, int play_height){
@@ -40,7 +41,9 @@ void handleFruitCollision(fruitData *collidedFruitData, Segmented_entity *snakeI
 }
 
 int hiScoreCounter(int currentScore, int *highestScore) {
-    if (currentScore-2 > *highestScore)
+    if (currentScore-2 > *highestScore) {
         *highestScore = currentScore-2;
+        highscore_save("snake", *highestScore);
+    }
     return *highestScore;
 }
