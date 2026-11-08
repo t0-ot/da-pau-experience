@@ -171,7 +171,7 @@ static ModuleAction snake_update(void *state,
         }
     }
     runtime->currentHiScore = hiScoreCounter(
-        runtime->snake.segments.amt-2,
+        runtime->snake.segments.amt,
         &runtime->currentHiScore
     );
     return MODULE_CONTINUE;
@@ -191,11 +191,6 @@ static void snake_draw(void *state) {
         runtime->currentHiScore,
         runtime->play_width,
         runtime->play_height
-    );
-
-    runtime->currentHiScore = hiScoreCounter(
-        runtime->snake.segments.amt,
-        &runtime->currentHiScore
     );
 }
 
