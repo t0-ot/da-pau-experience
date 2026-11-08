@@ -1,3 +1,11 @@
+/**
+ * @file game_input.h
+ * @brief Defines the shared game input structure.
+ *
+ * Provides an input representation that allows individual game
+ * modules to process user input independently of the input backend.
+ */
+
 #ifndef GAME_INPUT_H
 #define GAME_INPUT_H
 

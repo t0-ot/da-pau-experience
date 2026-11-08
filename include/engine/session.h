@@ -1,3 +1,11 @@
+/**
+ * @file session.h
+ * @brief Declares the game session management interface.
+ *
+ * Handles module initialization, execution, transitions,
+ * and cleanup throughout the application lifecycle.
+ */
+
 #ifndef SESSION_H
 #define SESSION_H
 

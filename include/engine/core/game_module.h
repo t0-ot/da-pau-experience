@@ -1,3 +1,11 @@
+/**
+ * @file game_module.h
+ * @brief Declares the game module interface.
+ *
+ * Defines the common module structure and lifecycle callbacks
+ * used by the application to manage individual games.
+ */
+
 #ifndef GAME_MODULE_H
 #define GAME_MODULE_H
 

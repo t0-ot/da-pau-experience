@@ -1,3 +1,11 @@
+/**
+ * @file game_types.h
+ * @brief Defines shared data types used throughout the game modules.
+ *
+ * Contains common structures and type definitions used to represent
+ * game entities and other shared gameplay data.
+ */
+
 #ifndef GAME_TYPES_H
 #define GAME_TYPES_H
 
