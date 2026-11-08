@@ -26,7 +26,7 @@ typedef struct {
     size_t runtime_size;
     void (*init)(void *runtime_data);
     module_action (*upd)(void *runtime_data);
-    void (*render)(void *runtime_data, CanvasBuffer *canvas);
+    void (*render)(void *runtime_data, Canvas_buffer *canvas);
     void (*clean_up)(void *runtime_data);
 } game_module;
 
@@ -36,7 +36,7 @@ typedef struct {
 typedef struct {
     const game_module *current_module;
     void *current_runtime;
-    CanvasBuffer *canvas;
+    Canvas_buffer *canvas;
     int is_running;
 } game_session;
 

@@ -47,6 +47,7 @@
 		</Compiler>
 		<Unit filename="include/core/game_registry.h" />
 		<Unit filename="include/engine/canvas.h" />
+		<Unit filename="include/engine/entity.h" />
 		<Unit filename="include/engine/guard.h" />
 		<Unit filename="include/engine/session.h" />
 		<Unit filename="include/engine/terminal.h" />
@@ -56,10 +57,17 @@
 		<Unit filename="include/games/snake/snake_logic.h" />
 		<Unit filename="include/games/snake/snake_render.h" />
 		<Unit filename="include/games/tron/tron.h" />
+		<Unit filename="include/games/tron/tron_internal.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="include/games/tron/tron_logic.h" />
 		<Unit filename="src/core/game_registry.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/canvas.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/entity.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/session.c">
@@ -84,6 +92,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/games/tron/tron.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/tron/tron_logic.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/main.c">

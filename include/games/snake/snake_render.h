@@ -3,7 +3,7 @@
 
 #include "engine/canvas.h"
 
-void snakeStamper(void *data, CanvasBuffer *canvas);
-void fruitStamper(void *data, CanvasBuffer *canvas);
+void snakeStamper(void *data, Canvas_buffer *canvas);
+void fruitStamper(void *data, Canvas_buffer *canvas);
 
 #endif // GAME_RENDER_H

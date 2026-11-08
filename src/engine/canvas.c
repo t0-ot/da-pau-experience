@@ -3,22 +3,22 @@
 #include <string.h>
 #include "engine/canvas.h"
 
-CanvasBuffer *canvas_create(int width, int height) {
-    CanvasBuffer *canvas = malloc(sizeof(CanvasBuffer));
+Canvas_buffer *canvas_create(int width, int height) {
+    Canvas_buffer *canvas = malloc(sizeof(Canvas_buffer));
     canvas->width = width;
     canvas->height = height;
     canvas->cells = malloc(width * height * sizeof(Canvas)); // Allocates the flat grid!
     return canvas;
 }
 
-void canvas_destroy(CanvasBuffer *canvas) {
+void canvas_destroy(Canvas_buffer *canvas) {
     if (canvas) {
         free(canvas->cells);
         free(canvas);
     }
 }
 
-void canvasScoreStamper(void *data, CanvasBuffer *canvas) {
+void score_stamper(void *data, Canvas_buffer *canvas) {
     ScoreText *scoreDat = (ScoreText *)data;
     int score = scoreDat->score - 2;
     if (score < 0)
@@ -28,34 +28,34 @@ void canvasScoreStamper(void *data, CanvasBuffer *canvas) {
     int tens     = (score / 10) % 10;
     int units    = score % 10;
 
-    cellColorAssignment(canvas, scoreDat->x,     scoreDat->y, hundreds + '0', 255, 215, 0);
-    cellColorAssignment(canvas, scoreDat->x + 1, scoreDat->y, tens     + '0', 255, 215, 0);
-    cellColorAssignment(canvas, scoreDat->x + 2, scoreDat->y, units    + '0', 255, 215, 0);
+    cell_color_assign(canvas, scoreDat->x,     scoreDat->y, hundreds + '0', 255, 215, 0);
+    cell_color_assign(canvas, scoreDat->x + 1, scoreDat->y, tens     + '0', 255, 215, 0);
+    cell_color_assign(canvas, scoreDat->x + 2, scoreDat->y, units    + '0', 255, 215, 0);
 }
 
-void cellColorAssignment(CanvasBuffer *canvas, int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b) {
+void cell_color_assign(Canvas_buffer *canvas, int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b) {
     canvas_get(canvas, x, y)->sym = ch;
     canvas_get(canvas, x, y)->color.r = r;
     canvas_get(canvas, x, y)->color.g = g;
     canvas_get(canvas, x, y)->color.b = b;
 }
 
-void canvasIntializer(CanvasBuffer *canvas, int dividerPos) {
+void canvas_intialize(Canvas_buffer *canvas, int dividerPos) {
     for (int y = 0; y < canvas->height; y++) {
         for (int x = 0; x < canvas->width; x++) {
             if (x == 0 || x == dividerPos || y == 0 || y == canvas->height - 1 || x == canvas->width - 1) {
-                cellColorAssignment(canvas, x, y, '#', 255, 105, 180);
+                cell_color_assign(canvas, x, y, '#', 255, 105, 180);
             } else if (x < dividerPos) {
-                cellColorAssignment(canvas, x, y, '.', 255, 182, 193);
+                cell_color_assign(canvas, x, y, '.', 255, 182, 193);
             } else {
-                cellColorAssignment(canvas, x, y, ' ', 255, 255, 255);
+                cell_color_assign(canvas, x, y, ' ', 255, 255, 255);
             }
         }
     }
 }
 
-void optionChoiceStamper(void *data, CanvasBuffer *canvas) {
-    option_list *option_list_data = (option_list *)data;
+void opt_choice_stamper(void *data, Canvas_buffer *canvas) {
+    Option_list *option_list_data = (Option_list *)data;
 
     for (int k = 0; k < option_list_data->option_amt; k++) {
         int len = strlen(option_list_data->option_choice[k].textData.text);
@@ -64,13 +64,13 @@ void optionChoiceStamper(void *data, CanvasBuffer *canvas) {
         int g = option_list_data->option_choice[k].textData.color[hoverState].g;
         int b = option_list_data->option_choice[k].textData.color[hoverState].b;
         for (int i = 0; i < len; i++)
-            cellColorAssignment(canvas, option_list_data->option_choice[k].textData.startX+i,
+            cell_color_assign(canvas, option_list_data->option_choice[k].textData.startX+i,
                                 option_list_data->option_choice[k].textData.startY,
                                 option_list_data->option_choice[k].textData.text[i],
                                 r, g, b);
         if (!(hoverState))
             continue;
-        BaseText hoverArrow[2] = {
+        Text_layout hoverArrow[2] = {
             [0].text = ">",
             [1].text = "<",
             [0 ... 1].color = { {255, 255, 255} },
@@ -80,41 +80,41 @@ void optionChoiceStamper(void *data, CanvasBuffer *canvas) {
         hoverArrow[0].startX -= 3;
         hoverArrow[1].startX += len+2;
         for (int j = 0; j < 2; j++)
-            canvasTextStamper(&hoverArrow[j], canvas);
+            text_stamper(&hoverArrow[j], canvas);
     }
 }
 
-void canvasTextStamperGradient(void *data, CanvasBuffer *canvas) {
-    BaseText *text = (BaseText *)data;
+void gradient_text_stamper(void *data, Canvas_buffer *canvas) {
+    Text_layout *text = (Text_layout *)data;
     int len = strlen(text->text);
 
     for (int i = 0; i < len; i++) {
         int r = text->color[0].r + (text->color[1].r - text->color[0].r) * i / (len - 1);
         int g = text->color[0].g + (text->color[1].g - text->color[0].g) * i / (len - 1);
         int b = text->color[0].b + (text->color[1].b - text->color[0].b) * i / (len - 1);
-        cellColorAssignment(canvas, text->startX+i, text->startY, text->text[i], r, g, b);
+        cell_color_assign(canvas, text->startX+i, text->startY, text->text[i], r, g, b);
     }
 }
 
-void canvasTextStamper(void *data, CanvasBuffer *canvas) {
-    BaseText *text = (BaseText *)data;
+void text_stamper(void *data, Canvas_buffer *canvas) {
+    Text_layout *text = (Text_layout *)data;
     int len = strlen(text->text);
 
     for (int i = 0; i < len; i++)
-        cellColorAssignment(canvas, text->startX+i, text->startY, text->text[i], text->color[0].r, text->color[0].g, text->color[0].b);
+        cell_color_assign(canvas, text->startX+i, text->startY, text->text[i], text->color[0].r, text->color[0].g, text->color[0].b);
 }
 
-void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList, int div_pos) {
+void render_frame(Canvas_buffer *canvas, RenderObj* screenRenderList[], int totalRenderList, int div_pos) {
     printf("\033[H");
-    canvasIntializer(canvas, div_pos);
+    canvas_intialize(canvas, div_pos);
     for (int i = 0; i < totalRenderList; i++) {
         if (screenRenderList[i] != NULL)
             screenRenderList[i]->stamp(screenRenderList[i]->data, canvas);
     }
-    canvasViewPrint(canvas);
+    canvas_print(canvas);
 }
 
-void canvasViewPrint(CanvasBuffer *canvas) {
+void canvas_print(Canvas_buffer *canvas) {
     int bufferPos = 0;
     char buffer[(canvas->width * 30) * canvas->height];
     for (int y = 0; y < canvas->height; y++) {

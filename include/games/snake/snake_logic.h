@@ -2,6 +2,7 @@
 #define SNAKE_LOGIC_H
 
 #include "engine/canvas.h"
+#include "engine/entity.h"
 
 typedef struct {
     int8_t scoreAmt;
@@ -18,26 +19,17 @@ typedef struct {
 } speedFruit;
 
 typedef struct {
-    ViewPointList pointList;
-    bool alive;
-} snakeData;
-
-typedef struct {
     void *fruitType;
-    void (*onEat)(void *fruit, snakeData *snake);
-    ViewPointList pointList;
+    void (*onEat)(void *fruit, Segmented_entity *snake);
+    Point_list pointList;
     Canvas visuals;
 } fruitData;
 
-int movementInputHandler(Point prevDirInput[], char input);
 int hiScoreCounter(int currentScore, int *highestScore);
-int snakeDirectionHandler(Point snake[], Point lastDir[], int play_width, int play_height);
-void shiftSnakeSegments(snakeData *snakeInfo);
-int checkLife(ViewPointList snakeView, int playWidthBoundary, int playHeightBoundary);
-void handleDeath(snakeData *snake1, ViewPointList *fruit, Point *lastDirInput, int play_width, int play_height);
-void spawnFruit(ViewPointList fruitView, int fruitNumber, ViewPointList snakeView, int spawnWidth, int spawnHeight);
-void baseEat(void *fruit, snakeData *snake);
-void handleMilestoneFruit(fruitData *fruitAwardTarget, ViewPointList *snakeScore, int play_width, int play_height);
-void handleFruitCollision(fruitData *collidedFruitData, snakeData *snakeInfo, int collidedFruitNum, int play_width, int play_height);
+void handleDeath(Segmented_entity *snake1, Point_list *fruit, Point *lastDirInput, int play_width, int play_height);
+void spawnFruit(Point_list fruitView, int fruitNumber, Point_list snakeView, int spawnWidth, int spawnHeight);
+void baseEat(void *fruit, Segmented_entity *snake);
+void handleMilestoneFruit(fruitData *fruitAwardTarget, Point_list *snakeScore, int play_width, int play_height);
+void handleFruitCollision(fruitData *collidedFruitData, Segmented_entity *snakeInfo, int collidedFruitNum, int play_width, int play_height);
 
 #endif // SNAKE_LOGIC_H

@@ -5,15 +5,15 @@
 #include "engine/terminal.h"
 #include "engine/utils.h"
 
-#define MODULE_NAME "Da Pau Launching Experience"
+#define MODULE_NAME "-+ Da Pau Launching Experience +-"
 
 /**
  * @brief Private runtime data keeping track of menu state, rendering elements, and animations.
  */
 typedef struct {
-    OptionText optionChoices[3];
-    option_list total_option_list;
-    BaseText titleText;
+    Option_text optionChoices[3];
+    Option_list total_option_list;
+    Text_layout titleText;
     RenderObj title_text_obj;
     RenderObj option_choices_obj;
     RenderObj* render_list[2];
@@ -48,19 +48,19 @@ static const MenuConfig MENU_REGISTRY[] = {
 void menu_init(void *runtime_data) {
     menu_runtime *runtime = (menu_runtime *)runtime_data;
 
-    runtime->titleText = (BaseText){
+    runtime->titleText = (Text_layout){
         .text = MODULE_NAME,
-        .startX = get_centered_x(0, menu_module.game_width, 27),
+        .startX = get_centered_x(0, menu_module.game_width, 33),
         .startY = (menu_module.game_height * 3) / 20,
         .color = { {.r = 255, .g = 105, .b = 180}, {.r = 255, .g = 215, .b = 0} }
     };
 
-    runtime->title_text_obj = (RenderObj){ .stamp = canvasTextStamperGradient };
-    runtime->option_choices_obj = (RenderObj){ .stamp = optionChoiceStamper };
+    runtime->title_text_obj = (RenderObj){ .stamp = gradient_text_stamper };
+    runtime->option_choices_obj = (RenderObj){ .stamp = opt_choice_stamper };
 
     // Dynamic Initialization Loop
     for (int i = 0; i < TOTAL_MENU_ITEMS; i++) {
-        runtime->optionChoices[i] = (OptionText){
+        runtime->optionChoices[i] = (Option_text){
             .textData.text = (char *)MENU_REGISTRY[i].text,
             .textData.startX = get_centered_x(0, menu_module.game_width, MENU_REGISTRY[i].width),
             // Calculates height scaling based on your y_offset properties
@@ -79,10 +79,6 @@ void menu_init(void *runtime_data) {
     runtime->total_option_list.option_amt = TOTAL_MENU_ITEMS;
 
     runtime->time = 0.0f;
-    runtime->duration = 1.0f;
-    runtime->startPos = 0.0f;
-    runtime->targetPos = 40.0f;
-    runtime->change = runtime->targetPos - runtime->startPos;
     runtime->selected_choice = MENU_CHOICE_NONE;
     runtime->highlighted_choice = 0;
     runtime->isAnimatingOut = 0;
@@ -110,6 +106,16 @@ module_action menu_upd(void *runtime_data) {
 
         if (runtime->selected_choice == MENU_CHOICE_QUIT) {
             return MODULE_QUIT;
+        } else if (runtime->selected_choice == MENU_CHOICE_PLAY_SNAKE) {
+            runtime->duration = 1.0f;
+            runtime->startPos = 0.0f;
+            runtime->targetPos = 40.0f;
+            runtime->change = runtime->targetPos - runtime->startPos;
+        } else if (runtime->selected_choice == MENU_CHOICE_PLAY_TRON) {
+            runtime->duration = 0.5f;
+            runtime->startPos = runtime->titleText.startX;
+            runtime->targetPos = -(runtime->titleText.startX);
+            runtime->change = runtime->targetPos - runtime->startPos;
         }
         return MODULE_CONTINUE;
     }
@@ -121,16 +127,22 @@ module_action menu_upd(void *runtime_data) {
     return MODULE_CONTINUE;
 }
 
-void menu_render(void *runtime_data, CanvasBuffer *canvas) {
+void menu_render(void *runtime_data, Canvas_buffer *canvas) {
     menu_runtime *runtime = (menu_runtime *)runtime_data;
     printf("\033[H");
     int currentPos = 0;
     if (runtime->isAnimatingOut) {
-        currentPos = (int)ease(runtime->time, runtime->startPos, runtime->change, runtime->duration);
-        runtime->titleText.startX = (int)ease(runtime->time, 28, 21, runtime->duration);
+        if (runtime->selected_choice == MENU_CHOICE_PLAY_SNAKE) {
+            currentPos = (int)ease(runtime->time, runtime->startPos, runtime->change, runtime->duration);
+            runtime->titleText.startX = (int)ease(runtime->time, get_centered_x(0, menu_module.game_width, 33), 21, runtime->duration);
+        } else if (runtime->selected_choice == MENU_CHOICE_PLAY_TRON) {
+            runtime->titleText.startY = (int)ease(runtime->time, (menu_module.game_height * 3) / 20, -(menu_module.game_height * 3) / 20, runtime->duration);
+        }
         runtime->render_list[1] = NULL;
     }
-    renderFrame(canvas, runtime->render_list, runtime->total_render_list, currentPos);
+    render_frame(canvas, runtime->render_list, runtime->total_render_list, currentPos);
+    printf("                                                               \n");
+    printf("                                                               ");
     fflush(stdout);
     usleep(30000);
 }

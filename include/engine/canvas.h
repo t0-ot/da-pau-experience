@@ -17,7 +17,7 @@ typedef struct {
 typedef struct {
     Point *points;
     int16_t amt;
-} ViewPointList;
+} Point_list;
 
 typedef struct {
     char sym;
@@ -28,13 +28,13 @@ typedef struct {
     int width;
     int height;
     Canvas *cells;
-} CanvasBuffer;
+} Canvas_buffer;
 
-typedef void(*StampFunc)(void *data, CanvasBuffer *canvas);
+typedef void(*Stamp_func)(void *data, Canvas_buffer *canvas);
 
 typedef struct {
     void *data;
-    StampFunc stamp;
+    Stamp_func stamp;
 } RenderObj;
 
 typedef struct {
@@ -42,7 +42,7 @@ typedef struct {
     int8_t startX;
     int8_t startY;
     RGB color[MAX_STATES];
-} BaseText;
+} Text_layout;
 
 typedef struct {
     int16_t score;
@@ -51,28 +51,28 @@ typedef struct {
 } ScoreText;
 
 typedef struct {
-    BaseText textData;
+    Text_layout textData;
     bool isSelected;
-} OptionText;
+} Option_text;
 
 typedef struct {
-    OptionText *option_choice;
+    Option_text *option_choice;
     int option_amt;
-} option_list;
+} Option_list;
 
 
-static inline Canvas *canvas_get(CanvasBuffer *canvas, int x, int y) {
+static inline Canvas *canvas_get(Canvas_buffer *canvas, int x, int y) {
     return &canvas->cells[y * canvas->width + x];
 }
-CanvasBuffer *canvas_create(int width, int height);
-void canvas_destroy(CanvasBuffer *canvas);
-void canvasIntializer(CanvasBuffer *canvas, int dividerPos);
-void renderFrame(CanvasBuffer *canvas, RenderObj* screenRenderList[], int totalRenderList, int div_pos);
-void optionChoiceStamper(void *data, CanvasBuffer *canvas);
-void canvasTextStamperGradient(void *data, CanvasBuffer *canvas);
-void canvasTextStamper(void *data, CanvasBuffer *canvas);
-void canvasScoreStamper(void *data, CanvasBuffer *canvas);
-void canvasViewPrint(CanvasBuffer *canvas);
-void cellColorAssignment(CanvasBuffer *canvas, int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b);
+Canvas_buffer *canvas_create(int width, int height);
+void canvas_destroy(Canvas_buffer *canvas);
+void canvas_intialize(Canvas_buffer *canvas, int dividerPos);
+void render_frame(Canvas_buffer *canvas, RenderObj* screenRenderList[], int totalRenderList, int div_pos);
+void opt_choice_stamper(void *data, Canvas_buffer *canvas);
+void gradient_text_stamper(void *data, Canvas_buffer *canvas);
+void text_stamper(void *data, Canvas_buffer *canvas);
+void score_stamper(void *data, Canvas_buffer *canvas);
+void canvas_print(Canvas_buffer *canvas);
+void cell_color_assign(Canvas_buffer *canvas, int x, int y, char ch, uint8_t r, uint8_t g, uint8_t b);
 
 #endif // CANVAS_H
