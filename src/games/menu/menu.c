@@ -1,170 +1,230 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include "games/menu/menu.h"
-#include "engine/terminal.h"
-#include "engine/utils.h"
-
-#define MODULE_NAME "-+ Da Pau Launching Experience +-"
 
 /**
- * @brief Private runtime data keeping track of menu state, rendering elements, and animations.
+ * @file menu.c
+ * @brief Main menu logic and Raylib rendering.
+ */
+
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "raylib.h"
+
+#include "games/menu/menu.h"
+#include "engine/utils.h"
+#include "engine/core/game_input.h"
+
+/** @brief Window-independent title displayed by the menu. */
+#define MODULE_NAME "-+ Da Pau Launching Experience +-"
+
+/** @brief Time between repeated menu navigation inputs. */
+#define MENU_INPUT_INTERVAL 0.18f
+
+/**
+ * @brief Configuration for an individual menu option.
  */
 typedef struct {
-    Option_text optionChoices[3];
-    Option_list total_option_list;
-    Text_layout titleText;
-    RenderObj title_text_obj;
-    RenderObj option_choices_obj;
-    RenderObj* render_list[2];
-    int total_render_list;
-    float time;
-    float duration;
-    float startPos;
-    float targetPos;
-    float change;
-    int highlighted_choice;
-    int isAnimatingOut;
-    menu_choice_type selected_choice;
-} menu_runtime;
-
-typedef struct {
-    const char *text;
-    menu_choice_type choice;
-    int width;    // Used for centering math
-    int y_offset; // Relative spacing modifier
+    const char *text; /**< Text displayed for the menu option. */
+    menu_choice_type choice; /**< Action associated with the option. */
 } MenuConfig;
 
-// Define menu structure sequentially
+/**
+ * @brief Runtime state owned by the main menu module.
+ */
+typedef struct {
+    int highlighted_choice; /**< Index of the currently highlighted option. */
+    menu_choice_type selected_choice; /**< Choice confirmed by the player. */
+
+    float input_cooldown; /**< Remaining delay before another navigation input. */
+    float animation_time; /**< Elapsed time of the exit animation. */
+    float animation_duration; /**< Total duration of the exit animation. */
+
+    bool is_animating_out; /**< Whether the menu is transitioning out. */
+} MenuRuntime;
+
+/**
+ * @brief Static menu option definitions.
+ */
 static const MenuConfig MENU_REGISTRY[] = {
-    { .text = "SNAKE",     .choice = MENU_CHOICE_PLAY_SNAKE, .width = 5, .y_offset = 0 },
-    { .text = "TRON",      .choice = MENU_CHOICE_PLAY_TRON,  .width = 4, .y_offset = 1 },
-    { .text = "QUIT GAME", .choice = MENU_CHOICE_QUIT,       .width = 9, .y_offset = 3 }
+    { "SNAKE",     MENU_CHOICE_PLAY_SNAKE },
+    { "TRON",      MENU_CHOICE_PLAY_TRON },
+    { "QUIT GAME", MENU_CHOICE_QUIT }
 };
 
+/**
+ * @brief Number of available options in the menu registry.
+ */
 #define TOTAL_MENU_ITEMS (sizeof(MENU_REGISTRY) / sizeof(MENU_REGISTRY[0]))
 
+/**
+ * @brief Initializes the menu runtime state.
+ *
+ * @param state Pointer to allocated menu runtime memory.
+ */
+static void menu_init(void *state) {
+    MenuRuntime *runtime = state;
 
-void menu_init(void *runtime_data) {
-    menu_runtime *runtime = (menu_runtime *)runtime_data;
-
-    runtime->titleText = (Text_layout){
-        .text = MODULE_NAME,
-        .startX = get_centered_x(0, menu_module.game_width, 33),
-        .startY = (menu_module.game_height * 3) / 20,
-        .color = { {.r = 255, .g = 105, .b = 180}, {.r = 255, .g = 215, .b = 0} }
-    };
-
-    runtime->title_text_obj = (RenderObj){ .stamp = gradient_text_stamper };
-    runtime->option_choices_obj = (RenderObj){ .stamp = opt_choice_stamper };
-
-    // Dynamic Initialization Loop
-    for (int i = 0; i < TOTAL_MENU_ITEMS; i++) {
-        runtime->optionChoices[i] = (Option_text){
-            .textData.text = (char *)MENU_REGISTRY[i].text,
-            .textData.startX = get_centered_x(0, menu_module.game_width, MENU_REGISTRY[i].width),
-            // Calculates height scaling based on your y_offset properties
-            .textData.startY = get_centered_y(i == 0 ? 0 : 1, menu_module.game_height, 1) + MENU_REGISTRY[i].y_offset,
-            .textData.color = {{0, 255, 0}, {255, 255, 255}}
-        };
-    }
-
-    runtime->title_text_obj.data = &runtime->titleText;
-    runtime->option_choices_obj.data = &runtime->total_option_list;
-    runtime->render_list[0] = &runtime->title_text_obj;
-    runtime->render_list[1] = &runtime->option_choices_obj;
-    runtime->total_render_list = sizeof(runtime->render_list) / sizeof(runtime->render_list[0]);
-
-    runtime->total_option_list.option_choice = runtime->optionChoices;
-    runtime->total_option_list.option_amt = TOTAL_MENU_ITEMS;
-
-    runtime->time = 0.0f;
-    runtime->selected_choice = MENU_CHOICE_NONE;
     runtime->highlighted_choice = 0;
-    runtime->isAnimatingOut = 0;
+    runtime->selected_choice = MENU_CHOICE_NONE;
 
-    set_raw_mode(1);
+    runtime->input_cooldown = 0.0f;
+    runtime->animation_time = 0.0f;
+    runtime->animation_duration = 0.65f;
+
+    runtime->is_animating_out = false;
 }
 
+/**
+ * @brief Updates menu navigation and selection.
+ *
+ * @param state Pointer to menu runtime state.
+ * @param input Current frame's input snapshot.
+ * @param delta_time Time elapsed since the previous frame.
+ * @return MODULE_FINISHED when an option is selected; otherwise MODULE_CONTINUE.
+ */
+static ModuleAction menu_update(
+    void *state,
+    const GameInput *input,
+    float delta_time
+) {
+    MenuRuntime *runtime = state;
 
-module_action menu_upd(void *runtime_data) {
-    menu_runtime *runtime = (menu_runtime *)runtime_data;
+    if (runtime == NULL || input == NULL)
+        return MODULE_QUIT;
 
-    if (runtime->isAnimatingOut) {
-        if (runtime->time <= runtime->duration) {
-            runtime->time += 0.03f;
-            return MODULE_CONTINUE; // Keep looping render/upd for animation
-        }
-        return MODULE_FINISHED;
-    }
+    if (runtime->is_animating_out) {
+        runtime->animation_time += delta_time;
 
-    if (menuInputHandler(&runtime->highlighted_choice, runtime->total_option_list.option_amt)) {
-        runtime->isAnimatingOut = 1;
+        if (runtime->animation_time >= runtime->animation_duration)
+            return MODULE_FINISHED;
 
-        // Dynamic mapping assignment
-        runtime->selected_choice = MENU_REGISTRY[runtime->highlighted_choice].choice;
-
-        if (runtime->selected_choice == MENU_CHOICE_QUIT) {
-            return MODULE_QUIT;
-        } else if (runtime->selected_choice == MENU_CHOICE_PLAY_SNAKE) {
-            runtime->duration = 1.0f;
-            runtime->startPos = 0.0f;
-            runtime->targetPos = 40.0f;
-            runtime->change = runtime->targetPos - runtime->startPos;
-        } else if (runtime->selected_choice == MENU_CHOICE_PLAY_TRON) {
-            runtime->duration = 0.5f;
-            runtime->startPos = runtime->titleText.startX;
-            runtime->targetPos = -(runtime->titleText.startX);
-            runtime->change = runtime->targetPos - runtime->startPos;
-        }
         return MODULE_CONTINUE;
     }
 
-    for (int i = 0; i < runtime->total_option_list.option_amt; i++) {
-        runtime->optionChoices[i].isSelected = (i == runtime->highlighted_choice);
+    if (runtime->input_cooldown > 0.0f)
+        runtime->input_cooldown -= delta_time;
+
+    if (runtime->input_cooldown <= 0.0f) {
+        if (input->up) {
+            runtime->highlighted_choice--;
+
+            if (runtime->highlighted_choice < 0)
+                runtime->highlighted_choice = (int)TOTAL_MENU_ITEMS - 1;
+
+            runtime->input_cooldown = MENU_INPUT_INTERVAL;
+        }
+        else if (input->down) {
+            runtime->highlighted_choice++;
+
+            if (runtime->highlighted_choice >= (int)TOTAL_MENU_ITEMS)
+                runtime->highlighted_choice = 0;
+
+            runtime->input_cooldown = MENU_INPUT_INTERVAL;
+        }
+    }
+
+    if (input->confirm) {
+        runtime->selected_choice =
+            MENU_REGISTRY[runtime->highlighted_choice].choice;
+
+        runtime->is_animating_out = true;
+        runtime->animation_time = 0.0f;
     }
 
     return MODULE_CONTINUE;
 }
 
-void menu_render(void *runtime_data, Canvas_buffer *canvas) {
-    menu_runtime *runtime = (menu_runtime *)runtime_data;
-    printf("\033[H");
-    int currentPos = 0;
-    if (runtime->isAnimatingOut) {
+/**
+ * @brief Draws the menu using Raylib.
+ *
+ * @param state Pointer to menu runtime state.
+ */
+static void menu_draw(void *state) {
+    MenuRuntime *runtime = state;
+
+    if (runtime == NULL)
+        return;
+
+    const int screen_width = GetScreenWidth();
+    const int screen_height = GetScreenHeight();
+
+    const char *title = MODULE_NAME;
+    const int title_size = 32;
+
+    int title_width = MeasureText(title, title_size);
+
+    int title_x = (screen_width - title_width) / 2;
+    int title_y = screen_height / 5;
+
+    if (runtime->is_animating_out) {
+        float movement = ease(runtime->animation_time, 0.0f, 100.0f, runtime->animation_duration);
+
         if (runtime->selected_choice == MENU_CHOICE_PLAY_SNAKE) {
-            currentPos = (int)ease(runtime->time, runtime->startPos, runtime->change, runtime->duration);
-            runtime->titleText.startX = (int)ease(runtime->time, get_centered_x(0, menu_module.game_width, 33), 21, runtime->duration);
-        } else if (runtime->selected_choice == MENU_CHOICE_PLAY_TRON) {
-            runtime->titleText.startY = (int)ease(runtime->time, (menu_module.game_height * 3) / 20, -(menu_module.game_height * 3) / 20, runtime->duration);
+            title_x += (int)movement;
         }
-        runtime->render_list[1] = NULL;
+        else if (runtime->selected_choice == MENU_CHOICE_PLAY_TRON) {
+            title_y -= (int)movement;
+        }
     }
-    render_frame(canvas, runtime->render_list, runtime->total_render_list, currentPos);
-    printf("                                                               \n");
-    printf("                                                               ");
-    fflush(stdout);
-    usleep(30000);
+
+    Color pink = { 255, 105, 180, 255 };
+    Color gold = { 255, 215, 0, 255 };
+
+    DrawText(title, title_x, title_y, title_size, pink);
+
+    /* Draw a small decorative underline. */
+    DrawLine(title_x, title_y + title_size + 8, title_x + title_width, title_y + title_size + 8, gold);
+
+    /* Hide the options while the menu transitions out. */
+    if (runtime->is_animating_out)
+        return;
+
+    const int option_size = 28;
+    const int option_spacing = 55;
+
+    int first_option_y = screen_height / 2;
+
+    for (size_t i = 0; i < TOTAL_MENU_ITEMS; i++) {
+        const char *option = MENU_REGISTRY[i].text;
+
+        int option_width = MeasureText(option, option_size);
+        int option_x = (screen_width - option_width) / 2;
+        int option_y = first_option_y + (int)i * option_spacing;
+
+        Color option_color = ((int)i == runtime->highlighted_choice) ? GREEN : WHITE;
+
+        DrawText(option, option_x, option_y, option_size, option_color);
+    }
+
+    DrawText("Use UP/DOWN to navigate and ENTER to select", 40, screen_height - 50, 16, GRAY );
 }
 
-void menu_clean_up(void *runtime_data) {
-    if (runtime_data == NULL) return;
-    set_raw_mode(0);
+/**
+ * @brief Cleans up resources owned by the menu.
+ *
+ * The session owns and frees the runtime state itself.
+ *
+ * @param state Pointer to menu runtime state.
+ */
+static void menu_cleanup(void *state) {
+    (void)state;
 
-    free(runtime_data);
+    /* No additional menu-owned resources to release yet. */
+}
+menu_choice_type menu_get_exit_choice(void *state) {
+    if (state == NULL)
+        return MENU_CHOICE_NONE;
+
+    const MenuRuntime *runtime = state;
+    return runtime->selected_choice;
 }
 
-menu_choice_type menu_get_exit_choice(void *runtime_data) {
-    if (runtime_data == NULL) return MENU_CHOICE_NONE;
-    return ((menu_runtime *)runtime_data)->selected_choice;
-}
-
-const game_module menu_module = {
-    .game_width = 80,
-    .game_height = 20,
-    .runtime_size = sizeof(menu_runtime),
+/**
+ * @brief Main menu module definition.
+ */
+const GameModule menu_module = {
+    .state_size = sizeof(MenuRuntime),
     .init = menu_init,
-    .upd = menu_upd,
-    .render = menu_render,
-    .clean_up = menu_clean_up
+    .update = menu_update,
+    .draw = menu_draw,
+    .cleanup = menu_cleanup
 };

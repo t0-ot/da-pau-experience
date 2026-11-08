@@ -1,18 +1,18 @@
-#ifndef GAME_H
-#define GAME_H
+/**
+ * @file snake.h
+ * @brief Public interface for the Snake game module.
+ */
 
-#include "engine/canvas.h"
-#include "engine/session.h"
-#include "games/snake/snake_logic.h"
+#ifndef SNAKE_H
+#define SNAKE_H
+
+#include "engine/core/game_module.h"
 
 /**
- * @brief The public module interface for the Snake game.
+ * @brief Registered Snake game module.
+ *
+ * The game session owns the runtime memory.
  */
-extern const game_module snake_module;
+extern const GameModule snake_module;
 
-void snake_init(void *data);
-module_action snake_upd(void *runtime_data);
-void snake_render(void *runtime_data, Canvas_buffer *canvas);
-void snake_clean_up(void *runtime_data);
-
-#endif // GAME_H
+#endif // SNAKE_H

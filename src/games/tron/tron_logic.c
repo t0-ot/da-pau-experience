@@ -1,23 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <stdbool.h>
 #include <string.h>
 #include "games/tron/tron_logic.h"
 #include "games/tron/tron_internal.h"
 #include "engine/utils.h"
 
-
-static void start_level_intro(tron_runtime *runtime) {
-    runtime->intro_level = runtime->level;
-    runtime->level_starting = 1;
-    clock_gettime(CLOCK_MONOTONIC, &runtime->level_start_time);
-}
-
-// Simple coordinate structure for the flood-fill tracking stack
+/**
+ * @brief Represents a coordinate used by the flood-fill algorithm.
+ *
+ * Stores grid positions while tracking accessible territory.
+ */
 typedef struct {
-    int x;
-    int y;
+    int x; /**< Horizontal grid coordinate. */
+    int y; /**< Vertical grid coordinate. */
 } FillPoint;
 
 // Helper function to check if a specific point matches another
@@ -38,7 +34,7 @@ bool point_is_obstacle(Point *obstacles, int count, Point point) {
 // Bounded Flood Fill algorithm to grade available open territory
 int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
     // 1. Instantly fail if the starting tile is out-of-bounds or an immediate crash
-    if (start.posX < 1 || start.posX >= play_width || start.posY < 1 || start.posY >= play_height) {
+    if (start.posX < 0 || start.posX >= play_width || start.posY < 0 || start.posY >= play_height) {
         return 0;
     }
     if (point_is_obstacle(obstacles, obstacle_count, start)) {
@@ -79,7 +75,7 @@ int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int 
             Point neighbor = {nx, ny};
 
             // Enforce arena boundaries
-            if (nx < 1 || nx >= play_width || ny < 1 || ny >= play_height) {
+            if (nx < 0 || nx >= play_width || ny < 0 || ny >= play_height) {
                 continue;
             }
 
@@ -237,46 +233,65 @@ void enemy_lightcycle_ai(Enemy_list *view_enemies, Point_list *player, int distr
     }
 }
 
+static void start_level_intro(tron_runtime *runtime) {
+    runtime->level_starting = 1;
+    runtime->intro_timer = 3.0f;
+}
+
 void handle_player_death(tron_runtime *runtime, int play_width) {
         runtime->enemy_distracted = 75;
         runtime->enemy_countdown = 3,
         runtime->enemy_update_interval = 3,
-        runtime->level = 1;
-        runtime->level_text.text = (char *)get_level_name(runtime->level);
-        runtime->level_text.startX = get_centered_x(0, play_width, strlen(runtime->level_text.text));
+        runtime->level = 1,
         start_level_intro(runtime);
 
-        runtime->last_dir_input->posX = 0;
-        runtime->last_dir_input->posY = 0;
-        reset_entity(&runtime->player, 1, play_width / 2, 15);
+        runtime->last_dir_input.posX = 0;
+        runtime->last_dir_input.posY = 0;
+        reset_entity(&runtime->player, 1, play_width / 2, 25);
 
         for (int i = 0; i < runtime->view_enemies.enemy_amt; i++) {
             runtime->view_enemies.enemy[i].alive = 1;
             reset_entity(&runtime->view_enemies.enemy[i], 1, enemy_start_x[i], enemy_start_y[i]);
-            runtime->screen_render_list[i + 2] = NULL;
         }
         runtime->view_enemies.enemy_amt = 1;
 }
 
-void update_tron_player(tron_runtime *runtime, char input, int play_width, int play_height) {
+void update_tron_player(
+    tron_runtime *runtime,
+    int dx,
+    int dy,
+    int play_width,
+    int play_height
+) {
+    if ((dx != 0 || dy != 0) &&
+        !(dx == -runtime->last_dir_input.posX &&
+          dy == -runtime->last_dir_input.posY)) {
+        runtime->last_dir_input.posX = dx;
+        runtime->last_dir_input.posY = dy;
+    }
+
     for (int i = 0; i < 1 + runtime->toggle_turbo; i++) {
+        if (runtime->last_dir_input.posX == 0 &&
+            runtime->last_dir_input.posY == 0)
+            break;
 
-        movement_input_handler(runtime->last_dir_input, input);
-
-        if (runtime->last_dir_input->posX != runtime->last_dir_input->posY)
-            runtime->player.segments.amt++;
+        runtime->player.segments.amt++;
         objectPointResize(&runtime->player.segments);
+
         shift_entity_segments(&runtime->player);
-        move_entity_segments(runtime->player.segments.points, runtime->last_dir_input, play_width - 1, play_height - 1);
-        runtime->player.alive = check_seg_entity_life(&runtime->player.segments, runtime->last_dir_input, play_width, play_height);
+
+        move_entity_segments(runtime->player.segments.points, &runtime->last_dir_input, play_width, play_height);
+
+        runtime->player.alive = check_seg_entity_life(&runtime->player.segments, &runtime->last_dir_input, play_width, play_height);
 
         for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
-            int player_collide = collision_check_both(&runtime->view_enemies.enemy[j].segments, &runtime->player.segments, 0);
-            if (player_collide > 0)
+            int collision = collision_check_both(&runtime->view_enemies.enemy[j].segments, &runtime->player.segments, 0);
+
+            if (collision > 0)
                 runtime->player.alive = 0;
         }
 
-        if (!(runtime->player.alive)) {
+        if (!runtime->player.alive) {
             handle_player_death(runtime, play_width);
             break;
         }
@@ -287,23 +302,22 @@ void advance_tron_level(tron_runtime *runtime, int play_width) {
     runtime->view_enemies.enemy_amt = (runtime->level % 3) +1;
     runtime->level++;
     start_level_intro(runtime);
-    runtime->last_dir_input->posX = 0;
-    runtime->last_dir_input->posY = 0;
-    reset_entity(&runtime->player, 1, play_width / 2, 15);
+    runtime->last_dir_input.posX = 0;
+    runtime->last_dir_input.posY = 0;
+    reset_entity(&runtime->player, 1, play_width / 2, 25);
     for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
         reset_entity(&runtime->view_enemies.enemy[j], 1, enemy_start_x[j], enemy_start_y[j]);
-        runtime->enemy_obj[j].data = &runtime->enemy[j];
     }
     int distract_deduct = 0;
     if (runtime->level < 6) {
         distract_deduct = 2;
-        runtime->enemy_update_interval = 3;
+        runtime->enemy_update_interval = 2;
     } else if (runtime->level < 11) {
         distract_deduct = 3;
-        runtime->enemy_update_interval = 2;
+        runtime->enemy_update_interval = 1;
     } else {
         distract_deduct = 5;
-        runtime->enemy_update_interval = 1;
+        runtime->enemy_update_interval = 0;
     }
     runtime->enemy_distracted = (runtime->enemy_distracted-distract_deduct == 0) ? 0 : runtime->enemy_distracted-distract_deduct;
 }
@@ -315,16 +329,6 @@ int all_enemies_dead(tron_runtime *runtime) {
     }
     return 1;
 }
-
-void update_enemy_renderlist(tron_runtime *runtime) {
-    for (int i = 0; i < runtime->view_enemies.enemy_amt; i++) {
-        if (runtime->view_enemies.enemy[i].alive)
-            runtime->screen_render_list[i + 2] = &runtime->enemy_obj[i];
-        else if (!(runtime->view_enemies.enemy[i].alive) && runtime->screen_render_list[i+2] != NULL)
-            runtime->screen_render_list[i + 2] = NULL;
-    }
-}
-
 
 const char *get_level_name(int level) {
     if (level < 1 || level > LEVEL_COUNT)

@@ -1,8 +1,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "engine/terminal.h"
-#include "engine/canvas.h"
 #include "engine/utils.h"
 #include "games/snake/snake_logic.h"
 
@@ -42,7 +40,7 @@ void handleFruitCollision(fruitData *collidedFruitData, Segmented_entity *snakeI
 }
 
 int hiScoreCounter(int currentScore, int *highestScore) {
-    if (currentScore > *highestScore)
-        *highestScore = currentScore;
+    if (currentScore-2 > *highestScore)
+        *highestScore = currentScore-2;
     return *highestScore;
 }

@@ -1,8 +1,16 @@
+/**
+ * @file tron.h
+ * @brief Public interface for the Tron game module.
+ */
+
 #ifndef TRON_H
 #define TRON_H
 
-#include "engine/session.h"
+#include "engine/core/game_module.h"
 
-extern const game_module tron_module;
+/**
+ * @brief Registered Tron game module.
+ */
+extern const GameModule tron_module;
 
 #endif // TRON_H

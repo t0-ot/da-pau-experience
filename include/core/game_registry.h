@@ -1,48 +1,55 @@
 /**
  * @file game_registry.h
- * @brief Centralized registry and routing mechanism for game modules.
+ * @brief Central registry and routing system for game modules.
  *
- * Acts as the single source of truth for mapping menu choices to game modules
- * and determining the next module transition state for the engine core.
+ * Maps menu selections to their corresponding game modules and
+ * determines which module should execute after the current one.
  */
 
 #ifndef GAME_REGISTRY_H
 #define GAME_REGISTRY_H
 
-#include "engine/session.h"
+#include "engine/core/game_module.h"
 #include "games/menu/menu.h"
 
 /**
- * @brief Represents a registered game mapping entry.
+ * @brief Represents a registered game module.
  */
 typedef struct {
-    menu_choice_type choice;
-    const game_module *module;
+    menu_choice_type choice;  /**< Menu selection associated with this game. */
+    const GameModule *module; /**< Game module associated with this entry. */
 } Game_Entry;
 
 /**
- * @brief Determines the next module to run based on the current module and its exit action.
+ * @brief Determines the next module following the current module's execution.
  *
- * @param current_mod Pointer to the module that just finished executing.
- * @param runtime Pointer to the current module's active runtime data.
- * @param action The completion action returned by the session run.
- * @return const Game_Entry* Pointer to the next game entry, or NULL to signal a complete exit.
+ * If the menu has finished, its selected option determines the next module.
+ * Other completed games return the application to the menu.
+ *
+ * @param current_mod Module that just finished executing.
+ * @param state Runtime state belonging to the completed module.
+ * @param action Action returned by the module.
+ * @return Pointer to the next registry entry, or NULL to exit.
  */
-const Game_Entry *game_registry_get_next(const game_module *current_mod, void *runtime, module_action action);
+const Game_Entry *game_registry_get_next(
+    const GameModule *current_mod,
+    void *state,
+    ModuleAction action
+);
 
 /**
- * @brief Retrieves a game entry corresponding to a specific menu choice.
+ * @brief Retrieves a registered game using its menu selection.
  *
- * @param choice The menu choice enum value.
- * @return const Game_Entry* Pointer to the matching game entry, or NULL if not found.
+ * @param choice Menu selection to look up.
+ * @return Matching registry entry, or NULL if no match exists.
  */
 const Game_Entry *game_registry_get_entry(menu_choice_type choice);
 
 /**
- * @brief Fetches the root application launcher/menu entry point.
+ * @brief Retrieves the application's starting menu module.
  *
- * @return const Game_Entry* Pointer to the menu launcher entry.
+ * @return Pointer to the menu launcher entry.
  */
 const Game_Entry *game_registry_fetch_menu(void);
 
-#endif // GAME_REGISTRY_H
+#endif /* GAME_REGISTRY_H */

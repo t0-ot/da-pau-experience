@@ -1,79 +1,99 @@
-/**
- * @file session.c
- * @brief Implementation of the game engine's session state machine and loop.
- */
-
-#include <string.h>
 #include <stdlib.h>
+
 #include "engine/session.h"
-#include "engine/guard.h"
+#include "engine/core/input.h"
+#include "engine/renderer/renderer.h"
 
-void session_init(game_session *session) {
-    REQUIRE_NOT_NULLED(session);
-    memset(session, 0, sizeof(game_session));
-    session->is_running = 1;
+void session_init(GameSession *session) {
+    if (session == NULL)
+        return;
+
+    session->current_module = NULL;
+    session->current_state = NULL;
+    session->is_running = true;
 }
 
-void session_set_module(game_session *session, const game_module *module) {
-    REQUIRE_NOT_NULLED(session);
-    REQUIRE_VALID_MODULE(module);
+bool session_set_module(
+    GameSession *session,
+    const GameModule *module
+) {
+    if (session == NULL || module == NULL || module->state_size == 0)
+        return false;
 
-    //If there was a game before we clean it up first.
-    if (session->current_module != NULL && session->current_module->clean_up != NULL) {
-        session->current_module->clean_up(session->current_runtime);
-        session->current_runtime = NULL;
+    void *new_state = calloc(1, module->state_size);
+
+    if (new_state == NULL)
+        return false;
+
+    if (session->current_module != NULL) {
+        if (session->current_module->cleanup != NULL)
+            session->current_module->cleanup(session->current_state);
+
+        free(session->current_state);
     }
 
-    if (session->canvas != NULL) {
-        canvas_destroy(session->canvas);
-        session->canvas = NULL;
-    }
-
-    session->canvas = canvas_create(module->game_width, module->game_height);
-
-    void *runtime_data = malloc(module->runtime_size);
-    REQUIRE_NOT_NULLED(runtime_data);
-
-
-    //Update with the new game
     session->current_module = module;
-    session->current_runtime = runtime_data;
+    session->current_state = new_state;
 
-    //check if current_module intialization function isn't NULL before running intialization to avoid seg fault
-    if (session->current_module->init != NULL)
-        session->current_module->init(session->current_runtime);
+    if (module->init != NULL)
+        module->init(session->current_state);
+
+    return true;
 }
 
-module_action session_run(game_session *session) {
-    REQUIRE_NOT_NULLED(session);
-    REQUIRE_VALID_MODULE(session->current_module);
+ModuleAction session_run(GameSession *session) {
+    if (session == NULL || session->current_module == NULL ||
+        session->current_state == NULL)
+        return MODULE_QUIT;
 
-    while (session->is_running) {
+    while (session->is_running && !renderer_should_close()) {
+        GameInput input = input_poll();
 
-        module_action action = session->current_module->upd(session->current_runtime);
+        if (input.quit) {
+            session->is_running = false;
+            return MODULE_QUIT;
+        }
 
-        if (action != MODULE_CONTINUE)
+        float delta_time = renderer_get_delta_time();
+
+        ModuleAction action = session->current_module->update(
+            session->current_state,
+            &input,
+            delta_time
+        );
+
+        if (action != MODULE_CONTINUE) {
+            if (action == MODULE_QUIT)
+                session->is_running = false;
+
             return action;
+        }
 
-        session->current_module->render(session->current_runtime, session->canvas);
+        renderer_begin_frame();
+
+        if (session->current_module->draw != NULL)
+            session->current_module->draw(session->current_state);
+
+        renderer_end_frame();
     }
+
+    session->is_running = false;
     return MODULE_QUIT;
 }
 
-void session_cleanup(game_session *session) {
+void session_cleanup(GameSession *session) {
     if (session == NULL)
         return;
-    session->is_running = 0;
 
-    if (session->current_module != NULL) {
-        if (session->current_module->clean_up != NULL && session->current_runtime != NULL)
-            session->current_module->clean_up(session->current_runtime);
+    session->is_running = false;
 
-        session->current_module = NULL;
-        session->current_runtime = NULL;
+    if (session->current_module != NULL &&
+        session->current_module->cleanup != NULL) {
+        session->current_module->cleanup(session->current_state);
     }
-    if (session->canvas != NULL) {
-        canvas_destroy(session->canvas);
-        session->canvas = NULL;
-    }
+
+    free(session->current_state);
+
+    session->current_state = NULL;
+    session->current_module = NULL;
 }
