@@ -109,7 +109,6 @@
 		<Unit filename="include/engine/core/game_types.h" />
 		<Unit filename="include/engine/core/input.h" />
 		<Unit filename="include/engine/entity.h" />
-		<Unit filename="include/engine/renderer/color.h" />
 		<Unit filename="include/engine/renderer/renderer.h" />
 		<Unit filename="include/engine/session.h" />
 		<Unit filename="include/engine/utils.h" />
