@@ -18,7 +18,7 @@ void spawnFruit(Point_list fruitView, int fruitNumber, Point_list snakeView, int
     do {
         fruitView.points[fruitNumber].posX = (rand() % (spawnWidth - 2)) + 1;
         fruitView.points[fruitNumber].posY = (rand() % (spawnHeight - 2)) + 1;
-    } while (collisionCheckOne(&snakeView, &fruitView, 0, fruitNumber) );
+    } while (collisionCheckOne(&snakeView, &fruitView, 0, fruitNumber) || collisionCheckOne(&fruitView, &fruitView, 0, fruitNumber));
 }
 
 void baseEat(void *fruit, Segmented_entity *snake) {
