@@ -81,7 +81,7 @@ static void snake_init(void *state) {
     int start_y = runtime->play_height / 2;
 
     runtime->snake.segments.points[0] = (Point){start_x, start_y};
-    runtime->snake.segments.points[1] = (Point){start_x - 1, start_y};
+    runtime->snake.segments.points[1] = (Point){start_x, start_y};
 
     runtime->snake.alive = true;
 
@@ -117,8 +117,6 @@ static ModuleAction snake_update(void *state,
 
     if (runtime->move_timer >= runtime->move_interval) {
         runtime->move_timer -= runtime->move_interval;
-
-        shift_entity_segments(&runtime->snake);
 
         if (!move_entity_segments(
                 runtime->snake.segments.points,
@@ -170,6 +168,7 @@ static ModuleAction snake_update(void *state,
                 );
             }
         }
+        shift_entity_segments(&runtime->snake);
     }
     runtime->currentHiScore = hiScoreCounter(
         runtime->snake.segments.amt,
