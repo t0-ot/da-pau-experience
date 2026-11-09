@@ -4,7 +4,7 @@
 #include "core/game_registry.h"
 #include "games/snake/snake.h"
 #include "games/tron/tron.h"
-#include "games/pacman/pacman.h"s
+#include "games/pacman/pacman.h"
 
 /**
  * @brief Registry table containing all playable game modules.
