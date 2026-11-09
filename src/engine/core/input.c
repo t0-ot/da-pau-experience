@@ -16,8 +16,8 @@ GameInput input_poll(void) {
     input.right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
 
     input.confirm = IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE);
-    input.back    = IsKeyPressed(KEY_ESCAPE);
-    input.quit    = IsKeyPressed(KEY_Q);
+    input.back    = IsKeyPressed(KEY_Q);
+    input.quit    = IsKeyPressed(KEY_ESCAPE);
     input.action = IsKeyPressed(KEY_E) || IsKeyPressed(KEY_X);
 
     return input;
