@@ -7,3 +7,4 @@ bin/
 *.so
 *.layout
 *.depend
+*.cscope_file_list

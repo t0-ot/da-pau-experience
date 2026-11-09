@@ -102,6 +102,7 @@ static bool create_directory_recursive(const char *path) {
 }
 
 bool storage_path_init(char *buffer, size_t buffer_size) {
+    int length = 0;
     if (buffer == NULL || buffer_size == 0) {
         return false;
     }
@@ -115,7 +116,7 @@ bool storage_path_init(char *buffer, size_t buffer_size) {
     char full_path[512];
 
 #ifdef _WIN32
-    int length = snprintf(
+    length = snprintf(
         full_path,
         sizeof(full_path),
         "%s\\DaPau",
@@ -136,7 +137,7 @@ bool storage_path_init(char *buffer, size_t buffer_size) {
             return false;
         }
     } else {
-        int length = snprintf(
+        length = snprintf(
             full_path,
             sizeof(full_path),
             "%s/.local/share/da-pau",
@@ -153,7 +154,7 @@ bool storage_path_init(char *buffer, size_t buffer_size) {
         return false;
     }
 
-    int length = snprintf(buffer, buffer_size, "%s", full_path);
+    length = snprintf(buffer, buffer_size, "%s", full_path);
 
     return length >= 0 && (size_t)length < buffer_size;
 }
