@@ -206,11 +206,6 @@ static void menu_draw(void *state) {
  *
  * @param state Pointer to menu runtime state.
  */
-static void menu_cleanup(void *state) {
-    (void)state;
-
-    /* No additional menu-owned resources to release yet. */
-}
 menu_choice_type menu_get_exit_choice(void *state) {
     if (state == NULL)
         return MENU_CHOICE_NONE;
@@ -227,5 +222,4 @@ const GameModule menu_module = {
     .init = menu_init,
     .update = menu_update,
     .draw = menu_draw,
-    .cleanup = menu_cleanup
 };
