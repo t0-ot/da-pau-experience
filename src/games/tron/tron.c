@@ -42,8 +42,8 @@ static void tron_init(void *state) {
     runtime->toggle_turbo = 0;
     runtime->level = 1;
     runtime->enemy_distracted = 75;
-    runtime->enemy_countdown = 3;
-    runtime->enemy_update_interval = 3;
+    runtime->enemy_move_timer = 0.0f;
+    runtime->enemy_move_interval = 0.20f;
 
     runtime->move_timer = 0.0f;
     runtime->move_interval = TRON_MOVE_INTERVAL;
@@ -103,27 +103,32 @@ static ModuleAction tron_update(
 
     // 2. Wait for the next movement tick
     runtime->move_timer += delta_time;
+    runtime->enemy_move_timer += delta_time;
 
-    if (runtime->move_timer < runtime->move_interval)
-        return MODULE_CONTINUE;
+    while (runtime->move_timer >= runtime->move_interval) {
+        runtime->move_timer -= runtime->move_interval;
 
-    runtime->move_timer -= runtime->move_interval;
+        // Apply buffered direction if one is available.
+        if (runtime->has_buffered_dir) {
+            runtime->last_dir_input = runtime->buffered_dir;
+            runtime->has_buffered_dir = false;
+        }
 
-    // Apply buffered direction if one is available.
-    if (runtime->has_buffered_dir) {
-        runtime->last_dir_input = runtime->buffered_dir;
-        runtime->has_buffered_dir = false;
+        // Always move using the current direction.
+        update_tron_player(
+            runtime,
+            runtime->last_dir_input.posX,
+            runtime->last_dir_input.posY,
+            TRON_WIDTH,
+            TRON_HEIGHT
+        );
+
+        if (all_enemies_dead(runtime)) {
+            advance_tron_level(runtime, TRON_WIDTH);
+        }
     }
-
-    // Always move using the current direction.
-    update_tron_player(
-        runtime,
-        runtime->last_dir_input.posX,
-        runtime->last_dir_input.posY,
-        TRON_WIDTH,
-        TRON_HEIGHT
-    );
-    if (--runtime->enemy_countdown <= 0) {
+    while (runtime->enemy_move_timer >= runtime->enemy_move_interval) {
+        runtime->enemy_move_timer -= runtime->enemy_move_interval;
         enemy_lightcycle_ai(
             &runtime->view_enemies,
             &runtime->player.segments,
@@ -131,14 +136,7 @@ static ModuleAction tron_update(
             TRON_WIDTH,
             TRON_HEIGHT
         );
-
-        runtime->enemy_countdown = runtime->enemy_update_interval;
     }
-
-    if (all_enemies_dead(runtime)) {
-        advance_tron_level(runtime, TRON_WIDTH);
-    }
-
     return MODULE_CONTINUE;
 }
 

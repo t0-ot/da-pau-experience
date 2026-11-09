@@ -240,8 +240,8 @@ static void start_level_intro(tron_runtime *runtime) {
 
 void handle_player_death(tron_runtime *runtime, int play_width) {
         runtime->enemy_distracted = 75;
-        runtime->enemy_countdown = 3,
-        runtime->enemy_update_interval = 3,
+        runtime->enemy_move_timer = 0.0f,
+        runtime->enemy_move_interval = 0.20f,
         runtime->level = 1,
         start_level_intro(runtime);
 
@@ -311,13 +311,13 @@ void advance_tron_level(tron_runtime *runtime, int play_width) {
     int distract_deduct = 0;
     if (runtime->level < 6) {
         distract_deduct = 2;
-        runtime->enemy_update_interval = 2;
+        runtime->enemy_move_interval = 0.20f;
     } else if (runtime->level < 11) {
         distract_deduct = 3;
-        runtime->enemy_update_interval = 1;
+        runtime->enemy_move_interval = 0.15f;
     } else {
         distract_deduct = 5;
-        runtime->enemy_update_interval = 0;
+        runtime->enemy_move_interval = 0.10f;
     }
     runtime->enemy_distracted = (runtime->enemy_distracted-distract_deduct == 0) ? 0 : runtime->enemy_distracted-distract_deduct;
 }

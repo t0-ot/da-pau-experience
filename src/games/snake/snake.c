@@ -115,7 +115,7 @@ static ModuleAction snake_update(void *state,
     }
     runtime->move_timer += delta_time;
 
-    if (runtime->move_timer >= runtime->move_interval) {
+    while (runtime->move_timer >= runtime->move_interval) {
         runtime->move_timer -= runtime->move_interval;
 
         if (!move_entity_segments(

@@ -37,8 +37,8 @@ typedef struct tron_runtime {
     int toggle_turbo; /**< Whether turbo movement is enabled. */
     int level; /**< Current level number. */
     int enemy_distracted; /**< Remaining duration of enemy distraction. */
-    int enemy_countdown; /**< Countdown until the next enemy update. */
-    int enemy_update_interval; /**< Interval between enemy updates. */
+    float enemy_move_timer; /**< Accumulated time since previous enemy move. */
+    float enemy_move_interval; /**< Time required between enemy movements. */
 
     float move_timer; /**< Accumulated time since the previous movement. */
     float move_interval; /**< Time required between player movements. */
