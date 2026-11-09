@@ -18,6 +18,7 @@
 typedef enum {
     MENU_CHOICE_PLAY_SNAKE, /**< Launch Snake. */
     MENU_CHOICE_PLAY_TRON,  /**< Launch Tron. */
+    MENU_CHOICE_PLAY_PACMAN, /**< Launch Pacman */
     MENU_CHOICE_NONE,       /**< No selection has been made. */
     MENU_CHOICE_QUIT        /**< Exit the application. */
 } menu_choice_type;
