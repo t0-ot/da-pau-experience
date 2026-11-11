@@ -4,6 +4,7 @@
 #include "games/snake/snake.h"
 #include "games/snake/snake_logic.h"
 #include "games/snake/snake_render.h"
+#include "games/snake/snake_internal.h"
 #include "engine/core/game_input.h"
 #include "engine/storage/highscore.h"
 #include "engine/utils.h"
@@ -11,27 +12,6 @@
 #define SNAKE_WIDTH 22
 #define SNAKE_HEIGHT 20
 #define SNAKE_MOVE_INTERVAL 0.12f
-
-/**
- * @brief Stores the runtime state of a Snake game session.
- *
- * Contains the snake entity, fruit data, movement state,
- * score information, and play area dimensions.
- */
-typedef struct {
-    Segmented_entity snake; /**< The player's snake entity. */
-    defaultFruit baseFruit; /**< Properties of the standard fruit. */
-    fruitData normalFruitSet; /**< Gameplay data and positions of active fruits. */
-
-    Point lastDirInput; /**< Current movement direction of the snake. */
-
-    int currentHiScore; /**< Highest score achieved during this session. */
-    int play_width; /**< Width of the playable grid in cells. */
-    int play_height; /**< Height of the playable grid in cells. */
-
-    float move_timer; /**< Time accumulated toward the next movement. */
-    float move_interval; /**< Time required between successive movements. */
-} snake_runtime;
 
 static void snake_set_direction(snake_runtime *runtime, const GameInput *input) {
     int dx = 0;
@@ -95,9 +75,7 @@ static void snake_init(void *state) {
     spawnFruit(runtime->normalFruitSet.pointList, 0, runtime->snake.segments, runtime->play_width, runtime->play_height);
 }
 
-static ModuleAction snake_update(void *state,
-                                 const GameInput *input,
-                                 float delta_time) {
+static ModuleAction snake_update(void *state, const GameInput *input, float delta_time) {
     snake_runtime *runtime = state;
 
     if (runtime == NULL || input == NULL ||

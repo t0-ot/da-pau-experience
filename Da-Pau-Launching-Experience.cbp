@@ -118,6 +118,7 @@
 		<Unit filename="include/games/menu/menu.h" />
 		<Unit filename="include/games/pacman/pacman.h" />
 		<Unit filename="include/games/snake/snake.h" />
+		<Unit filename="include/games/snake/snake_internal.h" />
 		<Unit filename="include/games/snake/snake_logic.h" />
 		<Unit filename="include/games/snake/snake_render.h" />
 		<Unit filename="include/games/tron/tron.h" />

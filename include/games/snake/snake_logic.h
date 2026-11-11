@@ -9,6 +9,8 @@
 
 #include "engine/entity.h"
 
+typedef struct snake_runtime snake_runtime;
+
 /**
  * @brief Properties of the standard fruit.
  */
