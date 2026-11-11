@@ -54,5 +54,4 @@ void snake_render_game(
     }
 
     DrawText("WASD / ARROWS: MOVE     ESC: MENU", panel_x, 370, 18, GRAY);
-    DrawFPS(panel_x, 400);
 }

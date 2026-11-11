@@ -246,7 +246,7 @@ void handle_player_death(tron_runtime *runtime, int play_width) {
         start_level_intro(runtime);
 
         runtime->last_dir_input.posX = 0;
-        runtime->last_dir_input.posY = 0;
+        runtime->last_dir_input.posY = -1;
         reset_entity(&runtime->player, 1, play_width / 2, 25);
 
         for (int i = 0; i < runtime->view_enemies.enemy_amt; i++) {
@@ -303,7 +303,7 @@ void advance_tron_level(tron_runtime *runtime, int play_width) {
     runtime->level++;
     start_level_intro(runtime);
     runtime->last_dir_input.posX = 0;
-    runtime->last_dir_input.posY = 0;
+    runtime->last_dir_input.posY = -1;
     reset_entity(&runtime->player, 1, play_width / 2, 25);
     for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
         reset_entity(&runtime->view_enemies.enemy[j], 1, enemy_start_x[j], enemy_start_y[j]);

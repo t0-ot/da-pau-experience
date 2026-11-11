@@ -7,7 +7,6 @@
 #define TRON_INTERNAL_H
 
 #include "engine/entity.h"
-#include <stdbool.h>
 
 /** @brief Width of the Tron play area in grid cells. */
 #define TRON_WIDTH 30
@@ -44,8 +43,8 @@ typedef struct tron_runtime {
     float move_interval; /**< Time required between player movements. */
     float intro_timer; /**< Remaining duration of the level introduction. */
 
-    Point buffered_dir; /**< Direction queued for the next player movement. */
-    bool has_buffered_dir; /**< Whether a direction is currently queued. */
+    Point buffered_dir[5]; /**< Direction queued for the next player movement. */
+    int buffered_dir_amt; /**< Whether a direction is currently queued. */
 
     int level_starting; /**< State indicating whether a level introduction is active. */
 } tron_runtime;

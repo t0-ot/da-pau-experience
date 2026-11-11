@@ -107,8 +107,9 @@
 		<Unit filename="include/engine/core/game_input.h" />
 		<Unit filename="include/engine/core/game_module.h" />
 		<Unit filename="include/engine/core/game_types.h" />
-		<Unit filename="include/engine/core/input.h" />
 		<Unit filename="include/engine/entity.h" />
+		<Unit filename="include/engine/input/input.h" />
+		<Unit filename="include/engine/input/movement.h" />
 		<Unit filename="include/engine/renderer/renderer.h" />
 		<Unit filename="include/engine/session.h" />
 		<Unit filename="include/engine/storage/highscore.h" />
@@ -126,10 +127,13 @@
 		<Unit filename="src/core/game_registry.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/engine/core/input.c">
+		<Unit filename="src/engine/entity.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/engine/entity.c">
+		<Unit filename="src/engine/input/input.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/input/movement.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/renderer/renderer.c">

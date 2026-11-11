@@ -3,12 +3,15 @@
 
 #include "raylib.h"
 
+#include "engine/input/input.h"
+#include "engine/input/movement.h"
 #include "games/tron/tron.h"
 #include "games/tron/tron_internal.h"
 #include "games/tron/tron_logic.h"
 #include "games/tron/tron_render.h"
 
 #define TRON_MOVE_INTERVAL 0.10f
+#define MAX_INPUT_BUFFER 5
 
 static void tron_init(void *state) {
     tron_runtime *runtime = state;
@@ -33,11 +36,12 @@ static void tron_init(void *state) {
         };
     }
 
-    runtime->last_dir_input = (Point){0, 0};
+    runtime->last_dir_input = (Point){0, -1};
 
     // Direction buffer initialization
-    runtime->buffered_dir = (Point){0, 0};
-    runtime->has_buffered_dir = false;
+    for (int i = 0; i < MAX_INPUT_BUFFER; i++)
+        runtime->buffered_dir[i] = (Point){0, 0};
+    runtime->buffered_dir_amt = 0;
 
     runtime->toggle_turbo = 0;
     runtime->level = 1;
@@ -76,45 +80,14 @@ static ModuleAction tron_update(
 
         return MODULE_CONTINUE;
     }
-
-    // 1. Capture directional input every frame
-    int dx = 0;
-    int dy = 0;
-
-    if (input->up)         dy = -1;
-    else if (input->down) dy = 1;
-    else if (input->left) dx = -1;
-    else if (input->right) dx = 1;
-
-    if (dx != 0 || dy != 0) {
-        bool reversing =
-            dx == -runtime->last_dir_input.posX &&
-            dy == -runtime->last_dir_input.posY;
-
-        bool same_direction =
-            dx == runtime->last_dir_input.posX &&
-            dy == runtime->last_dir_input.posY;
-
-        if (!reversing && !same_direction) {
-            runtime->buffered_dir = (Point){dx, dy};
-            runtime->has_buffered_dir = true;
-        }
-    }
-
-    // 2. Wait for the next movement tick
     runtime->move_timer += delta_time;
     runtime->enemy_move_timer += delta_time;
+    latch_movement_no_reversal(&runtime->last_dir_input, runtime->buffered_dir, input, &runtime->buffered_dir_amt);
 
-    while (runtime->move_timer >= runtime->move_interval) {
+    if (runtime->move_timer >= runtime->move_interval) {
         runtime->move_timer -= runtime->move_interval;
 
-        // Apply buffered direction if one is available.
-        if (runtime->has_buffered_dir) {
-            runtime->last_dir_input = runtime->buffered_dir;
-            runtime->has_buffered_dir = false;
-        }
-
-        // Always move using the current direction.
+        consume_buffer_input(&runtime->last_dir_input, runtime->buffered_dir, &runtime->buffered_dir_amt);
         update_tron_player(
             runtime,
             runtime->last_dir_input.posX,
@@ -122,10 +95,6 @@ static ModuleAction tron_update(
             TRON_WIDTH,
             TRON_HEIGHT
         );
-
-        if (all_enemies_dead(runtime)) {
-            advance_tron_level(runtime, TRON_WIDTH);
-        }
     }
     while (runtime->enemy_move_timer >= runtime->enemy_move_interval) {
         runtime->enemy_move_timer -= runtime->enemy_move_interval;
@@ -137,12 +106,14 @@ static ModuleAction tron_update(
             TRON_HEIGHT
         );
     }
+    if (all_enemies_dead(runtime)) {
+        advance_tron_level(runtime, TRON_WIDTH);
+    }
     return MODULE_CONTINUE;
 }
 
 static void tron_draw(void *state) {
     tron_runtime *runtime = state;
-
     if (runtime == NULL || runtime->player.segments.points == NULL)
         return;
 

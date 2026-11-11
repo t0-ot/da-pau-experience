@@ -9,7 +9,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "game_input.h"
+#include "engine/core/game_input.h"
 
 /**
  * @brief Initializes the input management system.

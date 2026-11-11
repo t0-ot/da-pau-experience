@@ -1,4 +1,4 @@
-#include "engine/core/input.h"
+#include "engine/input/input.h"
 
 #include "raylib.h"
 
@@ -10,10 +10,10 @@ void input_init(void) {
 GameInput input_poll(void) {
     GameInput input = {0};
 
-    input.up    = IsKeyDown(KEY_UP)    || IsKeyDown(KEY_W);
-    input.down  = IsKeyDown(KEY_DOWN)  || IsKeyDown(KEY_S);
-    input.left  = IsKeyDown(KEY_LEFT)  || IsKeyDown(KEY_A);
-    input.right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
+    input.up    = IsKeyPressed(KEY_UP)    || IsKeyPressed(KEY_W);
+    input.down  = IsKeyPressed(KEY_DOWN)  || IsKeyPressed(KEY_S);
+    input.left  = IsKeyPressed(KEY_LEFT)  || IsKeyPressed(KEY_A);
+    input.right = IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D);
 
     input.confirm = IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE);
     input.back    = IsKeyPressed(KEY_Q);
