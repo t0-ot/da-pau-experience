@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "engine/session.h"
-#include "engine/core/input.h"
+#include "engine/input/input.h"
 #include "engine/renderer/renderer.h"
 
 void session_init(GameSession *session) {

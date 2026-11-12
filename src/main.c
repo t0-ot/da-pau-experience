@@ -8,7 +8,7 @@
 
 #include "engine/session.h"
 #include "engine/renderer/renderer.h"
-#include "engine/core/input.h"
+#include "engine/input/input.h"
 #include "core/game_registry.h"
 
 /**
