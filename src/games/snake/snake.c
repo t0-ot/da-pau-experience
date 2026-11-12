@@ -47,7 +47,7 @@ static void snake_init(void *state) {
     runtime->snake.alive = true;
 
     /* Start moving right, with the tail behind the head. */
-    runtime->last_dir_input = (Point){0, -1};
+    runtime->last_dir_input = (Point){0, 0};
 
     runtime->baseFruit.scoreAmt = 1;
     runtime->normalFruitSet.fruitType = &runtime->baseFruit;
@@ -67,10 +67,6 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
     if (input->back)
         return MODULE_FINISHED;
 
-    if (runtime->last_dir_input.posX == 0 &&
-        runtime->last_dir_input.posY == 0) {
-        return MODULE_CONTINUE;
-    }
     runtime->move_timer += delta_time;
     latch_movement_no_reversal(&runtime->last_dir_input, runtime->buffered_dir, input, &runtime->buffered_dir_amt);
 
