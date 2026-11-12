@@ -2,6 +2,7 @@
 #include "raylib.h"
 
 #include "games/snake/snake.h"
+#include "engine/input/movement.h"
 #include "games/snake/snake_logic.h"
 #include "games/snake/snake_render.h"
 #include "games/snake/snake_internal.h"
@@ -12,27 +13,7 @@
 #define SNAKE_WIDTH 22
 #define SNAKE_HEIGHT 20
 #define SNAKE_MOVE_INTERVAL 0.12f
-
-static void snake_set_direction(snake_runtime *runtime, const GameInput *input) {
-    int dx = 0;
-    int dy = 0;
-
-    if (input->up)         dy = -1;
-    else if (input->down)  dy = 1;
-    else if (input->left)  dx = -1;
-    else if (input->right) dx = 1;
-
-    if (dx == 0 && dy == 0)
-        return;
-
-    /* Prevent the snake from reversing directly into itself. */
-    if (dx == -runtime->lastDirInput.posX &&
-        dy == -runtime->lastDirInput.posY)
-        return;
-
-    runtime->lastDirInput.posX = dx;
-    runtime->lastDirInput.posY = dy;
-}
+#define MAX_INPUT_BUFFER 5
 
 static void snake_init(void *state) {
     snake_runtime *runtime = state;
@@ -66,7 +47,7 @@ static void snake_init(void *state) {
     runtime->snake.alive = true;
 
     /* Start moving right, with the tail behind the head. */
-    runtime->lastDirInput = (Point){0, 0};
+    runtime->last_dir_input = (Point){0, -1};
 
     runtime->baseFruit.scoreAmt = 1;
     runtime->normalFruitSet.fruitType = &runtime->baseFruit;
@@ -86,19 +67,21 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
     if (input->back)
         return MODULE_FINISHED;
 
-    snake_set_direction(runtime, input);
-    if (runtime->lastDirInput.posX == 0 &&
-        runtime->lastDirInput.posY == 0) {
+    if (runtime->last_dir_input.posX == 0 &&
+        runtime->last_dir_input.posY == 0) {
         return MODULE_CONTINUE;
     }
     runtime->move_timer += delta_time;
+    latch_movement_no_reversal(&runtime->last_dir_input, runtime->buffered_dir, input, &runtime->buffered_dir_amt);
+
 
     while (runtime->move_timer >= runtime->move_interval) {
         runtime->move_timer -= runtime->move_interval;
 
+        consume_buffer_input(&runtime->last_dir_input, runtime->buffered_dir, &runtime->buffered_dir_amt);
         if (!move_entity_segments(
                 runtime->snake.segments.points,
-                &runtime->lastDirInput,
+                &runtime->last_dir_input,
                 runtime->play_width,
                 runtime->play_height)) {
             runtime->snake.alive = false;
@@ -107,7 +90,7 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
         if (runtime->snake.alive) {
             runtime->snake.alive = check_seg_entity_life(
                 &runtime->snake.segments,
-                &runtime->lastDirInput,
+                &runtime->last_dir_input,
                 runtime->play_width,
                 runtime->play_height
             );
@@ -117,7 +100,7 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
             handleDeath(
                 &runtime->snake,
                 &runtime->normalFruitSet.pointList,
-                &runtime->lastDirInput,
+                &runtime->last_dir_input,
                 runtime->play_width,
                 runtime->play_height
             );
