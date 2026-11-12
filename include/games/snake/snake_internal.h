@@ -1,6 +1,8 @@
 #ifndef SNAKE_INTERNAL_H
 #define SNAKE_INTERNAL_H
 
+#include "engine/entity.h"
+
 /**
  * @brief Stores the runtime state of a Snake game session.
  *
