@@ -8,5 +8,6 @@
 void latch_movement_handler(Point *target, Point *buffer, const GameInput *input, int *buffered_amt);
 void latch_movement_no_reversal(Point *target, Point *buffer, const GameInput *input, int *buffered_amt);
 bool consume_buffer_input(Point *target, Point *buffer, int *buffer_amt);
+bool has_directional_input(const GameInput *input);
 
 #endif // MOVEMENT_H

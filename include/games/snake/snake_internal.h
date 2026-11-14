@@ -15,10 +15,12 @@ typedef struct snake_runtime {
     fruitData normalFruitSet; /**< Gameplay data and positions of active fruits. */
 
     Point last_dir_input; /**< Current movement direction of the snake. */
+    bool is_moving;
 
     int currentHiScore; /**< Highest score achieved during this session. */
     int play_width; /**< Width of the playable grid in cells. */
     int play_height; /**< Height of the playable grid in cells. */
+    int pending_growth;
 
     float move_timer; /**< Time accumulated toward the next movement. */
     float move_interval; /**< Time required between successive movements. */

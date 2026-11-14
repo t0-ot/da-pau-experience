@@ -44,11 +44,12 @@ void snake_render_game(
 
         DrawRectangle(x + 3, y + 3, CELL_SIZE - 6, CELL_SIZE - 6, RED);
     }
-    for (int i = snake->segments.amt - 1; i >= 0; i--) {
-        int x = offset_x + snake->segments.points[i].posX * CELL_SIZE;
-        int y = offset_y + snake->segments.points[i].posY * CELL_SIZE;
+    for (int i = 0; i < snake->segments.amt; i++) {
+        int index = (snake->tail + i) % snake->capacity;
+        int x = offset_x + snake->segments.points[index].posX * CELL_SIZE;
+        int y = offset_y + snake->segments.points[index].posY * CELL_SIZE;
 
-        Color segment_color = (i == 0) ? LIME : DARKGREEN;
+        Color segment_color = (index == snake->head) ? LIME : DARKGREEN;
 
         DrawRectangle(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4, segment_color);
     }

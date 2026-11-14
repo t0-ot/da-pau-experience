@@ -52,3 +52,15 @@ bool consume_buffer_input(Point *target, Point *buffer, int *buffer_amt) {
         buffer[i] = buffer[i+1];
     (*buffer_amt)--;
 }
+
+bool has_directional_input(const GameInput *input) {
+    if (input->up)
+        return 1;
+    if (input->down)
+        return 1;
+    if (input->left)
+        return 1;
+    if (input->right)
+        return 1;
+    return 0;
+}

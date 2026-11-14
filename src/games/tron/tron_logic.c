@@ -107,23 +107,21 @@ int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int 
 }
 
 
-void enemy_lightcycle_ai(Enemy_list *view_enemies, Point_list *player, int distraction_modifier, int play_width,int play_height) {
+void enemy_lightcycle_ai(Enemy_list *view_enemies, Segmented_entity *player, int distraction_modifier, int play_width,int play_height) {
     for (int i = 0; i < view_enemies->enemy_amt; i++) {
         if (!(view_enemies->enemy[i].alive))
             continue;
 
         // Extend and shift the enemy's trail.
-        view_enemies->enemy[i].segments.amt++;
-        objectPointResize(&view_enemies->enemy[i].segments);
-        shift_entity_segments(&view_enemies->enemy[i]);
+        grow_entity(&view_enemies->enemy[i]);
 
         // Capture starting position (the current head of the enemy cycle)
-        Point enemy_start = view_enemies->enemy[i].segments.points[0];
+        Point enemy_start = view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head];
 
         // =========================================
         // 1. BUILD THE OBSTACLE LIST
         // =========================================
-        int obstacle_count = player->amt - 1;
+        int obstacle_count = player->segments.amt;
         for (int k = 0; k < view_enemies->enemy_amt; k++) {
             if (!(view_enemies->enemy[k].alive))
                 continue;
@@ -143,17 +141,23 @@ void enemy_lightcycle_ai(Enemy_list *view_enemies, Point_list *player, int distr
         int obstacle_index = 0;
 
         // Populate obstacles with the player's tail
-        for (int j = 1; j < player->amt; j++) {
-            obstacles[obstacle_index++] = player->points[j];
+        for (int j = 0; j < player->segments.amt; j++) {
+            int player_index = (player->tail + j) % player->capacity;
+            obstacles[obstacle_index++] = player->segments.points[player_index];
         }
 
         // Populate obstacles with enemy trails
         for (int k = 0; k < view_enemies->enemy_amt; k++) {
             if (!(view_enemies->enemy[k].alive))
                 continue;
-            int start = (k == i) ? 1 : 0;
-            for (int j = start; j < view_enemies->enemy[k].segments.amt; j++) {
-                obstacles[obstacle_index++] = view_enemies->enemy[k].segments.points[j];
+            int segment_limit = view_enemies->enemy[k].segments.amt;
+
+            if (k == i)
+                segment_limit--;
+
+            for (int j = 0; j < segment_limit; j++) {
+                int enemy_index = (view_enemies->enemy[k].tail + j) % view_enemies->enemy[k].capacity;
+                obstacles[obstacle_index++] = view_enemies->enemy[k].segments.points[enemy_index];
             }
         }
 
@@ -172,7 +176,7 @@ void enemy_lightcycle_ai(Enemy_list *view_enemies, Point_list *player, int distr
         int right_score = check_breathing_room(move_right, obstacles, obstacle_count, play_width, play_height, 35);
 
         // Get the player's head position to calculate distance
-        Point player_head = player->points[0];
+        Point player_head = player->segments.points[player->head];
 
         // Group options into an array so we can loop through them easily
         Point options[] = {move_up, move_down, move_left, move_right};
@@ -219,13 +223,13 @@ void enemy_lightcycle_ai(Enemy_list *view_enemies, Point_list *player, int distr
         // 3. EXECUTE MOVEMENT
         // =========================================
         // Apply our best calculated position directly to the cycle's head if the best move is the same coordinate as the current position it means they are dead
-        if (best_move.posX == view_enemies->enemy[i].segments.points[0].posX &&
-            best_move.posY == view_enemies->enemy[i].segments.points[0].posY) {
+        if (best_move.posX == view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head].posX &&
+            best_move.posY == view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head].posY) {
 
             view_enemies->enemy[i].alive = false;
         }
-        view_enemies->enemy[i].segments.points[0] = best_move;
-
+        view_enemies->enemy[i].head = (view_enemies->enemy[i].head + 1) % view_enemies->enemy[i].capacity;
+        view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head] = best_move;
         // Housekeeping
         free(obstacles);
 
@@ -275,14 +279,10 @@ void update_tron_player(
             runtime->last_dir_input.posY == 0)
             break;
 
-        runtime->player.segments.amt++;
-        objectPointResize(&runtime->player.segments);
 
-        shift_entity_segments(&runtime->player);
-
-        move_entity_segments(runtime->player.segments.points, &runtime->last_dir_input, play_width, play_height);
-
-        runtime->player.alive = check_seg_entity_life(&runtime->player.segments, &runtime->last_dir_input, play_width, play_height);
+        move_entity_segments(&runtime->player, &runtime->last_dir_input, play_width, play_height);
+        grow_entity(&runtime->player);
+        runtime->player.alive = check_seg_entity_life(&runtime->player, &runtime->last_dir_input, play_width, play_height);
 
         for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
             int collision = collision_check_both(&runtime->view_enemies.enemy[j].segments, &runtime->player.segments, 0);

@@ -25,7 +25,7 @@ typedef struct Enemy_list Enemy_list;
  */
 void enemy_lightcycle_ai(
     Enemy_list *view_enemies,
-    Point_list *player,
+    Segmented_entity *player,
     int distraction_modifier,
     int play_width,
     int play_height

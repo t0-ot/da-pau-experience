@@ -18,14 +18,19 @@
  */
 typedef struct {
     Point_list segments; /**< Positions and count of the entity's segments. */
-    bool alive;          /**< Whether the entity is currently alive. */
+    int head;            /**< Index of the newest segment (head) */
+    int tail;            /**< Index of the oldest segment (tail) */
+    int capacity;        /**< Total allocated slots in segments.points (e.g. width * height) */
+    bool alive;          /**< Whether the entity is currently alive */
 } Segmented_entity;
 
 /**
  * @brief Shifts each segment into the previous segment's position.
  * @param entity Entity whose segments will be shifted.
  */
-void shift_entity_segments(Segmented_entity *entity);
+void advance_entity_tail(Segmented_entity *entity);
+
+void grow_entity(Segmented_entity *entity);
 
 /**
  * @brief Moves an entity's head in its current direction.
@@ -35,7 +40,7 @@ void shift_entity_segments(Segmented_entity *entity);
  * @param play_height Height of the playable area.
  * @return 1 if movement succeeds, otherwise 0.
  */
-int move_entity_segments(Point *entity, Point *last_dir, int play_width, int play_height);
+int move_entity_segments(Segmented_entity *entity, Point *last_dir, int play_width, int play_height);
 
 /**
  * @brief Checks whether an entity is still alive.
@@ -45,7 +50,7 @@ int move_entity_segments(Point *entity, Point *last_dir, int play_width, int pla
  * @param play_height Height of the playable area.
  * @return 1 if alive, otherwise 0.
  */
-int check_seg_entity_life(Point_list *entity, Point *last_dir, int play_width, int play_height);
+int check_seg_entity_life(Segmented_entity *entity, Point *last_dir, int play_width, int play_height);
 
 /**
  * @brief Resets an entity to a starting position and length.
@@ -55,5 +60,9 @@ int check_seg_entity_life(Point_list *entity, Point *last_dir, int play_width, i
  * @param y Starting vertical coordinate.
  */
 void reset_entity(Segmented_entity *entity, int seg_len, int x, int y);
+
+int segmented_self_collision_check(Segmented_entity *entity);
+
+int segmented_collision_with_pointlist(Segmented_entity *entity, Point_list *objView2, int checkIndexObj2);
 
 #endif // ENTITY_H_INCLUDED
