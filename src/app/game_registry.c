@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-#include "core/game_registry.h"
+#include "app/game_registry.h"
 #include "games/snake/snake.h"
 #include "games/tron/tron.h"
 #include "games/pacman/pacman.h"

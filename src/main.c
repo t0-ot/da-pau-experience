@@ -9,7 +9,7 @@
 #include "engine/session.h"
 #include "engine/renderer/renderer.h"
 #include "engine/input/input.h"
-#include "core/game_registry.h"
+#include "app/game_registry.h"
 
 /**
  * @brief Application entry point.

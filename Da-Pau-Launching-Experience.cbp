@@ -103,7 +103,7 @@
 			<Add directory="include" />
 			<Add directory="external/raylib/src" />
 		</Compiler>
-		<Unit filename="include/core/game_registry.h" />
+		<Unit filename="include/app/game_registry.h" />
 		<Unit filename="include/engine/core/game_input.h" />
 		<Unit filename="include/engine/core/game_module.h" />
 		<Unit filename="include/engine/core/game_types.h" />
@@ -125,7 +125,7 @@
 		<Unit filename="include/games/tron/tron_internal.h" />
 		<Unit filename="include/games/tron/tron_logic.h" />
 		<Unit filename="include/games/tron/tron_render.h" />
-		<Unit filename="src/core/game_registry.c">
+		<Unit filename="src/app/game_registry.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/entity.c">
