@@ -16,8 +16,8 @@
  * @brief Represents a two-dimensional position on the game grid.
  */
 typedef struct {
-    int8_t posX; /**< Horizontal coordinate. */
-    int8_t posY; /**< Vertical coordinate. */
+    int posX; /**< Horizontal coordinate. */
+    int posY; /**< Vertical coordinate. */
 } Point;
 
 /**
