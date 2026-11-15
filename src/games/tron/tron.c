@@ -1,7 +1,4 @@
-
 #include <stdlib.h>
-
-#include "raylib.h"
 
 #include "engine/input/input.h"
 #include "engine/input/movement.h"

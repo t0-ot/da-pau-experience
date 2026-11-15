@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include "raylib.h"
 
 #include "games/snake/snake.h"
 #include "engine/input/movement.h"
