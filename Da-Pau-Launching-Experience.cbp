@@ -6,9 +6,17 @@
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
+		<MakeCommands>
+			<Build command="$make -f $makefile $target" />
+			<CompileFile command="$make -f $makefile $file" />
+			<Clean command="$make -f $makefile clean$target" />
+			<DistClean command="$make -f $makefile distclean$target" />
+			<AskRebuildNeeded command="$make -q -f $makefile $target" />
+			<SilentBuild command="$make -f $makefile $target &gt; $(CMD_NULL)" />
+		</MakeCommands>
 		<Build>
 			<Target title="debug">
-				<Option output="bin/Debug/Da-Pau-Eating-Experience" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug/Da-Pau-Launching-Experience" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -22,9 +30,17 @@
 					<Add library="raylib" />
 					<Add directory="external/raylib/src" />
 				</Linker>
+				<MakeCommands>
+					<Build command="$make -f $makefile $target" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -f $makefile $target &gt; $(CMD_NULL)" />
+				</MakeCommands>
 			</Target>
 			<Target title="release">
-				<Option output="bin/Release/Da-Pau-Eating-Experience" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release/Da-Pau-Launching-Experience" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -39,9 +55,17 @@
 					<Add library="raylib" />
 					<Add directory="external/raylib/src" />
 				</Linker>
+				<MakeCommands>
+					<Build command="$make -f $makefile $target" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -f $makefile $target &gt; $(CMD_NULL)" />
+				</MakeCommands>
 			</Target>
 			<Target title="asan">
-				<Option output="bin/Debug/Da-Pau-Eating-Experience" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug/Da-Pau-Launching-Experience" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -56,6 +80,14 @@
 					<Add library="raylib" />
 					<Add directory="external/raylib/src" />
 				</Linker>
+				<MakeCommands>
+					<Build command="$make -f $makefile $target" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -f $makefile $target &gt; $(CMD_NULL)" />
+				</MakeCommands>
 			</Target>
 		</Build>
 		<Compiler>
