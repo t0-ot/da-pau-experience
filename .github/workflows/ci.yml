@@ -5,13 +5,11 @@ on:
     branches: [ main, master, dev ]
   pull_request:
 
-# Allows the deploy-docs job to publish to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Cancels outdated runs if you push twice quickly
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
@@ -23,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo & Raylib submodule
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -33,7 +31,7 @@ jobs:
           sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev xvfb
 
       - name: Cache compiled Raylib (Linux)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: external/raylib/src/libraylib.a
           key: raylib-linux-${{ hashFiles('external/raylib/src/raylib.h') }}
@@ -45,7 +43,6 @@ jobs:
 
       - name: Run Headless Startup Smoke Test (ASan)
         run: |
-          # Launches the game for 3 seconds in a virtual display to catch startup crashes/leaks
           timeout --preserve-status 3s xvfb-run -a ./bin/Debug/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
 
       - name: Package Linux Release
@@ -55,7 +52,7 @@ jobs:
           cp -r src/assets dist/linux/ 2>/dev/null || true
 
       - name: Upload Linux Playable Build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Da-Pau-Launching-Experience-Linux
           path: dist/linux
@@ -69,7 +66,7 @@ jobs:
         shell: msys2 {0}
     steps:
       - name: Checkout repo & Raylib submodule
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -77,12 +74,13 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
+          suppress-deprecation-warnings: true
           install: >-
+            make
             mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-make
 
       - name: Cache compiled Raylib (Windows)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: external/raylib/src/libraylib.a
           key: raylib-windows-${{ hashFiles('external/raylib/src/raylib.h') }}
@@ -99,7 +97,7 @@ jobs:
           cp -r src/assets dist/windows/ 2>/dev/null || true
 
       - name: Upload Windows Playable Build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Da-Pau-Launching-Experience-Windows
           path: dist/windows
@@ -109,7 +107,7 @@ jobs:
     name: Cppcheck Static Analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
       - name: Scan src/ and include/ for C bugs
@@ -121,15 +119,15 @@ jobs:
     name: Generate Doxygen Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Doxygen & Graphviz
         run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
       - name: Run Doxygen
         run: doxygen docs/Doxyfile
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: html
+          path: docs/html
 
   # 5. Auto-Publish Docs to GitHub Pages (only on main/master push)
   deploy-docs:
