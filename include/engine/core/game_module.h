@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include "game_input.h"
+#include "engine/core/engine_context.h"
 
 /**
  * @brief Describes the result of a game module's update operation.
@@ -35,7 +36,7 @@ typedef struct {
      * @brief Initializes the module's runtime state.
      * @param state Pointer to the allocated runtime state.
      */
-    void (*init)(void *state);
+    void (*init)(void *state, EngineContext *engine);
 
     /**
      * @brief Updates the module's game logic.
@@ -48,20 +49,21 @@ typedef struct {
     ModuleAction (*update)(
         void *state,
         const GameInput *input,
-        float delta_time
+        float delta_time,
+        EngineContext *engine
     );
 
     /**
      * @brief Draws the current state of the module.
      * @param state Pointer to the module's runtime state.
      */
-    void (*draw)(void *state);
+    void (*draw)(void *state, EngineContext *engine);
 
     /**
      * @brief Releases resources owned by the module's runtime state.
      * @param state Pointer to the module's runtime state.
      */
-    void (*cleanup)(void *state);
+    void (*cleanup)(void *state, EngineContext *engine);
 
 } GameModule;
 

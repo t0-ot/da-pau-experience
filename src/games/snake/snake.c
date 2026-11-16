@@ -2,6 +2,7 @@
 
 #include "games/snake/snake.h"
 #include "engine/input/movement.h"
+#include "engine/core/engine_context.h"
 #include "games/snake/snake_logic.h"
 #include "games/snake/snake_render.h"
 #include "games/snake/snake_internal.h"
@@ -14,8 +15,13 @@
 #define SNAKE_MOVE_INTERVAL 0.12f
 #define MAX_INPUT_BUFFER 5
 
-static void snake_init(void *state) {
+static void snake_init(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
+
+    runtime->texture.assets = asset_manager_create_group(engine->assets);
+    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "src/assets/apple.png");
+
+    runtime->texture.fruit_texture = fruit.handle;
 
     runtime->play_width = SNAKE_WIDTH;
     runtime->play_height = SNAKE_HEIGHT;
@@ -59,7 +65,7 @@ static void snake_init(void *state) {
     spawnFruit(runtime->normalFruitSet.pointList, 0, &runtime->snake, runtime->play_width, runtime->play_height);
 }
 
-static ModuleAction snake_update(void *state, const GameInput *input, float delta_time) {
+static ModuleAction snake_update(void *state, const GameInput *input, float delta_time, EngineContext *engine) {
     snake_runtime *runtime = state;
 
     if (runtime == NULL || input == NULL ||
@@ -100,7 +106,9 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
             }
 
             runtime->snake.alive = check_seg_entity_life(&runtime->snake, &runtime->last_dir_input, runtime->play_width, runtime->play_height);
-        } else {
+        }
+
+        if (!runtime->snake.alive){
             handleDeath(&runtime->snake, &runtime->normalFruitSet.pointList, &runtime->last_dir_input, runtime->play_width, runtime->play_height, &runtime->is_moving, &runtime->pending_growth);
             runtime->move_timer = 0.0f;
         }
@@ -109,29 +117,23 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
     return MODULE_CONTINUE;
 }
 
-static void snake_draw(void *state) {
+static void snake_draw(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
 
     if (runtime == NULL || !runtime->snake.segments.points ||
         !runtime->normalFruitSet.pointList.points)
         return;
 
-    snake_render_game(
-        &runtime->snake,
-        &runtime->normalFruitSet,
-        runtime->snake.segments.amt-2,
-        runtime->currentHiScore,
-        runtime->play_width,
-        runtime->play_height
-    );
+    snake_render_game(runtime, engine);
 }
 
-static void snake_cleanup(void *state) {
+static void snake_cleanup(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
 
     if (runtime == NULL)
         return;
 
+    asset_manager_destroy_group(engine->assets, runtime->texture.assets);
     free(runtime->snake.segments.points);
     runtime->snake.segments.points = NULL;
 

@@ -9,6 +9,7 @@
 #include "engine/session.h"
 #include "engine/renderer/renderer.h"
 #include "engine/input/input.h"
+#include "engine/assets/asset_manager.h"
 #include "app/game_registry.h"
 
 /**
@@ -28,12 +29,25 @@ int main(void) {
     if (!renderer_init(1280, 720, "Da Pau Launching Experience"))
         return EXIT_FAILURE;
 
+    /* Create engine services. */
+    AssetManager *assets = asset_manager_create();
+
+    if (assets == NULL) {
+        renderer_close();
+        return EXIT_FAILURE;
+    }
+
+    /* Assemble the engine context. */
+    EngineContext engine = {
+        .assets = assets
+    };
+
     /* Initialize centralized input handling. */
     input_init();
 
     /* Initialize the game session. */
     GameSession session;
-    session_init(&session);
+    session_init(&session, &engine);
 
     /* Begin with the main menu. */
     const Game_Entry *next_game = game_registry_fetch_menu();
@@ -59,6 +73,7 @@ int main(void) {
 
     /* Release session and graphics resources. */
     session_cleanup(&session);
+    asset_manager_destroy(assets);
     renderer_close();
 
     return EXIT_SUCCESS;

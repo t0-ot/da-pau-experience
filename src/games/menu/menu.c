@@ -62,7 +62,7 @@ static const MenuConfig MENU_REGISTRY[] = {
  *
  * @param state Pointer to allocated menu runtime memory.
  */
-static void menu_init(void *state) {
+static void menu_init(void *state, EngineContext *engine) {
     MenuRuntime *runtime = state;
 
     runtime->highlighted_choice = 0;
@@ -86,7 +86,8 @@ static void menu_init(void *state) {
 static ModuleAction menu_update(
     void *state,
     const GameInput *input,
-    float delta_time
+    float delta_time,
+    EngineContext *engine
 ) {
     MenuRuntime *runtime = state;
 
@@ -140,7 +141,7 @@ static ModuleAction menu_update(
  *
  * @param state Pointer to menu runtime state.
  */
-static void menu_draw(void *state) {
+static void menu_draw(void *state, EngineContext *engine) {
     MenuRuntime *runtime = state;
 
     if (runtime == NULL)

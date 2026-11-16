@@ -9,6 +9,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "engine/assets/asset_manager.h"
 #include <stdbool.h>
 
 /**
@@ -56,5 +57,14 @@ void renderer_end_frame(void);
  * @return The frame time in seconds.
  */
 float renderer_get_delta_time(void);
+
+bool renderer_draw_texture(
+    const AssetManager *manager,
+    TextureHandle texture,
+    float x,
+    float y,
+    float width,
+    float height
+);
 
 #endif // RENDERER_H

@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 #include "engine/core/game_module.h"
+#include "engine/core/engine_context.h"
 
 /**
  * @brief Holds the state of the currently active game session.
@@ -22,6 +23,7 @@
 typedef struct {
     const GameModule *current_module; /**< Currently active game module. */
     void *current_state;              /**< Runtime state allocated for the active module. */
+    EngineContext *engine;
     bool is_running;                  /**< Whether the session is still running. */
 } GameSession;
 
@@ -30,7 +32,7 @@ typedef struct {
  *
  * @param session Pointer to the session to initialize.
  */
-void session_init(GameSession *session);
+void session_init(GameSession *session, EngineContext *engine);
 
 /**
  * @brief Switches the active game module.

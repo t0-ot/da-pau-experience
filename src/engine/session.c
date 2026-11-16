@@ -4,12 +4,13 @@
 #include "engine/input/input.h"
 #include "engine/renderer/renderer.h"
 
-void session_init(GameSession *session) {
+void session_init(GameSession *session, EngineContext *engine) {
     if (session == NULL)
         return;
 
     session->current_module = NULL;
     session->current_state = NULL;
+    session->engine = engine;
     session->is_running = true;
 }
 
@@ -27,7 +28,7 @@ bool session_set_module(
 
     if (session->current_module != NULL) {
         if (session->current_module->cleanup != NULL)
-            session->current_module->cleanup(session->current_state);
+            session->current_module->cleanup(session->current_state, session->engine);
 
         free(session->current_state);
     }
@@ -36,7 +37,7 @@ bool session_set_module(
     session->current_state = new_state;
 
     if (module->init != NULL)
-        module->init(session->current_state);
+        module->init(session->current_state, session->engine);
 
     return true;
 }
@@ -59,7 +60,8 @@ ModuleAction session_run(GameSession *session) {
         ModuleAction action = session->current_module->update(
             session->current_state,
             &input,
-            delta_time
+            delta_time,
+            session->engine
         );
 
         if (action != MODULE_CONTINUE) {
@@ -72,7 +74,7 @@ ModuleAction session_run(GameSession *session) {
         renderer_begin_frame();
 
         if (session->current_module->draw != NULL)
-            session->current_module->draw(session->current_state);
+            session->current_module->draw(session->current_state, session->engine);
 
         renderer_end_frame();
     }
@@ -89,7 +91,7 @@ void session_cleanup(GameSession *session) {
 
     if (session->current_module != NULL &&
         session->current_module->cleanup != NULL) {
-        session->current_module->cleanup(session->current_state);
+        session->current_module->cleanup(session->current_state, session->engine);
     }
 
     free(session->current_state);

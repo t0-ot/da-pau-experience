@@ -8,6 +8,8 @@
 #define SNAKE_RENDER_H
 
 #include "engine/entity.h"
+#include "engine/core/engine_context.h"
+#include "games/snake/snake_internal.h"
 #include "games/snake/snake_logic.h"
 
 /**
@@ -20,6 +22,6 @@
  * @param play_width Width of the playable area.
  * @param play_height Height of the playable area.
  */
-void snake_render_game(const Segmented_entity *snake, const fruitData *fruit,int score, int high_score, int play_width, int play_height);
+void snake_render_game(snake_runtime *snake_data, EngineContext *engine);
 
 #endif // SNAKE_RENDER_H
