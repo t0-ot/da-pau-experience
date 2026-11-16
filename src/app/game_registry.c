@@ -5,6 +5,7 @@
 #include "games/snake/snake.h"
 #include "games/tron/tron.h"
 #include "games/pacman/pacman.h"
+#include "games/fruit_catcher/fruit_catcher.h"
 
 /**
  * @brief Registry table containing all playable game modules.
@@ -12,7 +13,9 @@
 static const Game_Entry GAME_ENTRIES[] = {
     { MENU_CHOICE_PLAY_SNAKE, &snake_module },
     { MENU_CHOICE_PLAY_TRON,  &tron_module },
-    { MENU_CHOICE_PLAY_PACMAN, &pacman_module}
+    { MENU_CHOICE_PLAY_PACMAN, &pacman_module},
+    { MENU_CHOICE_PLAY_FRUITCATCHER, &catcher_module},
+
 };
 
 /**
