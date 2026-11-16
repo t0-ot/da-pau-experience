@@ -6,6 +6,17 @@
 #include "games/tron/tron_internal.h"
 #include "engine/utils.h"
 
+const char *level_names[] = {
+    "CMSC-10",
+    "CMSC-11",
+    "CMSC-56",
+    "KAS-1",
+    "MATH-18",
+    "PE-1",
+    "SCI-10",
+    "NSTP-1"
+};
+
 /**
  * @brief Represents a coordinate used by the flood-fill algorithm.
  *
@@ -331,7 +342,7 @@ int all_enemies_dead(tron_runtime *runtime) {
 }
 
 const char *get_level_name(int level) {
-    if (level < 1 || level > LEVEL_COUNT)
+    if (level < 1 || level > (int)LEVEL_COUNT)
         return "UNKNOWN";
 
     return level_names[level - 1];
