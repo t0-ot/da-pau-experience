@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "games/fruit_catcher/fruit_catcher.h"
+#include "engine/core/engine_context.h"
+#include "engine/renderer/renderer.h"
 #include "engine/core/game_input.h"
 #include "engine/core/game_types.h"
 #include "engine/utils.h"
@@ -9,7 +11,14 @@
 #define CATCHER_MOVEMENT_SPEED 0.12f
 #define FRUIT_SPEED 0.12f
 
+typedef struct {
+    AssetGroupHandle assets;
+
+    TextureHandle fruit_texture;
+} fruit_catcher_textures;
+
 typedef struct{
+    fruit_catcher_textures textures;
     Point_list fruits;
     int score;
     float fruit_timer;
@@ -25,8 +34,13 @@ bool spawn_catcher_fruit(Point_list *fruits, int fruitNumber, int play_width, in
     fruits->points[fruitNumber].posY = 0;
 }
 
-static void catcher_init(void *state) {
+static void catcher_init(void *state, EngineContext *engine) {
     catcher_runtime *runtime = state;
+
+    runtime->textures.assets = asset_manager_create_group(engine->assets);
+
+    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/apple.png");
+    runtime->textures.fruit_texture = fruit.handle;
 
     runtime->score = 0;
     runtime->fruits.amt = 1;
@@ -41,7 +55,7 @@ static void catcher_init(void *state) {
     runtime->catcher.posY = 650;
 }
 
-static ModuleAction catcher_upd(void *state, const GameInput *input, float delta_time) {
+static ModuleAction catcher_upd(void *state, const GameInput *input, float delta_time, EngineContext *engine) {
     catcher_runtime *runtime = state;
 
     if (input->back)
@@ -80,19 +94,20 @@ static ModuleAction catcher_upd(void *state, const GameInput *input, float delta
     return MODULE_CONTINUE;
 }
 
-static void catcher_draw(void *state) {
+static void catcher_draw(void *state, EngineContext *engine) {
     catcher_runtime *runtime = state;
 
     Color GENESIS = {0, 255, 100, 255};
 
     DrawRectangle(runtime->catcher.posX, runtime->catcher.posY, 100, 10, GENESIS);
     for (int i = 0; i < runtime->fruits.amt; i++)
-        DrawRectangle(runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100, RED);
+        renderer_draw_texture(engine->assets, runtime->textures.fruit_texture, runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100);
+//      DrawRectangle(runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100, RED);
     DrawText(TextFormat("Score: %d", runtime->score), GetScreenWidth()/2 - (MeasureText("Score: ", 35)/2)+300, 150, 35, WHITE);
     DrawText("Fruit Catcher", GetScreenWidth()/2 - (MeasureText("Fruit Catcher", 35)/2), 150, 35, WHITE);
 }
 
-static void catcher_cleanup(void *state) {
+static void catcher_cleanup(void *state, EngineContext *engine) {
     catcher_runtime *runtime = state;
 }
 
