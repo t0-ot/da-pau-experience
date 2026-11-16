@@ -104,6 +104,9 @@
 			<Add directory="external/raylib/src" />
 		</Compiler>
 		<Unit filename="include/app/game_registry.h" />
+		<Unit filename="include/engine/assets/asset_manager.h" />
+		<Unit filename="include/engine/assets/texture.h" />
+		<Unit filename="include/engine/core/engine_context.h" />
 		<Unit filename="include/engine/core/game_input.h" />
 		<Unit filename="include/engine/core/game_module.h" />
 		<Unit filename="include/engine/core/game_types.h" />
@@ -128,6 +131,13 @@
 		<Unit filename="src/app/game_registry.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/engine/assets/asset_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/assets/texture.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/assets/texture_backend.h" />
 		<Unit filename="src/engine/entity.c">
 			<Option compilerVar="CC" />
 		</Unit>
