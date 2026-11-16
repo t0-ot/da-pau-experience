@@ -1,6 +1,10 @@
 #include "engine/renderer/renderer.h"
 
+#include "../assets/asset_manager_internal.h"
+#include "../assets/texture_backend.h"
 #include "raylib.h"
+
+#include <stddef.h>
 
 bool renderer_init(int width, int height, const char *title) {
     SetConfigFlags(FLAG_VSYNC_HINT);
@@ -31,4 +35,25 @@ void renderer_end_frame(void) {
 
 float renderer_get_delta_time(void) {
     return GetFrameTime();
+}
+
+bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, float x, float y, float width, float height) {
+    if (width <= 0 || height <= 0)
+        return false;
+
+    TextureResource *resource =
+        asset_manager_resolve_texture(manager, texture);
+
+    if (resource == NULL)
+        return false;
+
+    texture_backend_draw(
+        resource,
+        x,
+        y,
+        width,
+        height
+    );
+
+    return true;
 }

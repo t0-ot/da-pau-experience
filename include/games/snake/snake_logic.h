@@ -8,26 +8,9 @@
 #define SNAKE_LOGIC_H
 
 #include "engine/entity.h"
+#include "games/snake/snake_internal.h"
 
 typedef struct snake_runtime snake_runtime;
-
-/**
- * @brief Properties of the standard fruit.
- */
-typedef struct {
-    int8_t scoreAmt; /**< Number of segments added when the fruit is eaten. */
-} defaultFruit;
-
-/**
- * @brief Stores fruit gameplay data and its positions.
- *
- * Rendering information is deliberately excluded.
- */
-typedef struct {
-    void *fruitType; /**< Pointer to the specific fruit type and its properties. */
-    void (*onEat)(void *fruit, Segmented_entity *snake, int *pending_growth); /**< Eating behavior assigned to the fruit. */
-    Point_list pointList; /**< Positions of the fruit instances. */
-} fruitData;
 
 
 /**

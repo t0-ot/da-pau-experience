@@ -7,14 +7,14 @@ typedef struct{
     Point mc;
 } pacman_runtime;
 
-static void pacman_init(void *state) {
+static void pacman_init(void *state, EngineContext *engine) {
     pacman_runtime *runtime = state;
 
     runtime->mc.posX = 10;
     runtime->mc.posY = 10;
 }
 
-static ModuleAction pacman_upd(void *state, const GameInput *input, float delta_time) {
+static ModuleAction pacman_upd(void *state, const GameInput *input, float delta_time, EngineContext *engine) {
     pacman_runtime *runtime = state;
 
     runtime->mc.posX++;
@@ -22,7 +22,7 @@ static ModuleAction pacman_upd(void *state, const GameInput *input, float delta_
 
 }
 
-static void pacman_draw(void *state) {
+static void pacman_draw(void *state, EngineContext *engine) {
      pacman_runtime *runtime = state;
 
      DrawRectangle(0, 0, 100, 10, RED);
@@ -30,7 +30,7 @@ static void pacman_draw(void *state) {
 
 }
 
-static void pacman_cleanup(void *state) {
+static void pacman_cleanup(void *state, EngineContext *engine) {
      pacman_runtime *runtime = state;
 
 }

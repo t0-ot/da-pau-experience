@@ -10,7 +10,7 @@
 #define TRON_MOVE_INTERVAL 0.10f
 #define MAX_INPUT_BUFFER 5
 
-static void tron_init(void *state) {
+static void tron_init(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
 
     runtime->player.segments.amt = 1;
@@ -61,7 +61,8 @@ static void tron_init(void *state) {
 static ModuleAction tron_update(
     void *state,
     const GameInput *input,
-    float delta_time
+    float delta_time,
+    EngineContext *engine
 ) {
     tron_runtime *runtime = state;
 
@@ -115,7 +116,7 @@ static ModuleAction tron_update(
     return MODULE_CONTINUE;
 }
 
-static void tron_draw(void *state) {
+static void tron_draw(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
     if (runtime == NULL || runtime->player.segments.points == NULL)
         return;
@@ -130,7 +131,7 @@ static void tron_draw(void *state) {
     );
 }
 
-static void tron_cleanup(void *state) {
+static void tron_cleanup(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
 
     if (runtime == NULL)
