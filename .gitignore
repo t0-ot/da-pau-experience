@@ -8,3 +8,8 @@ bin/
 *.layout
 *.depend
 *.cscope_file_list
+
+html/
+docs/html/
+latex/
+docs/latex/

@@ -1,0 +1,147 @@
+name: Build, Test & Deploy Docs
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+
+# Allows the deploy-docs job to publish to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Cancels outdated runs if you push twice quickly
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. Linux Compile + ASan Memory/Crash Smoke Test
+  linux-build-and-test:
+    name: Linux Build & ASan Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo & Raylib submodule
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Linux X11/OpenGL & Xvfb dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev xvfb
+
+      - name: Cache compiled Raylib (Linux)
+        uses: actions/cache@v4
+        with:
+          path: external/raylib/src/libraylib.a
+          key: raylib-linux-${{ hashFiles('external/raylib/src/raylib.h') }}
+
+      - name: Compile Release & ASan Debug
+        run: |
+          make release
+          make asan
+
+      - name: Run Headless Startup Smoke Test (ASan)
+        run: |
+          # Launches the game for 3 seconds in a virtual display to catch startup crashes/leaks
+          timeout --preserve-status 3s xvfb-run -a ./bin/Debug/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
+
+      - name: Package Linux Release
+        run: |
+          mkdir -p dist/linux
+          cp bin/Release/Da-Pau-Launching-Experience dist/linux/
+          cp -r src/assets dist/linux/ 2>/dev/null || true
+
+      - name: Upload Linux Playable Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Da-Pau-Launching-Experience-Linux
+          path: dist/linux
+
+  # 2. Windows Cross-Platform Build & Playable .zip
+  windows-build:
+    name: Windows Build (.exe)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Checkout repo & Raylib submodule
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSYS2 MinGW64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+
+      - name: Cache compiled Raylib (Windows)
+        uses: actions/cache@v4
+        with:
+          path: external/raylib/src/libraylib.a
+          key: raylib-windows-${{ hashFiles('external/raylib/src/raylib.h') }}
+
+      - name: Compile Windows Debug & Release
+        run: |
+          make debug
+          make release
+
+      - name: Package Windows Release
+        run: |
+          mkdir -p dist/windows
+          cp bin/Windows/Release/Da-Pau-Launching-Experience.exe dist/windows/
+          cp -r src/assets dist/windows/ 2>/dev/null || true
+
+      - name: Upload Windows Playable Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Da-Pau-Launching-Experience-Windows
+          path: dist/windows
+
+  # 3. C Static Analysis (Bug & Memory Scanner)
+  static-analysis:
+    name: Cppcheck Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+      - name: Scan src/ and include/ for C bugs
+        run: |
+          cppcheck --enable=warning,performance,portability --suppress=missingIncludeSystem -I include src/
+
+  # 4. Build Doxygen Docs
+  build-docs:
+    name: Generate Doxygen Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Doxygen & Graphviz
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+      - name: Run Doxygen
+        run: doxygen docs/Doxyfile
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: html
+
+  # 5. Auto-Publish Docs to GitHub Pages (only on main/master push)
+  deploy-docs:
+    name: Deploy Docs to GitHub Pages
+    needs: build-docs
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
