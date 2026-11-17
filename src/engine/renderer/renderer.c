@@ -84,3 +84,32 @@ bool renderer_draw_texture_region(const AssetManager *manager, TextureHandle tex
 
     return true;
 }
+
+bool renderer_draw_texture_region(
+    const AssetManager *manager,
+    TextureHandle texture,
+    Rectangle source,
+    Rectangle destination,
+    Vector2 origin,
+    float rotation
+) {
+    if (source.width <= 0 || source.height <= 0 ||
+        destination.width <= 0 || destination.height <= 0)
+        return false;
+
+    TextureResource *resource =
+        asset_manager_resolve_texture(manager, texture);
+
+    if (resource == NULL)
+        return false;
+
+    texture_backend_draw_region(
+        resource,
+        source,
+        destination,
+        origin,
+        rotation
+    );
+
+    return true;
+}
