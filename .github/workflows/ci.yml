@@ -2,7 +2,7 @@ name: Build, Test & Deploy Docs
 
 on:
   push:
-    branches: [ main, master, dev ]
+    branches: [ main ]
   pull_request:
 
 permissions:
