@@ -110,8 +110,13 @@ jobs:
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
       - name: Scan src/ and include/ for C bugs
-        run: |
-          cppcheck --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction --error-exitcode=1 -I include src/
+	run: |
+          cppcheck --enable=all --std=c17 --check-level=exhaustive \
+            --suppress=missingIncludeSystem \
+            --suppress=missingInclude \
+            --suppress=constParameterCallback \
+            --error-exitcode=1 -I include src/
+
 
   # 4. Build Doxygen Docs
   build-docs:
