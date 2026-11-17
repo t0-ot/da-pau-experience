@@ -10,6 +10,7 @@
 #define RENDERER_H
 
 #include "engine/assets/asset_manager.h"
+#include "raylib.h"
 #include <stdbool.h>
 
 /**
@@ -65,6 +66,15 @@ bool renderer_draw_texture(
     float y,
     float width,
     float height
+);
+
+bool renderer_draw_texture_region(
+    const AssetManager *manager,
+    TextureHandle texture,
+    Rectangle source,
+    Rectangle destination,
+    Vector2 origin,
+    float rotation
 );
 
 #endif // RENDERER_H
