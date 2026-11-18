@@ -36,6 +36,6 @@ extern const GameModule menu_module;
  * @param state Pointer to the menu's runtime state.
  * @return The selected menu choice, or MENU_CHOICE_NONE if state is NULL.
  */
-menu_choice_type menu_get_exit_choice(void *state);
+menu_choice_type menu_get_exit_choice(const void *state);
 
 #endif /* MENU_H */

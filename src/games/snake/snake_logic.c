@@ -14,7 +14,7 @@ void handleDeath(Segmented_entity *snake1, Point_list *fruit, Point *lastDirInpu
     spawnFruit(*fruit,  0, snake1, play_width, play_height);
 }
 
-void spawnFruit(Point_list fruitView, int fruitNumber, Segmented_entity *snake, int spawnWidth, int spawnHeight) {
+void spawnFruit(Point_list fruitView, int fruitNumber, const Segmented_entity *snake, int spawnWidth, int spawnHeight) {
     do {
         fruitView.points[fruitNumber].posX = (rand() % (spawnWidth - 2)) + 1;
         fruitView.points[fruitNumber].posY = (rand() % (spawnHeight - 2)) + 1;

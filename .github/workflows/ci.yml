@@ -115,7 +115,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y cppcheck
 
       - name: Scan src/ and include/ for C bugs
-        run: cppcheck --enable=all --std=c17 --check-level=exhaustive --suppress=missingIncludeSystem --suppress=constParameterCallback --suppress=*:*external/raylib/* --error-exitcode=1 -I include -I external/raylib/src src/
+        run: cppcheck --enable=all --std=c17 --check-level=exhaustive --inline-supper --suppress=missingIncludeSystem --suppress=constParameterCallback --suppress=*:*external/raylib/* --error-exitcode=1 -I include -I external/raylib/src src/
 
 
 

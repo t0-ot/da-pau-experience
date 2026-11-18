@@ -48,7 +48,7 @@ void handleDeath(Segmented_entity *snake1, Point_list *fruit, Point *lastDirInpu
  * @param spawnWidth Width of the play area.
  * @param spawnHeight Height of the play area.
  */
-void spawnFruit(Point_list fruitView, int fruitNumber, Segmented_entity *snake, int spawnWidth, int spawnHeight);
+void spawnFruit(Point_list fruitView, int fruitNumber, const Segmented_entity *snake, int spawnWidth, int spawnHeight);
 
 /**
  * @brief Applies the standard fruit's score to the snake.

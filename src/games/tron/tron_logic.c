@@ -77,8 +77,8 @@ static int check_breathing_room(Point start, Point *obstacles, int obstacle_coun
         space_count++;
 
         // Explore all 4 adjacent neighbors (North, South, East, West)
-        int dx[] = {0, 0, 1, -1};
-        int dy[] = {1, -1, 0, 0};
+        const int dx[] = {0, 0, 1, -1};
+        const int dy[] = {1, -1, 0, 0};
 
         for (int i = 0; i < 4; i++) {
             int nx = curr.x + dx[i];
@@ -191,7 +191,7 @@ void enemy_lightcycle_ai(Enemy_list *view_enemies, Segmented_entity *player, int
 
         // Group options into an array so we can loop through them easily
         Point options[] = {move_up, move_down, move_left, move_right};
-        int scores[]    = {up_score, down_score, left_score, right_score};
+        const int scores[]    = {up_score, down_score, left_score, right_score};
 
         int best_score = -1;
         int best_dist  = 999999;
@@ -301,6 +301,7 @@ void update_tron_player(
         runtime->player.alive = check_seg_entity_life(&runtime->player, &runtime->last_dir_input, play_width, play_height);
 
         for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
+            //TODO FIX ENEMY COLLISION CHECK WITH PROPER RING BUFFER COLLISION CHECK
             int collision = collision_check_both(&runtime->view_enemies.enemy[j].segments, &runtime->player.segments, 0);
 
             if (collision > 0)

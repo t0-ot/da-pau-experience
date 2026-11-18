@@ -7,7 +7,7 @@
 
 #define CELL_SIZE 30
 
-void snake_render_game(snake_runtime *snake_data, EngineContext *engine) {
+void snake_render_game(snake_runtime *snake_data, const EngineContext *engine) {
     int board_width = snake_data->play_width * CELL_SIZE;
     int board_height = snake_data->play_height * CELL_SIZE;
 
