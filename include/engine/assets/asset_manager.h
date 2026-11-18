@@ -55,9 +55,4 @@ TextureLoadResult asset_manager_load_texture(
     const char *path
 );
 
-bool asset_manager_is_texture_valid(
-    const AssetManager *manager,
-    TextureHandle texture
-);
-
 #endif // ASSET_MANAGER_H

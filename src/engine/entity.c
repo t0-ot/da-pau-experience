@@ -49,7 +49,7 @@ static int segmented_self_collision_check(const Segmented_entity *entity) {
     return 0;
 }
 
-int check_seg_entity_life(Segmented_entity *entity, const Point *last_dir, int play_width, int play_height) {
+int check_seg_entity_life(const Segmented_entity *entity, const Point *last_dir, int play_width, int play_height) {
     if (last_dir->posX == 0 && last_dir->posY == 0)
         return 1;
 

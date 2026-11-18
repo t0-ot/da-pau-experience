@@ -338,12 +338,12 @@ void advance_tron_level(tron_runtime *runtime, int play_width) {
     runtime->enemy_distracted = (runtime->enemy_distracted-distract_deduct == 0) ? 0 : runtime->enemy_distracted-distract_deduct;
 }
 
-int all_enemies_dead(tron_runtime *runtime) {
+bool all_enemies_dead(const tron_runtime *runtime) {
     for (int i = 0; i < runtime->view_enemies.enemy_amt; i++) {
         if (runtime->view_enemies.enemy[i].alive)
-            return 0;
+            return false;
     }
-    return 1;
+    return true;
 }
 
 const char *get_level_name(int level) {

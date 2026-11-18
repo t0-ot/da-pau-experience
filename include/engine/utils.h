@@ -50,26 +50,6 @@ int objectPointResize(Point_list *data);
 int calc_point_dist(Point *current_coord, Point *target_coord);
 
 /**
- * @brief Calculates the horizontal position for centered text.
- *
- * @param left_wall Left boundary of the region.
- * @param right_wall Right boundary of the region.
- * @param text_length Width of the text.
- * @return The horizontal coordinate at which the text should begin.
- */
-int get_centered_x(int left_wall, int right_wall, int text_length);
-
-/**
- * @brief Calculates the vertical position for centered text.
- *
- * @param top_wall Top boundary of the region.
- * @param bottom_wall Bottom boundary of the region.
- * @param text_length Height of the text.
- * @return The vertical coordinate at which the text should begin.
- */
-int get_centered_y(int top_wall, int bottom_wall, int text_length);
-
-/**
  * @brief Checks whether a point in the second list overlaps a point in the first list.
  *
  * Searches the first list starting at the specified index and compares

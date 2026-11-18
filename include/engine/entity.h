@@ -50,7 +50,7 @@ int move_entity_segments(Segmented_entity *entity, const Point *last_dir, int pl
  * @param play_height Height of the playable area.
  * @return 1 if alive, otherwise 0.
  */
-int check_seg_entity_life(Segmented_entity *entity, const Point *last_dir, int play_width, int play_height);
+int check_seg_entity_life(const Segmented_entity *entity, const Point *last_dir, int play_width, int play_height);
 
 /**
  * @brief Resets an entity to a starting position and length.
