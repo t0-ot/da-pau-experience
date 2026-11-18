@@ -40,7 +40,7 @@ void grow_entity(Segmented_entity *entity);
  * @param play_height Height of the playable area.
  * @return 1 if movement succeeds, otherwise 0.
  */
-int move_entity_segments(Segmented_entity *entity, Point *last_dir, int play_width, int play_height);
+int move_entity_segments(Segmented_entity *entity, const Point *last_dir, int play_width, int play_height);
 
 /**
  * @brief Checks whether an entity is still alive.
@@ -50,7 +50,7 @@ int move_entity_segments(Segmented_entity *entity, Point *last_dir, int play_wid
  * @param play_height Height of the playable area.
  * @return 1 if alive, otherwise 0.
  */
-int check_seg_entity_life(Segmented_entity *entity, Point *last_dir, int play_width, int play_height);
+int check_seg_entity_life(Segmented_entity *entity, const Point *last_dir, int play_width, int play_height);
 
 /**
  * @brief Resets an entity to a starting position and length.
@@ -61,8 +61,6 @@ int check_seg_entity_life(Segmented_entity *entity, Point *last_dir, int play_wi
  */
 void reset_entity(Segmented_entity *entity, int seg_len, int x, int y);
 
-int segmented_self_collision_check(Segmented_entity *entity);
-
-int segmented_collision_with_pointlist(Segmented_entity *entity, Point_list *objView2, int checkIndexObj2);
+int segmented_collision_with_pointlist(const Segmented_entity *entity, const Point_list *objView2, int checkIndexObj2);
 
 #endif // ENTITY_H_INCLUDED

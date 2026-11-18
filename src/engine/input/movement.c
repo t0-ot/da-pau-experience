@@ -1,7 +1,7 @@
 #include "engine/input/movement.h"
 #include "engine/core/game_types.h"
 
-void latch_movement_handler(Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
+void latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
     int dx = 0, dy = 0;
 
     if (input->up)    dy = -1;

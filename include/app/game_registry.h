@@ -38,14 +38,6 @@ const Game_Entry *game_registry_get_next(
 );
 
 /**
- * @brief Retrieves a registered game using its menu selection.
- *
- * @param choice Menu selection to look up.
- * @return Matching registry entry, or NULL if no match exists.
- */
-const Game_Entry *game_registry_get_entry(menu_choice_type choice);
-
-/**
  * @brief Retrieves the application's starting menu module.
  *
  * @return Pointer to the menu launcher entry.

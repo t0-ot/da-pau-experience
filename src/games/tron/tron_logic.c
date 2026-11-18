@@ -28,12 +28,12 @@ typedef struct {
 } FillPoint;
 
 // Helper function to check if a specific point matches another
-bool same_point(Point a, Point b) {
+static bool same_point(Point a, Point b) {
     return a.posX == b.posX && a.posY == b.posY;
 }
 
 // Check if a point hits any current light trails or player segments
-bool point_is_obstacle(Point *obstacles, int count, Point point) {
+static bool point_is_obstacle(Point *obstacles, int count, Point point) {
     for (int i = 0; i < count; i++) {
         if (same_point(obstacles[i], point)) {
             return true;
@@ -43,7 +43,7 @@ bool point_is_obstacle(Point *obstacles, int count, Point point) {
 }
 
 // Bounded Flood Fill algorithm to grade available open territory
-int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
+static int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
     // 1. Instantly fail if the starting tile is out-of-bounds or an immediate crash
     if (start.posX < 0 || start.posX >= play_width || start.posY < 0 || start.posY >= play_height) {
         return 0;
@@ -253,7 +253,12 @@ static void start_level_intro(tron_runtime *runtime) {
     runtime->intro_timer = 3.0f;
 }
 
-void handle_player_death(tron_runtime *runtime, int play_width) {
+/**
+ * @brief Resets the player and enemy state after player death.
+ * @param runtime Pointer to the Tron runtime state.
+ * @param play_width Width of the playable area in grid cells.
+ */
+static void handle_player_death(tron_runtime *runtime, int play_width) {
         runtime->enemy_distracted = 75;
         runtime->enemy_move_timer = 0.0f,
         runtime->enemy_move_interval = 0.20f,

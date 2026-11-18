@@ -32,13 +32,6 @@ void enemy_lightcycle_ai(
 );
 
 /**
- * @brief Resets the player and enemy state after player death.
- * @param runtime Pointer to the Tron runtime state.
- * @param play_width Width of the playable area in grid cells.
- */
-void handle_player_death(tron_runtime *runtime, int play_width);
-
-/**
  * @brief Updates the player's trail and movement.
  * @param runtime Pointer to the Tron runtime state.
  * @param dx Horizontal movement direction.
