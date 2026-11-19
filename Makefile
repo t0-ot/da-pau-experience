@@ -16,15 +16,17 @@ ifeq ($(OS),Windows_NT)
 	# -mwindows hides the console window in Release (matches use_console_runner="0")
 	WIN_GUI_FLAG = $(if $(filter release,$(MODE)),-mwindows,)
 	LDFLAGS = -L$(RAYLIB_DIR) -lraylib -lopengl32 -lgdi32 -lwinmm -static-libgcc $(WIN_GUI_FLAG)
+	MKDIR = if not exist "$(subst /,\,$(1))" mkdir "$(subst /,\,$(1))"
+	RM_DIR = if exist "$(subst /,\,$(1))" rmdir /s /q "$(subst /,\,$(1))"
 else
 	EXT =
 	BIN_BASE = bin
 	OBJ_BASE = obj
 	LDFLAGS = -L$(RAYLIB_DIR) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -static-libgcc
+	MKDIR = mkdir -p $(1)
+	RM_DIR = rm -rf $(1)
 endif
 
-MKDIR = mkdir -p $(1)
-RM_DIR = rm -rf $(1)
 
 
 # Build Mode Configuration (debug | release | asan)
