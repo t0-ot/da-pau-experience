@@ -23,7 +23,7 @@ static ModuleAction pacman_upd(void *state, const GameInput *input, float delta_
 }
 
 static void pacman_draw(void *state, EngineContext *engine) {
-     pacman_runtime *runtime = state;
+//     pacman_runtime *runtime = state;
 
      DrawRectangle(0, 0, 100, 10, RED);
 
@@ -31,7 +31,7 @@ static void pacman_draw(void *state, EngineContext *engine) {
 }
 
 static void pacman_cleanup(void *state, EngineContext *engine) {
-     pacman_runtime *runtime = state;
+//     pacman_runtime *runtime = state;
 
 }
 

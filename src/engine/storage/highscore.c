@@ -3,6 +3,7 @@
 #include "raylib.h"
 
 #include <stdlib.h>
+#include <limits.h>
 
 int highscore_load(const char *game_name) {
     if (game_name == NULL || game_name[0] == '\0') {
@@ -24,11 +25,15 @@ int highscore_load(const char *game_name) {
     if (text == NULL) {
         return 0;
     }
+    char* first_invalid;
+    long long score = strtoll(text, &first_invalid, 10);
 
-    int score = atoi(text);
+    if (first_invalid == text || score <  INT_MIN || score > INT_MAX)
+        score = 0;
+
     UnloadFileText(text);
 
-    return (score > 0) ? score : 0;
+    return (int)score;
 }
 
 void highscore_save(const char *game_name, int score) {

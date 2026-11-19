@@ -47,27 +47,7 @@ int objectPointResize(Point_list *data);
  * @param target_coord Pointer to the second point.
  * @return The calculated distance, scaled by a factor of 10.
  */
-int calc_point_dist(Point *current_coord, Point *target_coord);
-
-/**
- * @brief Calculates the horizontal position for centered text.
- *
- * @param left_wall Left boundary of the region.
- * @param right_wall Right boundary of the region.
- * @param text_length Width of the text.
- * @return The horizontal coordinate at which the text should begin.
- */
-int get_centered_x(int left_wall, int right_wall, int text_length);
-
-/**
- * @brief Calculates the vertical position for centered text.
- *
- * @param top_wall Top boundary of the region.
- * @param bottom_wall Bottom boundary of the region.
- * @param text_length Height of the text.
- * @return The vertical coordinate at which the text should begin.
- */
-int get_centered_y(int top_wall, int bottom_wall, int text_length);
+int calc_point_dist(const Point *current_coord, const Point *target_coord);
 
 /**
  * @brief Checks whether a point in the second list overlaps a point in the first list.
@@ -82,7 +62,7 @@ int get_centered_y(int top_wall, int bottom_wall, int text_length);
  * @param checkIndexObj2 Index of the point in the second list to check.
  * @return The matching index in the first list plus one, or 0 if no match is found.
  */
-int collisionCheckOne(Point_list *objView1, Point_list *objView2, int countFrom, int checkIndexObj2);
+int collisionCheckOne(const Point_list *objView1, const Point_list *objView2, int countFrom, int checkIndexObj2);
 
 /**
  * @brief Checks for overlapping points between two lists.
@@ -95,6 +75,6 @@ int collisionCheckOne(Point_list *objView1, Point_list *objView2, int countFrom,
  * @param countFrom Index at which the search in the first list begins.
  * @return The matching index in the first list plus one, or 0 if no match is found.
  */
-int collision_check_both(Point_list *objView1, Point_list *objView2, int countFrom);
+int collision_check_both(const Point_list *objView1, const Point_list *objView2, int countFrom);
 
 #endif // UTILS_H

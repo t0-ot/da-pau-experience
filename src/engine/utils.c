@@ -28,24 +28,14 @@ int objectPointResize(Point_list *data) {
     return 1;
 }
 
-int get_centered_x(int left_wall, int right_wall, int text_length) {
-    int region_width = right_wall - left_wall;
-    return left_wall + ((region_width - text_length) / 2);
-}
-
-int get_centered_y(int top_wall, int bottom_wall, int text_length) {
-    int region_height = bottom_wall - top_wall;
-    return top_wall + ((region_height - text_length) / 2);
-}
-
-int calc_point_dist(Point *current_coord, Point *target_coord) {
+int calc_point_dist(const Point *current_coord, const Point *target_coord) {
     int diff_x = abs(current_coord->posX - target_coord->posX);
     int diff_y = abs(current_coord->posY - target_coord->posY);
 
     return (diff_x+diff_y)*10;
 }
 
-int collisionCheckOne(Point_list *objView1, Point_list *objView2, int countFrom, int checkIndexObj2) {
+int collisionCheckOne(const Point_list *objView1, const Point_list *objView2, int countFrom, int checkIndexObj2) {
     for (int i = countFrom; i < objView1->amt; i++) {
         if (objView1 == objView2 && i == checkIndexObj2)
             continue;
@@ -55,7 +45,7 @@ int collisionCheckOne(Point_list *objView1, Point_list *objView2, int countFrom,
     return 0;
 }
 
-int collision_check_both(Point_list *objView1, Point_list *objView2, int countFrom) {
+int collision_check_both(const Point_list *objView1, const Point_list *objView2, int countFrom) {
     for (int i = countFrom; i < objView1->amt; i++) {
         for (int j = 0; j < objView2->amt; j++) {
             if (objView1->points[i].posX == objView2->points[j].posX && objView1->points[i].posY == objView2->points[j].posY)

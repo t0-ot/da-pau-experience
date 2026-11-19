@@ -48,7 +48,7 @@ void handleDeath(Segmented_entity *snake1, Point_list *fruit, Point *lastDirInpu
  * @param spawnWidth Width of the play area.
  * @param spawnHeight Height of the play area.
  */
-void spawnFruit(Point_list fruitView, int fruitNumber, Segmented_entity *snake, int spawnWidth, int spawnHeight);
+void spawnFruit(Point_list fruitView, int fruitNumber, const Segmented_entity *snake, int spawnWidth, int spawnHeight);
 
 /**
  * @brief Applies the standard fruit's score to the snake.
@@ -60,19 +60,6 @@ void spawnFruit(Point_list fruitView, int fruitNumber, Segmented_entity *snake, 
  * @param snake Pointer to the snake entity receiving the score.
  */
 void baseEat(void *fruit, Segmented_entity *snake, int *pending_growth);
-
-/**
- * @brief Spawns an additional fruit when the snake reaches a milestone.
- *
- * Checks whether the snake's segment count meets the milestone
- * condition and, if so, adds another fruit to the fruit position list.
- *
- * @param fruitAwardTarget Pointer to the fruit data receiving the new fruit.
- * @param snakeScore Pointer to the snake's segment list.
- * @param play_width Width of the play area.
- * @param play_height Height of the play area.
- */
-void handleMilestoneFruit(fruitData *fruitAwardTarget, Segmented_entity *snake, int play_width, int play_height, int pending_segments);
 
 /**
  * @brief Handles the snake's collision with a fruit.

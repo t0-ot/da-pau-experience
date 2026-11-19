@@ -22,6 +22,6 @@
  * @param play_width Width of the playable area.
  * @param play_height Height of the playable area.
  */
-void snake_render_game(snake_runtime *snake_data, EngineContext *engine);
+void snake_render_game(snake_runtime *snake_data, const EngineContext *engine);
 
 #endif // SNAKE_RENDER_H

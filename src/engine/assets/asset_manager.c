@@ -281,7 +281,7 @@ TextureLoadResult asset_manager_load_texture(AssetManager *manager, AssetGroupHa
 
     /* Reuse an existing texture within this group. */
     for (size_t i = 0; i < manager->texture_count; i++) {
-        TextureSlot *slot = &manager->textures[i];
+        const TextureSlot *slot = &manager->textures[i];
 
         if (!slot->active)
             continue;
@@ -366,10 +366,6 @@ TextureLoadResult asset_manager_load_texture(AssetManager *manager, AssetGroupHa
     };
 
     return result;
-}
-
-bool asset_manager_is_texture_valid(const AssetManager *manager, TextureHandle texture) {
-    return texture_is_valid(manager, texture);
 }
 
 TextureResource *asset_manager_resolve_texture(const AssetManager *manager, TextureHandle texture) {

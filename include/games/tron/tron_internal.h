@@ -59,19 +59,11 @@ static const int enemy_start_x[3] = {
 /** @brief Initial vertical positions of the three enemies. */
 static const int enemy_start_y[3] = {5, 5, 5};
 
-/** @brief Display names associated with each Tron level. */
-static const char *level_names[] = {
-    "CMSC-10",
-    "CMSC-11",
-    "CMSC-56",
-    "KAS-1",
-    "MATH-18",
-    "PE-1",
-    "SCI-10"
-    "NSTP-1"
-};
-
 /** @brief Number of levels defined in the level_names array. */
-#define LEVEL_COUNT (sizeof(level_names) / sizeof(level_names[0]))
+#define LEVEL_COUNT 8
+
+/** @brief Display names associated with each Tron level. */
+extern const char *level_names[LEVEL_COUNT];
+
 
 #endif // TRON_INTERNAL_H
