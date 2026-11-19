@@ -1,4 +1,4 @@
-CC ?= gcc
+CC = gcc
 TARGET_NAME = Da-Pau-Launching-Experience
 RAYLIB_DIR = external/raylib/src
 
@@ -8,10 +8,10 @@ SRC := $(wildcard src/*.c src/*/*.c src/*/*/*.c)
 # Common flags
 BASE_CFLAGS = -Wall -Wextra -Iinclude -I$(RAYLIB_DIR)
 
-# Detect MSYS2 / POSIX-like shell on Windows vs native cmd.exe
+# OS-specific configuration
 ifeq ($(OS),Windows_NT)
 	EXT = .exe
-	OS_DIR = Windows
+	BIN_BASE = bin/Windows
 	OBJ_BASE = obj/Windows
 	WIN_GUI_FLAG = $(if $(filter release,$(MODE)),-mwindows,)
 	LDFLAGS = -L$(RAYLIB_DIR) -lraylib -lopengl32 -lgdi32 -lwinmm -static-libgcc $(WIN_GUI_FLAG)
@@ -26,7 +26,7 @@ ifeq ($(OS),Windows_NT)
 	endif
 else
 	EXT =
-	OS_DIR = Unix
+	BIN_BASE = bin
 	OBJ_BASE = obj
 	LDFLAGS = -L$(RAYLIB_DIR) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -static-libgcc
 	MKDIR = mkdir -p "$(1)"
@@ -36,6 +36,7 @@ endif
 
 # Build Mode Configuration (debug | release | asan)
 MODE ?= debug
+
 ifeq ($(MODE),release)
 	CFLAGS = $(BASE_CFLAGS) -O2
 	LDFLAGS += -s
@@ -49,18 +50,16 @@ else
 	MODE_DIR = Debug
 endif
 
-# Output directories: builds in bin/<Mode>/<OS>/ and copies one level up to bin/<Mode>/
-MIRROR_DIR = bin/$(MODE_DIR)
-OUT_DIR = $(MIRROR_DIR)/$(OS_DIR)
+OUT_DIR = $(BIN_BASE)/$(MODE_DIR)
 OBJ_DIR = $(OBJ_BASE)/$(MODE_DIR)
+SHARED_DIR = bin/$(MODE_DIR)
 
 TARGET = $(OUT_DIR)/$(TARGET_NAME)$(EXT)
-MIRROR_TARGET = $(MIRROR_DIR)/$(TARGET_NAME)$(EXT)
+SHARED_TARGET = $(SHARED_DIR)/$(TARGET_NAME)$(EXT)
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRC))
 RAYLIB_LIB = $(RAYLIB_DIR)/libraylib.a
 
-# Default target
-.PHONY: all debug release asan build raylib-build clean clean-all
+.PHONY: all debug release asan clean clean-all
 all: debug
 
 debug:
@@ -72,36 +71,27 @@ release:
 asan:
 	@$(MAKE) build MODE=asan
 
-build: raylib-build $(TARGET)
+build: $(RAYLIB_LIB) $(TARGET)
 
-# Compile Raylib with matching sanitizer/optimization flags when needed
-raylib-build:
-ifeq ($(MODE),asan)
-	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract" LDFLAGS="-fsanitize=address,undefined,leak,pointer-compare,pointer-subtract"
-else ifeq ($(MODE),release)
-	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP CFLAGS="-O2"
-else
-	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP CFLAGS="-g"
-endif
+# Do not pass CFLAGS here or Raylib's platform defines get overwritten
+$(RAYLIB_LIB):
+	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP
 
-# Link final executable and copy to bin/<Mode>/$(TARGET_NAME)$(EXT)
 $(TARGET): $(OBJS)
 	@$(call MKDIR,$(dir $@))
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
-	@$(call MKDIR,$(MIRROR_DIR))
-	@$(call CP_FILE,$@,$(MIRROR_TARGET))
-	@echo "Built successfully: $@ (copied to $(MIRROR_TARGET))"
+ifeq ($(OS),Windows_NT)
+	@$(call MKDIR,$(SHARED_DIR))
+	@$(call CP_FILE,$@,$(SHARED_TARGET))
+endif
 
-# Compile .c files into .o files
 $(OBJ_DIR)/%.o: %.c
 	@$(call MKDIR,$(dir $@))
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean game build artifacts (keeps Raylib compiled for fast rebuilds)
 clean:
 	@$(call RM_DIR,bin)
 	@$(call RM_DIR,obj)
 
-# Deep clean (also cleans Raylib)
 clean-all: clean
 	$(MAKE) -C $(RAYLIB_DIR) clean

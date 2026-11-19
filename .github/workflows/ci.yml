@@ -30,24 +30,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev xvfb
 
-      - name: Cache compiled Raylib (Linux Release)
+      - name: Cache compiled Raylib (Linux)
         uses: actions/cache@v5
         with:
-          path: external/raylib/src/
-          key: raylib-linux-release-${{ hashFiles('external/raylib/src/raylib.h', 'external/raylib/src/Makefile') }}
+          path: external/raylib/src/libraylib.a
+          key: raylib-linux-${{ hashFiles('external/raylib/src/raylib.h') }}
 
-      - name: Compile Linux Release
+      - name: Compile Release
         run: make release
-
-      - name: Clean Raylib before ASan build
-        run: make -C external/raylib/src clean
-
-      - name: Compile Linux ASan Debug
-        run: make asan
-
-      - name: Run Headless Startup Smoke Test (ASan)
-        run: |
-          timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 124 ] || [ $? -eq 143 ]
 
       - name: Package Linux Release
         run: |
@@ -61,7 +51,16 @@ jobs:
           name: Da-Pau-Launching-Experience-Linux
           path: dist/linux
 
-  # 2. Windows Build & Playable .zip
+      - name: Rebuild Raylib & Compile ASan Debug
+        run: |
+          make -C external/raylib/src clean
+          make asan
+
+      - name: Run Headless Startup Smoke Test (ASan)
+        run: |
+          timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
+
+  # 2. Windows Cross-Platform Build & Playable .zip
   windows-build:
     name: Windows Build (.exe)
     runs-on: windows-latest
@@ -85,8 +84,8 @@ jobs:
       - name: Cache compiled Raylib (Windows)
         uses: actions/cache@v5
         with:
-          path: external/raylib/src/
-          key: raylib-windows-ucrt64-${{ hashFiles('external/raylib/src/raylib.h', 'external/raylib/src/Makefile') }}
+          path: external/raylib/src/libraylib.a
+          key: raylib-windows-${{ hashFiles('external/raylib/src/raylib.h') }}
 
       - name: Compile Windows Debug & Release
         run: |
@@ -141,7 +140,7 @@ jobs:
         with:
           path: docs/html
 
-  # 5. Auto-Publish Docs to GitHub Pages (only on main push)
+  # 5. Auto-Publish Docs to GitHub Pages (only on main/master push)
   deploy-docs:
     name: Deploy Docs to GitHub Pages
     needs: build-docs
