@@ -11,7 +11,7 @@ BASE_CFLAGS = -Wall -Wextra -Iinclude -I$(RAYLIB_DIR)
 # OS-specific configuration
 ifeq ($(OS),Windows_NT)
 	EXT = .exe
-	BIN_BASE = bin/Windows
+	OS_DIR = Windows
 	OBJ_BASE = obj/Windows
 	# -mwindows hides the console window in Release (matches use_console_runner="0")
 	WIN_GUI_FLAG = $(if $(filter release,$(MODE)),-mwindows,)
@@ -20,14 +20,16 @@ ifeq ($(OS),Windows_NT)
 	RM_DIR = if exist "$(subst /,\,$(1))" rmdir /s /q "$(subst /,\,$(1))"
 else
 	EXT =
-	BIN_BASE = bin
+	OS_DIR = Unix
 	OBJ_BASE = obj
 	LDFLAGS = -L$(RAYLIB_DIR) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -static-libgcc
 	MKDIR = mkdir -p $(1)
 	RM_DIR = rm -rf $(1)
 endif
 
-
+BIN_BASE = bin/$(TARGET_NAME)/$(OS_DIR)
+MIRROR_DIR = bin/$(TARGET_NAME)
+MIRROR_TARGET = $(MIRROR_DIR)/$(TARGET_NAME)$(EXT)
 
 # Build Mode Configuration (debug | release | asan)
 MODE ?= debug
@@ -40,7 +42,7 @@ ifeq ($(MODE),release)
 else ifeq ($(MODE),asan)
 	CFLAGS = $(BASE_CFLAGS) -g -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract
 	LDFLAGS += -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract
-	OUT_DIR = $(BIN_BASE)/Debug
+	OUT_DIR = $(BIN_BASE)/Debug-Asan
 	OBJ_DIR = $(OBJ_BASE)/Debug-Asan
 else
 	CFLAGS = $(BASE_CFLAGS) -g
@@ -72,11 +74,17 @@ build: $(RAYLIB_LIB) $(TARGET)
 $(RAYLIB_LIB):
 	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP
 
-# Link final executable
+# Link final executable and copy to bin/$(TARGET_NAME)/$(TARGET_NAME)$(EXT)
 $(TARGET): $(OBJS)
 	@$(call MKDIR,$(dir $@))
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
-	@echo "Built successfully: $@"
+	@$(call MKDIR,$(MIRROR_DIR))
+ifeq ($(OS),Windows_NT)
+	@copy /Y "$(subst /,\,$@)" "$(subst /,\,$(MIRROR_TARGET))" >nul
+else
+	@cp -f "$@" "$(MIRROR_TARGET)"
+endif
+	@echo "Built successfully: $@ (copied to $(MIRROR_TARGET))"
 
 # Compile .c files into .o files
 $(OBJ_DIR)/%.o: %.c
@@ -91,4 +99,3 @@ clean:
 # Deep clean (also cleans Raylib)
 clean-all: clean
 	$(MAKE) -C $(RAYLIB_DIR) clean
-
