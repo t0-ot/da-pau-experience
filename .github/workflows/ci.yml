@@ -36,14 +36,8 @@ jobs:
           path: external/raylib/src/libraylib.a
           key: raylib-linux-${{ hashFiles('external/raylib/src/raylib.h') }}
 
-      - name: Compile Release & ASan Debug
-        run: |
-          make release
-          make asan
-
-      - name: Run Headless Startup Smoke Test (ASan)
-        run: |
-          timeout --preserve-status 3s xvfb-run -a ./bin/Debug/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
+      - name: Compile Release
+        run: make release
 
       - name: Package Linux Release
         run: |
@@ -56,6 +50,15 @@ jobs:
         with:
           name: Da-Pau-Launching-Experience-Linux
           path: dist/linux
+
+      - name: Rebuild Raylib & Compile ASan Debug
+        run: |
+          make -C external/raylib/src clean
+          make asan
+
+      - name: Run Headless Startup Smoke Test (ASan)
+        run: |
+          timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
 
   # 2. Windows Cross-Platform Build & Playable .zip
   windows-build:
@@ -87,12 +90,13 @@ jobs:
       - name: Compile Windows Debug & Release
         run: |
           make debug
+          make -C external/raylib/src clean
           make release
 
       - name: Package Windows Release
         run: |
           mkdir -p dist/windows
-          cp bin/Windows/Release/Da-Pau-Launching-Experience.exe dist/windows/
+          cp bin/Release/Da-Pau-Launching-Experience.exe dist/windows/
           cp -r src/assets dist/windows/ 2>/dev/null || true
 
       - name: Upload Windows Playable Build
@@ -117,18 +121,20 @@ jobs:
       - name: Scan src/ and include/ for C bugs
         run: cppcheck --enable=all --std=c17 --check-level=exhaustive --inline-suppr --suppress=missingIncludeSystem --suppress=constParameterCallback --suppress=*:*external/raylib/* --error-exitcode=1 -I include -I external/raylib/src src/
 
-
-
   # 4. Build Doxygen Docs
   build-docs:
     name: Generate Doxygen Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
       - name: Install Doxygen & Graphviz
         run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
       - name: Run Doxygen
         run: doxygen docs/Doxyfile
+
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v4
         with:
@@ -147,4 +153,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
