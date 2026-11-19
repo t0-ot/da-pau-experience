@@ -37,8 +37,8 @@ float renderer_get_delta_time(void) {
     return GetFrameTime();
 }
 
-bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, float x, float y, float width, float height) {
-    if (width <= 0 || height <= 0)
+bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, Rectangle texture_data) {
+    if (texture_data.width <= 0 || texture_data.height <= 0)
         return false;
 
     const TextureResource *resource =
@@ -49,28 +49,21 @@ bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, f
 
     texture_backend_draw(
         resource,
-        x,
-        y,
-        width,
-        height
+        texture_data.x,
+        texture_data.y,
+        texture_data.width,
+        texture_data.height
     );
 
     return true;
 }
 
-bool renderer_draw_texture_region(
-    const AssetManager *manager,
-    TextureHandle texture,
-    Rectangle source,
-    Rectangle destination,
-    Vector2 origin,
-    float rotation
-) {
+bool renderer_draw_texture_region(const AssetManager *manager, TextureHandle texture, Rectangle source, Rectangle destination, Vector2 origin, float rotation) {
     if (source.width <= 0 || source.height <= 0 ||
         destination.width <= 0 || destination.height <= 0)
         return false;
 
-    TextureResource *resource =
+    const TextureResource *resource =
         asset_manager_resolve_texture(manager, texture);
 
     if (resource == NULL)

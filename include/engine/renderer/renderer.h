@@ -62,10 +62,7 @@ float renderer_get_delta_time(void);
 bool renderer_draw_texture(
     const AssetManager *manager,
     TextureHandle texture,
-    float x,
-    float y,
-    float width,
-    float height
+    Rectangle texture_data
 );
 
 bool renderer_draw_texture_region(
