@@ -1,4 +1,4 @@
-CC = gcc
+CC ?= gcc
 TARGET_NAME = Da-Pau-Launching-Experience
 RAYLIB_DIR = external/raylib/src
 
@@ -8,23 +8,30 @@ SRC := $(wildcard src/*.c src/*/*.c src/*/*/*.c)
 # Common flags
 BASE_CFLAGS = -Wall -Wextra -Iinclude -I$(RAYLIB_DIR)
 
-# OS-specific configuration
+# Detect MSYS2 / POSIX-like shell on Windows vs native cmd.exe
 ifeq ($(OS),Windows_NT)
 	EXT = .exe
 	OS_DIR = Windows
 	OBJ_BASE = obj/Windows
-	# -mwindows hides the console window in Release (matches use_console_runner="0")
 	WIN_GUI_FLAG = $(if $(filter release,$(MODE)),-mwindows,)
 	LDFLAGS = -L$(RAYLIB_DIR) -lraylib -lopengl32 -lgdi32 -lwinmm -static-libgcc $(WIN_GUI_FLAG)
-	MKDIR = if not exist "$(subst /,\,$(1))" mkdir "$(subst /,\,$(1))"
-	RM_DIR = if exist "$(subst /,\,$(1))" rmdir /s /q "$(subst /,\,$(1))"
+	ifdef MSYSTEM
+		MKDIR = mkdir -p "$(1)"
+		RM_DIR = rm -rf "$(1)"
+		CP_FILE = cp -f "$(1)" "$(2)"
+	else
+		MKDIR = if not exist "$(subst /,\,$(1))" mkdir "$(subst /,\,$(1))"
+		RM_DIR = if exist "$(subst /,\,$(1))" rmdir /s /q "$(subst /,\,$(1))"
+		CP_FILE = copy /Y "$(subst /,\,$(1))" "$(subst /,\,$(2))" >nul
+	endif
 else
 	EXT =
 	OS_DIR = Unix
 	OBJ_BASE = obj
 	LDFLAGS = -L$(RAYLIB_DIR) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -static-libgcc
-	MKDIR = mkdir -p $(1)
-	RM_DIR = rm -rf $(1)
+	MKDIR = mkdir -p "$(1)"
+	RM_DIR = rm -rf "$(1)"
+	CP_FILE = cp -f "$(1)" "$(2)"
 endif
 
 # Build Mode Configuration (debug | release | asan)
@@ -34,7 +41,7 @@ ifeq ($(MODE),release)
 	LDFLAGS += -s
 	MODE_DIR = Release
 else ifeq ($(MODE),asan)
-	CFLAGS = $(BASE_CFLAGS) -g -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract
+	CFLAGS = $(BASE_CFLAGS) -g -O1 -fno-omit-frame-pointer -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract
 	LDFLAGS += -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract
 	MODE_DIR = Debug-Asan
 else
@@ -53,7 +60,7 @@ OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRC))
 RAYLIB_LIB = $(RAYLIB_DIR)/libraylib.a
 
 # Default target
-.PHONY: all debug release asan clean clean-all
+.PHONY: all debug release asan build raylib-build clean clean-all
 all: debug
 
 debug:
@@ -65,22 +72,24 @@ release:
 asan:
 	@$(MAKE) build MODE=asan
 
-build: $(RAYLIB_LIB) $(TARGET)
+build: raylib-build $(TARGET)
 
-# Compile Raylib submodule if libraylib.a doesn't exist yet
-$(RAYLIB_LIB):
-	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP
+# Compile Raylib with matching sanitizer/optimization flags when needed
+raylib-build:
+ifeq ($(MODE),asan)
+	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract" LDFLAGS="-fsanitize=address,undefined,leak,pointer-compare,pointer-subtract"
+else ifeq ($(MODE),release)
+	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP CFLAGS="-O2"
+else
+	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP CFLAGS="-g"
+endif
 
 # Link final executable and copy to bin/<Mode>/$(TARGET_NAME)$(EXT)
 $(TARGET): $(OBJS)
 	@$(call MKDIR,$(dir $@))
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 	@$(call MKDIR,$(MIRROR_DIR))
-ifeq ($(OS),Windows_NT)
-	@copy /Y "$(subst /,\,$@)" "$(subst /,\,$(MIRROR_TARGET))" >nul
-else
-	@cp -f "$@" "$(MIRROR_TARGET)"
-endif
+	@$(call CP_FILE,$@,$(MIRROR_TARGET))
 	@echo "Built successfully: $@ (copied to $(MIRROR_TARGET))"
 
 # Compile .c files into .o files
