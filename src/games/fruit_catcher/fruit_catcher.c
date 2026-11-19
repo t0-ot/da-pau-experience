@@ -34,8 +34,19 @@ typedef struct{
 } catcher_runtime;
 
 bool spawn_catcher_fruit(Point_list *fruits, int fruitNumber, int play_width) {
-    fruits->points[fruitNumber].posX = (rand() % (play_width - 90)) + 1;
-    fruits->points[fruitNumber].posY = 0;
+    for (int i = 0; i < fruits->amt; i++) {
+        if (fruits->amt > 0) {
+            fruits->points[fruitNumber].posX = (rand() % (play_width - 90)) + 1;
+            fruits->points[fruitNumber].posY = 0;
+            if (i != fruitNumber) {
+                int dist = calc_point_dist(&fruits->points[fruitNumber], &fruits->points[(fruitNumber+1 == fruits->amt) ? fruitNumber+1 : fruitNumber-1]);
+                //TODO: IMPLEMENT PROPER DISTANCE LIMITING SO THAT FRUITS DON'T SPAWN TOO FAR AWAY FROM EACH OTHER
+            }
+        }else {
+            fruits->points[fruitNumber].posX = (rand() % (play_width - 90)) + 1;
+            fruits->points[fruitNumber].posY = 0;
+        }
+    }
 }
 
 static void catcher_init(void *state, EngineContext *engine) {
