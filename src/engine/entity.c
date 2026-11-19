@@ -19,7 +19,7 @@ void grow_entity(Segmented_entity *entity) {
     entity->segments.amt++;
 }
 
-int move_entity_segments(Segmented_entity *entity, Point *last_dir, int play_width, int play_height) {
+int move_entity_segments(Segmented_entity *entity, const Point *last_dir, int play_width, int play_height) {
     // 1. Read the current nose (before moving)
     int next_x = entity->segments.points[entity->head].posX + last_dir->posX;
     int next_y = entity->segments.points[entity->head].posY + last_dir->posY;
@@ -37,7 +37,19 @@ int move_entity_segments(Segmented_entity *entity, Point *last_dir, int play_wid
     return 0;
 }
 
-int check_seg_entity_life(Segmented_entity *entity, Point *last_dir, int play_width, int play_height) {
+static int segmented_self_collision_check(const Segmented_entity *entity) {
+    for (int i = 0; i < entity->segments.amt-1; i++) {
+        int index = (entity->tail + i) % entity->capacity;
+        if (entity->segments.points[entity->head].posX == entity->segments.points[index].posX &&
+            entity->segments.points[entity->head].posY == entity->segments.points[index].posY) {
+
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int check_seg_entity_life(const Segmented_entity *entity, const Point *last_dir, int play_width, int play_height) {
     if (last_dir->posX == 0 && last_dir->posY == 0)
         return 1;
 
@@ -70,19 +82,7 @@ void reset_entity(Segmented_entity *entity, int seg_len, int x, int y) {
     entity->alive = true;
 }
 
-int segmented_self_collision_check(Segmented_entity *entity) {
-    for (int i = 0; i < entity->segments.amt-1; i++) {
-        int index = (entity->tail + i) % entity->capacity;
-        if (entity->segments.points[entity->head].posX == entity->segments.points[index].posX &&
-            entity->segments.points[entity->head].posY == entity->segments.points[index].posY) {
-
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int segmented_collision_with_pointlist(Segmented_entity *entity, Point_list *objView2, int checkIndexObj2) {
+int segmented_collision_with_pointlist(const Segmented_entity *entity, const Point_list *objView2, int checkIndexObj2) {
     for (int i = 0; i < entity->segments.amt; i++) {
         int index = (entity->tail + i) % entity->capacity;
         if (entity->segments.points[index].posX == objView2->points[checkIndexObj2].posX && entity->segments.points[index].posY == objView2->points[checkIndexObj2].posY)

@@ -1,7 +1,10 @@
 #include "engine/input/movement.h"
 #include "engine/core/game_types.h"
 
-void latch_movement_handler(Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
+
+// cppcheck-suppress staticFunction
+// Intentionally non-static: this handler will be called from other modules.
+void latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
     int dx = 0, dy = 0;
 
     if (input->up)    dy = -1;
@@ -29,7 +32,7 @@ void latch_movement_handler(Point *target, Point *buffer, const GameInput *input
     }
 }
 
-void latch_movement_no_reversal(Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
+void latch_movement_no_reversal(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
     latch_movement_handler(target, buffer, input, buffered_amt);
 
     bool is_reversing = false;

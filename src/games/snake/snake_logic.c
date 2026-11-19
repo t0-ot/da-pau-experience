@@ -14,7 +14,7 @@ void handleDeath(Segmented_entity *snake1, Point_list *fruit, Point *lastDirInpu
     spawnFruit(*fruit,  0, snake1, play_width, play_height);
 }
 
-void spawnFruit(Point_list fruitView, int fruitNumber, Segmented_entity *snake, int spawnWidth, int spawnHeight) {
+void spawnFruit(Point_list fruitView, int fruitNumber, const Segmented_entity *snake, int spawnWidth, int spawnHeight) {
     do {
         fruitView.points[fruitNumber].posX = (rand() % (spawnWidth - 2)) + 1;
         fruitView.points[fruitNumber].posY = (rand() % (spawnHeight - 2)) + 1;
@@ -25,7 +25,18 @@ void baseEat(void *fruit, Segmented_entity *snake, int *pending_growth) {
     *pending_growth += ((defaultFruit *)((fruitData *)fruit)->fruitType)->scoreAmt;
 }
 
-void handleMilestoneFruit(fruitData *fruitAwardTarget, Segmented_entity *snake, int play_width, int play_height, int pending_segments) {
+/**
+ * @brief Spawns an additional fruit when the snake reaches a milestone.
+ *
+ * Checks whether the snake's segment count meets the milestone
+ * condition and, if so, adds another fruit to the fruit position list.
+ *
+ * @param fruitAwardTarget Pointer to the fruit data receiving the new fruit.
+ * @param snakeScore Pointer to the snake's segment list.
+ * @param play_width Width of the play area.
+ * @param play_height Height of the play area.
+ */
+static void handleMilestoneFruit(fruitData *fruitAwardTarget, const Segmented_entity *snake, int play_width, int play_height, int pending_segments) {
     if ((((snake->segments.amt + pending_segments) -2) % 10) != 0)
         return;
     fruitAwardTarget->pointList.amt++;

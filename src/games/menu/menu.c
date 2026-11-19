@@ -141,7 +141,7 @@ static ModuleAction menu_update(
  * @param state Pointer to menu runtime state.
  */
 static void menu_draw(void *state, EngineContext *engine) {
-    MenuRuntime *runtime = state;
+    const MenuRuntime *runtime = state;
 
     if (runtime == NULL)
         return;
@@ -207,7 +207,7 @@ static void menu_draw(void *state, EngineContext *engine) {
  *
  * @param state Pointer to menu runtime state.
  */
-menu_choice_type menu_get_exit_choice(void *state) {
+menu_choice_type menu_get_exit_choice(const void *state) {
     if (state == NULL)
         return MENU_CHOICE_NONE;
 

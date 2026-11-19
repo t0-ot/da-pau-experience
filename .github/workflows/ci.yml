@@ -2,7 +2,7 @@ name: Build, Test & Deploy Docs
 
 on:
   push:
-    branches: [ main, master, dev ]
+    branches: [ main ]
   pull_request:
 
 permissions:
@@ -106,12 +106,18 @@ jobs:
     name: Cppcheck Static Analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repo & Raylib submodule
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
       - name: Install cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
+
       - name: Scan src/ and include/ for C bugs
-        run: |
-          cppcheck --enable=warning,performance,portability --suppress=missingIncludeSystem -I include src/
+        run: cppcheck --enable=all --std=c17 --check-level=exhaustive --inline-suppr --suppress=missingIncludeSystem --suppress=constParameterCallback --suppress=*:*external/raylib/* --error-exitcode=1 -I include -I external/raylib/src src/
+
+
 
   # 4. Build Doxygen Docs
   build-docs:

@@ -28,12 +28,12 @@ typedef struct {
 } FillPoint;
 
 // Helper function to check if a specific point matches another
-bool same_point(Point a, Point b) {
+static bool same_point(Point a, Point b) {
     return a.posX == b.posX && a.posY == b.posY;
 }
 
 // Check if a point hits any current light trails or player segments
-bool point_is_obstacle(Point *obstacles, int count, Point point) {
+static bool point_is_obstacle(const Point *obstacles, int count, Point point) {
     for (int i = 0; i < count; i++) {
         if (same_point(obstacles[i], point)) {
             return true;
@@ -43,7 +43,7 @@ bool point_is_obstacle(Point *obstacles, int count, Point point) {
 }
 
 // Bounded Flood Fill algorithm to grade available open territory
-int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
+static int check_breathing_room(Point start, const Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
     // 1. Instantly fail if the starting tile is out-of-bounds or an immediate crash
     if (start.posX < 0 || start.posX >= play_width || start.posY < 0 || start.posY >= play_height) {
         return 0;
@@ -77,8 +77,8 @@ int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int 
         space_count++;
 
         // Explore all 4 adjacent neighbors (North, South, East, West)
-        int dx[] = {0, 0, 1, -1};
-        int dy[] = {1, -1, 0, 0};
+        const int dx[] = {0, 0, 1, -1};
+        const int dy[] = {1, -1, 0, 0};
 
         for (int i = 0; i < 4; i++) {
             int nx = curr.x + dx[i];
@@ -191,7 +191,7 @@ void enemy_lightcycle_ai(Enemy_list *view_enemies, Segmented_entity *player, int
 
         // Group options into an array so we can loop through them easily
         Point options[] = {move_up, move_down, move_left, move_right};
-        int scores[]    = {up_score, down_score, left_score, right_score};
+        const int scores[]    = {up_score, down_score, left_score, right_score};
 
         int best_score = -1;
         int best_dist  = 999999;
@@ -253,7 +253,12 @@ static void start_level_intro(tron_runtime *runtime) {
     runtime->intro_timer = 3.0f;
 }
 
-void handle_player_death(tron_runtime *runtime, int play_width) {
+/**
+ * @brief Resets the player and enemy state after player death.
+ * @param runtime Pointer to the Tron runtime state.
+ * @param play_width Width of the playable area in grid cells.
+ */
+static void handle_player_death(tron_runtime *runtime, int play_width) {
         runtime->enemy_distracted = 75;
         runtime->enemy_move_timer = 0.0f,
         runtime->enemy_move_interval = 0.20f,
@@ -296,6 +301,7 @@ void update_tron_player(
         runtime->player.alive = check_seg_entity_life(&runtime->player, &runtime->last_dir_input, play_width, play_height);
 
         for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
+            //TODO FIX ENEMY COLLISION CHECK WITH PROPER RING BUFFER COLLISION CHECK
             int collision = collision_check_both(&runtime->view_enemies.enemy[j].segments, &runtime->player.segments, 0);
 
             if (collision > 0)
@@ -333,12 +339,12 @@ void advance_tron_level(tron_runtime *runtime, int play_width) {
     runtime->enemy_distracted = (runtime->enemy_distracted-distract_deduct == 0) ? 0 : runtime->enemy_distracted-distract_deduct;
 }
 
-int all_enemies_dead(tron_runtime *runtime) {
+bool all_enemies_dead(const tron_runtime *runtime) {
     for (int i = 0; i < runtime->view_enemies.enemy_amt; i++) {
         if (runtime->view_enemies.enemy[i].alive)
-            return 0;
+            return false;
     }
-    return 1;
+    return true;
 }
 
 const char *get_level_name(int level) {

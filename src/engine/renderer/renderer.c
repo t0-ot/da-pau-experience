@@ -41,7 +41,7 @@ bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, f
     if (width <= 0 || height <= 0)
         return false;
 
-    TextureResource *resource =
+    const TextureResource *resource =
         asset_manager_resolve_texture(manager, texture);
 
     if (resource == NULL)
