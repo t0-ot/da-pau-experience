@@ -43,7 +43,7 @@ static bool point_is_obstacle(const Point *obstacles, int count, Point point) {
 }
 
 // Bounded Flood Fill algorithm to grade available open territory
-static int check_breathing_room(Point start, Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
+static int check_breathing_room(Point start, const Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
     // 1. Instantly fail if the starting tile is out-of-bounds or an immediate crash
     if (start.posX < 0 || start.posX >= play_width || start.posY < 0 || start.posY >= play_height) {
         return 0;
