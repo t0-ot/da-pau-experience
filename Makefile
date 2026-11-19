@@ -27,36 +27,33 @@ else
 	RM_DIR = rm -rf $(1)
 endif
 
-BIN_BASE = bin/$(TARGET_NAME)/$(OS_DIR)
-MIRROR_DIR = bin/$(TARGET_NAME)
-MIRROR_TARGET = $(MIRROR_DIR)/$(TARGET_NAME)$(EXT)
-
 # Build Mode Configuration (debug | release | asan)
 MODE ?= debug
-
 ifeq ($(MODE),release)
 	CFLAGS = $(BASE_CFLAGS) -O2
 	LDFLAGS += -s
-	OUT_DIR = $(BIN_BASE)/Release
-	OBJ_DIR = $(OBJ_BASE)/Release
+	MODE_DIR = Release
 else ifeq ($(MODE),asan)
 	CFLAGS = $(BASE_CFLAGS) -g -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract
 	LDFLAGS += -fsanitize=address,undefined,leak,pointer-compare,pointer-subtract
-	OUT_DIR = $(BIN_BASE)/Debug-Asan
-	OBJ_DIR = $(OBJ_BASE)/Debug-Asan
+	MODE_DIR = Debug-Asan
 else
 	CFLAGS = $(BASE_CFLAGS) -g
-	OUT_DIR = $(BIN_BASE)/Debug
-	OBJ_DIR = $(OBJ_BASE)/Debug
+	MODE_DIR = Debug
 endif
 
+# Output directories: builds in bin/<Mode>/<OS>/ and copies one level up to bin/<Mode>/
+MIRROR_DIR = bin/$(MODE_DIR)
+OUT_DIR = $(MIRROR_DIR)/$(OS_DIR)
+OBJ_DIR = $(OBJ_BASE)/$(MODE_DIR)
+
 TARGET = $(OUT_DIR)/$(TARGET_NAME)$(EXT)
+MIRROR_TARGET = $(MIRROR_DIR)/$(TARGET_NAME)$(EXT)
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRC))
 RAYLIB_LIB = $(RAYLIB_DIR)/libraylib.a
 
 # Default target
 .PHONY: all debug release asan clean clean-all
-
 all: debug
 
 debug:
@@ -74,7 +71,7 @@ build: $(RAYLIB_LIB) $(TARGET)
 $(RAYLIB_LIB):
 	$(MAKE) -C $(RAYLIB_DIR) PLATFORM=PLATFORM_DESKTOP
 
-# Link final executable and copy to bin/$(TARGET_NAME)/$(TARGET_NAME)$(EXT)
+# Link final executable and copy to bin/<Mode>/$(TARGET_NAME)$(EXT)
 $(TARGET): $(OBJS)
 	@$(call MKDIR,$(dir $@))
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
