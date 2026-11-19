@@ -33,7 +33,7 @@ typedef struct {
  */
 const Game_Entry *game_registry_get_next(
     const GameModule *current_mod,
-    void *state,
+    const void *state,
     ModuleAction action
 );
 

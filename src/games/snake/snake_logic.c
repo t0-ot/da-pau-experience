@@ -36,7 +36,7 @@ void baseEat(void *fruit, Segmented_entity *snake, int *pending_growth) {
  * @param play_width Width of the play area.
  * @param play_height Height of the play area.
  */
-static void handleMilestoneFruit(fruitData *fruitAwardTarget, Segmented_entity *snake, int play_width, int play_height, int pending_segments) {
+static void handleMilestoneFruit(fruitData *fruitAwardTarget, const Segmented_entity *snake, int play_width, int play_height, int pending_segments) {
     if ((((snake->segments.amt + pending_segments) -2) % 10) != 0)
         return;
     fruitAwardTarget->pointList.amt++;

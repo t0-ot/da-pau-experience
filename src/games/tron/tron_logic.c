@@ -33,7 +33,7 @@ static bool same_point(Point a, Point b) {
 }
 
 // Check if a point hits any current light trails or player segments
-static bool point_is_obstacle(Point *obstacles, int count, Point point) {
+static bool point_is_obstacle(const Point *obstacles, int count, Point point) {
     for (int i = 0; i < count; i++) {
         if (same_point(obstacles[i], point)) {
             return true;

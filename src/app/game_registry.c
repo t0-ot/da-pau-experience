@@ -40,11 +40,7 @@ static const Game_Entry *game_registry_get_entry(menu_choice_type choice) {
     return NULL;
 }
 
-const Game_Entry *game_registry_get_next(
-    const GameModule *current_mod,
-    void *state,
-    ModuleAction action
-) {
+const Game_Entry *game_registry_get_next(const GameModule *current_mod, const void *state, ModuleAction action) {
     (void)action;
 
     if (current_mod == &menu_module) {
