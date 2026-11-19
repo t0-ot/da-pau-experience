@@ -8,13 +8,16 @@
 #include "engine/core/game_types.h"
 #include "engine/utils.h"
 
-#define CATCHER_MOVEMENT_SPEED 0.12f
+#define CATCHER_MOVEMENT_SPEED 0.05
+
 #define FRUIT_SPEED 0.12f
 
 typedef struct {
     AssetGroupHandle assets;
 
     TextureHandle fruit_texture;
+    TextureHandle background_texture;
+
 } fruit_catcher_textures;
 
 typedef struct{
@@ -30,7 +33,7 @@ typedef struct{
 } catcher_runtime;
 
 bool spawn_catcher_fruit(Point_list *fruits, int fruitNumber, int play_width, int play_height) {
-    fruits->points[fruitNumber].posX = (rand() % (play_width - 2)) + 1;
+    fruits->points[fruitNumber].posX = (rand() % (play_width - 90)) + 1;
     fruits->points[fruitNumber].posY = 0;
 }
 
@@ -40,7 +43,11 @@ static void catcher_init(void *state, EngineContext *engine) {
     runtime->textures.assets = asset_manager_create_group(engine->assets);
 
     TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/apple.png");
+    TextureLoadResult background = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/background.png");
+
     runtime->textures.fruit_texture = fruit.handle;
+    runtime->textures.background_texture = background.handle;
+
 
     runtime->score = 0;
     runtime->fruits.amt = 1;
@@ -73,6 +80,7 @@ static ModuleAction catcher_upd(void *state, const GameInput *input, float delta
         runtime->player_move_timer -= runtime->player_move_interval;
 
         if(input->right) runtime->catcher.posX+=30;
+        if(runtime->catcher.posX == 721) return MODULE_QUIT;
         if(input->left) runtime->catcher.posX-=30;
 
     }
@@ -87,8 +95,10 @@ static ModuleAction catcher_upd(void *state, const GameInput *input, float delta
         if (CheckCollisionRecs(catcher, (Rectangle){runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100})){
             spawn_catcher_fruit(&runtime->fruits, i, GetScreenWidth(), GetScreenHeight());
             runtime->score++;
-        } else if (GetScreenHeight() < runtime->fruits.points[i].posY+100)
-            return MODULE_FINISHED;
+        }
+        else if (GetScreenHeight() < runtime->fruits.points[i].posY+100)
+//            return MODULE_FINISHED;
+              spawn_catcher_fruit(&runtime->fruits, i, GetScreenWidth(), GetScreenHeight());
     }
 
     return MODULE_CONTINUE;
@@ -98,13 +108,14 @@ static void catcher_draw(void *state, EngineContext *engine) {
     catcher_runtime *runtime = state;
 
     Color GENESIS = {0, 255, 100, 255};
+    renderer_draw_texture(engine->assets, runtime->textures.background_texture, 30, 30, 1220, 660);
 
     DrawRectangle(runtime->catcher.posX, runtime->catcher.posY, 100, 10, GENESIS);
     for (int i = 0; i < runtime->fruits.amt; i++)
         renderer_draw_texture(engine->assets, runtime->textures.fruit_texture, runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100);
 //      DrawRectangle(runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100, RED);
-    DrawText(TextFormat("Score: %d", runtime->score), GetScreenWidth()/2 - (MeasureText("Score: ", 35)/2)+300, 150, 35, WHITE);
-    DrawText("Fruit Catcher", GetScreenWidth()/2 - (MeasureText("Fruit Catcher", 35)/2), 150, 35, WHITE);
+    DrawText(TextFormat("Score: %d", runtime->score), GetScreenWidth()/2 - (MeasureText("Score: ", 35)/2)+300, 130, 35, WHITE);
+    DrawText("Fruit Catcher", GetScreenWidth()/2 - (MeasureText("Fruit Catcher", 35)/2), 130, 35, WHITE);
 }
 
 static void catcher_cleanup(void *state, EngineContext *engine) {
