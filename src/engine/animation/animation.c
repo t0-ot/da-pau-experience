@@ -100,6 +100,8 @@ void animation_player_play(animation_player *player) {
     player->is_playing = true;
 }
 
+// Public API: available to game modules even though not currently used.
+// cppcheck-suppress unusedFunction
 void animation_player_pause(animation_player *player) {
     if (player == NULL)
         return;
