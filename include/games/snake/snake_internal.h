@@ -2,6 +2,7 @@
 #define SNAKE_INTERNAL_H
 
 #include "engine/entity.h"
+#include "engine/animation/animation.h"
 #include "engine/assets/asset_manager.h"
 
 /**
@@ -49,8 +50,13 @@ typedef struct snake_runtime {
     int play_height; /**< Height of the playable grid in cells. */
     int pending_growth;
 
+    float fruit_random_timer;
+
     float move_timer; /**< Time accumulated toward the next movement. */
     float move_interval; /**< Time required between successive movements. */
+
+    animation_clip fruit_clip;
+    animation_player fruit_player;
 
      Point buffered_dir[5]; /**< Direction queued for the next player movement. */
     int buffered_dir_amt; /**< Whether a direction is currently queued. */
