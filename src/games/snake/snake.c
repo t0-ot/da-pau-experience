@@ -7,6 +7,7 @@
 #include "games/snake/snake_render.h"
 #include "games/snake/snake_internal.h"
 #include "engine/core/game_input.h"
+#include "engine/animation/animation.h"
 #include "engine/storage/highscore.h"
 #include "engine/utils.h"
 
@@ -22,6 +23,10 @@ static void snake_init(void *state, EngineContext *engine) {
     TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "src/assets/apple.png");
 
     runtime->texture.fruit_texture = fruit.handle;
+
+    animation_clip_init(&runtime->fruit_clip, 0, 0, 7, 7, 1, 448, 448, 0.15f, ANIMATION_PLAY_ONCE);
+    animation_player_init(&runtime->fruit_player, &runtime->fruit_clip);
+    animation_player_play(&runtime->fruit_player);
 
     runtime->play_width = SNAKE_WIDTH;
     runtime->play_height = SNAKE_HEIGHT;
@@ -83,8 +88,24 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
         } else if (!input->left)
             runtime->is_moving = 1;
     }
+    if (runtime->fruit_player.is_finished) {
+        animation_player_reset(&runtime->fruit_player);
+    }
+
+    if (!runtime->fruit_player.is_playing &&
+        runtime->fruit_random_timer <= 0.0f) {
+
+        if (rand() % 100 < 20) {
+            animation_player_play(&runtime->fruit_player);
+        }
+
+        runtime->fruit_random_timer = 2.0f;
+    }
+
+    runtime->fruit_random_timer -= delta_time;
 
     runtime->move_timer += delta_time;
+    animation_player_update(&runtime->fruit_player, delta_time);
     if (runtime->move_timer >= runtime->move_interval) {
         runtime->move_timer -= runtime->move_interval;
 
