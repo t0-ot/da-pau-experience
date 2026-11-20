@@ -41,7 +41,7 @@ void texture_backend_unload(TextureResource *resource) {
 
 void texture_backend_draw_region(const TextureResource *resource, Rectangle source, Rectangle destination, Vector2 origin, float rotation) {
     if (resource == NULL ||
-        source.width <= 0 || source.height <= 0 ||
+        source.width == 0 || source.height == 0 ||
         destination.width <= 0 || destination.height <= 0)
         return;
 

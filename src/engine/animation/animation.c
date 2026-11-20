@@ -1,28 +1,48 @@
 #include "engine/animation/animation.h"
 #include <stddef.h>
-#include <stdbool.h>
 
-animation_clip animation_clip_cinit(
+AnimationResult animation_clip_init(
+    animation_clip *clip,
     int frame_count,
-    int sprite_column,
-    int sprite_row,
+    int sprite_columns,
+    int sprite_rows,
     int frame_width,
     int frame_height,
     float frame_duration,
-    bool is_looping) {
+    animation_playback_mode playback_mode) {
 
+    // INPUT VALIDITY CHECK
+    if (clip == NULL)
+        return ANIM_INVALID_ARGUMENTS;
+    if (frame_width <= 0 || frame_height <= 0)
+        return ANIM_INVALID_ARGUMENTS;
+    if (playback_mode != ANIMATION_PLAY_ONCE && playback_mode != ANIMATION_LOOP)
+        return ANIM_INVALID_ARGUMENTS;
+    if (frame_count <= 0)
+        return ANIM_INVALID_ARGUMENTS;
+    if (sprite_columns <= 0 || sprite_rows <= 0)
+        return ANIM_INVALID_ARGUMENTS;
+    if (frame_duration <= 0.0f)
+        return ANIM_INVALID_ARGUMENTS;
+    if ((size_t)frame_count > (size_t)sprite_columns * (size_t)sprite_rows)
+        return ANIM_INVALID_ARGUMENTS;
 
+    *clip = (animation_clip){
+        .frame_count = frame_count,
+        .sprite_columns = sprite_columns,
+        .sprite_rows = sprite_rows,
+        .frame_width = frame_width,
+        .frame_height = frame_height,
+        .frame_duration = frame_duration,
+        .playback_mode = playback_mode
+    };
+
+    return ANIM_CLIP_SUCCESSFUL_INIT;
 }
 
-bool animation_player_init(animation_player *data, const animation_clip *clip) {
+AnimationResult animation_player_init(animation_player *data, const animation_clip *clip) {
     if (clip == NULL || data == NULL)
-        return false;
-    if (clip->frame_count < 0 || clip->frame_duration < 0)
-        return false;
-    if (clip->sprite_columns < 0 || clip->sprite_rows < 0)
-        return false;
-    if (clip->frame_width < 0 || clip->frame_height < 0)
-        return false;
+        return ANIM_INVALID_ARGUMENTS;
 
     *data = (animation_player){
         .clip = clip,
@@ -31,27 +51,39 @@ bool animation_player_init(animation_player *data, const animation_clip *clip) {
         .is_playing = false,
         .is_finished = false
     };
-    return true;
+    return ANIM_PLAYER_SUCCESSFUL_INIT;
 }
 
 void animation_player_play(animation_player *player) {
+    if (player == NULL)
+        return;
+    player->is_playing = 1;
 }
 void animation_player_pause(animation_player *player) {
+    if (player == NULL)
+        return;
+    player->is_playing = 0;
 }
 void animation_player_reset(animation_player *player) {
+    if (player == NULL)
+        return;
+    player->is_finished = 0;
+    player->current_frame = 0;
+    player->is_playing = 0;
+    player->elapsed_time = 0.0f;
 }
 
-void animation_player_update(animation_player *player, const float delta_time) {
+AnimationResult animation_player_update(animation_player *player, const float delta_time) {
     if (player == NULL || player->clip == NULL)
-        return;
+        return ANIM_INVALID_ARGUMENTS;
 
     if (!player->is_playing || player->is_finished)
-        return;
+        return ANIM_SUCCESSFUL_UPDATE;
 
     if (player->clip->frame_count <= 0 ||
         player->clip->frame_duration <= 0.0f ||
         delta_time <= 0.0f)
-        return;
+        return ANIM_INVALID_ARGUMENTS;
 
     player->elapsed_time += delta_time;
 
@@ -60,7 +92,7 @@ void animation_player_update(animation_player *player, const float delta_time) {
 
         if (player->current_frame + 1 < player->clip->frame_count) {
             player->current_frame++;
-        } else if (player->clip->is_looping) {
+        } else if (player->clip->playback_mode == ANIMATION_LOOP) {
             player->current_frame = 0;
         } else {
             player->is_finished = true;
@@ -69,4 +101,5 @@ void animation_player_update(animation_player *player, const float delta_time) {
             break;
         }
     }
+    return ANIM_SUCCESSFUL_UPDATE;
 }

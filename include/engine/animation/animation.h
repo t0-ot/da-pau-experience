@@ -1,6 +1,21 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
+#include <stdbool.h>
+
+typedef enum {
+    ANIM_INVALID_ARGUMENTS,
+    ANIM_INVALID_CLIP,
+    ANIM_CLIP_SUCCESSFUL_INIT,
+    ANIM_PLAYER_SUCCESSFUL_INIT,
+    ANIM_SUCCESSFUL_UPDATE
+} AnimationResult;
+
+typedef enum {
+    ANIMATION_PLAY_ONCE,
+    ANIMATION_LOOP
+} animation_playback_mode;
+
 typedef struct {
     int frame_count;
 
@@ -12,7 +27,7 @@ typedef struct {
 
     float frame_duration;
 
-    bool is_looping;
+    animation_playback_mode playback_mode;
 } animation_clip;
 
 typedef struct {
