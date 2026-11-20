@@ -47,7 +47,7 @@ typedef struct {
 static const MenuConfig MENU_REGISTRY[] = {
     { "SNAKE",     MENU_CHOICE_PLAY_SNAKE },
     { "TRON",      MENU_CHOICE_PLAY_TRON },
-    { "PACMAN",    MENU_CHOICE_PLAY_PACMAN},
+    { "FROGGER",    MENU_CHOICE_PLAY_FROGGER},
     { "QUIT GAME", MENU_CHOICE_QUIT }
 };
 
