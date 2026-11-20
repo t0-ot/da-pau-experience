@@ -54,7 +54,7 @@ static void catcher_init(void *state, EngineContext *engine) {
 
     runtime->textures.assets = asset_manager_create_group(engine->assets);
 
-    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/apple.png");
+    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/fruit_catcher_fruit.png");
     TextureLoadResult background = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/background.png");
     TextureLoadResult catcher = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/fruit_catcher.png");
 
