@@ -87,6 +87,10 @@ static ModuleAction tron_update(
     runtime->move_timer += delta_time;
     runtime->enemy_move_timer += delta_time;
     latch_movement_no_reversal(&runtime->last_dir_input, runtime->buffered_dir, input, &runtime->buffered_dir_amt);
+    if (runtime->toggle_turbo)
+        runtime->move_interval = 0.05f;
+    else
+        runtime->move_interval = 0.10f;
 
     if (runtime->move_timer >= runtime->move_interval) {
         runtime->move_timer -= runtime->move_interval;
