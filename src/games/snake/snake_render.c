@@ -37,7 +37,19 @@ void snake_render_game(snake_runtime *snake_data, const EngineContext *engine) {
         int x = offset_x + snake_data->normalFruitSet.pointList.points[i].posX * CELL_SIZE;
         int y = offset_y + snake_data->normalFruitSet.pointList.points[i].posY * CELL_SIZE;
 
-        renderer_draw_texture(engine->assets, snake_data->texture.fruit_texture, (Rectangle){x-16, y-19, CELL_SIZE*2, CELL_SIZE*2});
+//        renderer_draw_texture(engine->assets, snake_data->texture.fruit_texture, (Rectangle){x-16, y-19, CELL_SIZE*2, CELL_SIZE*2});
+        Rectangle source;
+        DrawRectangle(x + 3, y + 3, CELL_SIZE - 6, CELL_SIZE - 6, RED);
+        if (animation_player_get_source(&snake_data->fruit_player, &source) == ANIM_SUCCESSFUL_SOURCE) {
+            renderer_draw_texture_region(
+                engine->assets,
+                snake_data->texture.fruit_texture,
+                source,
+                (Rectangle){x-16, y-19, CELL_SIZE*2, CELL_SIZE*2},
+                (Vector2){0, 0},
+                0.0f
+            );
+        }
     }
     for (int i = 0; i < snake_data->snake.segments.amt; i++) {
         int index = (snake_data->snake.tail + i) % snake_data->snake.capacity;
