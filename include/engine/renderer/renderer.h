@@ -10,6 +10,7 @@
 #define RENDERER_H
 
 #include "engine/assets/asset_manager.h"
+#include "raylib.h"
 #include <stdbool.h>
 
 /**
@@ -61,10 +62,16 @@ float renderer_get_delta_time(void);
 bool renderer_draw_texture(
     const AssetManager *manager,
     TextureHandle texture,
-    float x,
-    float y,
-    float width,
-    float height
+    Rectangle texture_data
+);
+
+bool renderer_draw_texture_region(
+    const AssetManager *manager,
+    TextureHandle texture,
+    Rectangle source,
+    Rectangle destination,
+    Vector2 origin,
+    float rotation
 );
 
 #endif // RENDERER_H

@@ -36,9 +36,10 @@ void renderer_end_frame(void) {
 float renderer_get_delta_time(void) {
     return GetFrameTime();
 }
-
-bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, float x, float y, float width, float height) {
-    if (width <= 0 || height <= 0)
+// Public API: convenience wrapper for drawing an entire texture.
+// cppcheck-suppress unusedFunction
+bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, Rectangle destination) {
+    if (destination.width <= 0 || destination.height <= 0)
         return false;
 
     const TextureResource *resource =
@@ -49,10 +50,32 @@ bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, f
 
     texture_backend_draw(
         resource,
-        x,
-        y,
-        width,
-        height
+        destination.x,
+        destination.y,
+        destination.width,
+        destination.height
+    );
+
+    return true;
+}
+
+bool renderer_draw_texture_region(const AssetManager *manager, TextureHandle texture, Rectangle source, Rectangle destination, Vector2 origin, float rotation) {
+    if (source.width == 0 || source.height == 0 ||
+        destination.width <= 0 || destination.height <= 0)
+        return false;
+
+    const TextureResource *resource =
+        asset_manager_resolve_texture(manager, texture);
+
+    if (resource == NULL)
+        return false;
+
+    texture_backend_draw_region(
+        resource,
+        source,
+        destination,
+        origin,
+        rotation
     );
 
     return true;
