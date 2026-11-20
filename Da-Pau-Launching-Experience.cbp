@@ -96,6 +96,7 @@
 			<Add directory="external/raylib/src" />
 		</Compiler>
 		<Unit filename="include/app/game_registry.h" />
+		<Unit filename="include/engine/animation/animation.h" />
 		<Unit filename="include/engine/assets/asset_manager.h" />
 		<Unit filename="include/engine/assets/texture.h" />
 		<Unit filename="include/engine/core/engine_context.h" />
@@ -121,6 +122,9 @@
 		<Unit filename="include/games/tron/tron_logic.h" />
 		<Unit filename="include/games/tron/tron_render.h" />
 		<Unit filename="src/app/game_registry.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/animation/animation.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/assets/asset_manager.c">
