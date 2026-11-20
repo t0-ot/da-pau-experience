@@ -290,28 +290,20 @@ void update_tron_player(
         runtime->last_dir_input.posY = dy;
     }
 
-    for (int i = 0; i < 1 + runtime->toggle_turbo; i++) {
-        if (runtime->last_dir_input.posX == 0 &&
-            runtime->last_dir_input.posY == 0)
-            break;
+    move_entity_segments(&runtime->player, &runtime->last_dir_input, play_width, play_height);
+    grow_entity(&runtime->player);
+    runtime->player.alive = check_seg_entity_life(&runtime->player, &runtime->last_dir_input, play_width, play_height);
 
+    for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
+        //TODO FIX ENEMY COLLISION CHECK WITH PROPER RING BUFFER COLLISION CHECK
+        int collision = collision_check_both(&runtime->view_enemies.enemy[j].segments, &runtime->player.segments, 0);
 
-        move_entity_segments(&runtime->player, &runtime->last_dir_input, play_width, play_height);
-        grow_entity(&runtime->player);
-        runtime->player.alive = check_seg_entity_life(&runtime->player, &runtime->last_dir_input, play_width, play_height);
+        if (collision > 0)
+            runtime->player.alive = 0;
+    }
 
-        for (int j = 0; j < runtime->view_enemies.enemy_amt; j++) {
-            //TODO FIX ENEMY COLLISION CHECK WITH PROPER RING BUFFER COLLISION CHECK
-            int collision = collision_check_both(&runtime->view_enemies.enemy[j].segments, &runtime->player.segments, 0);
-
-            if (collision > 0)
-                runtime->player.alive = 0;
-        }
-
-        if (!runtime->player.alive) {
-            handle_player_death(runtime, play_width);
-            break;
-        }
+    if (!runtime->player.alive) {
+        handle_player_death(runtime, play_width);
     }
 }
 
