@@ -54,7 +54,7 @@ static void catcher_init(void *state, EngineContext *engine) {
 
     runtime->textures.assets = asset_manager_create_group(engine->assets);
 
-    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/fruit_catcher_fruit.png");
+    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/apple.png");
     TextureLoadResult background = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/background.png");
     TextureLoadResult catcher = asset_manager_load_texture(engine->assets, runtime->textures.assets, "src/assets/fruit_catcher.png");
 
@@ -131,10 +131,10 @@ static void catcher_draw(void *state, EngineContext *engine) {
     catcher_runtime *runtime = state;
 
     Color GENESIS = {0, 255, 100, 255};
-    renderer_draw_texture(engine->assets, runtime->textures.background_texture, 30, 30, 1220, 660);
-    renderer_draw_texture(engine->assets, runtime->textures.fruit_catcher_texture, runtime->catcher.posX, runtime->catcher.posY, 180, 24);
+    renderer_draw_texture(engine->assets, runtime->textures.background_texture, (Rectangle){30, 30, 1220, 660});
+    renderer_draw_texture(engine->assets, runtime->textures.fruit_catcher_texture, (Rectangle){runtime->catcher.posX, runtime->catcher.posY, 180, 24});
     for (int i = 0; i < runtime->fruits.amt; i++)
-        renderer_draw_texture(engine->assets, runtime->textures.fruit_texture, runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100);
+        renderer_draw_texture_region(engine->assets, runtime->textures.fruit_texture, (Rectangle){0, 0, 448, 448}, (Rectangle){runtime->fruits.points[i].posX, runtime->fruits.points[i].posY, 100, 100}, (Vector2){0, 0}, 0);
     DrawText(TextFormat("Score: %d", runtime->score), GetScreenWidth()/2 - (MeasureText("Score: ", 35)/2)+300, 130, 35, WHITE);
     DrawText("Fruit Catcher", GetScreenWidth()/2 - (MeasureText("Fruit Catcher", 35)/2), 130, 35, WHITE);
 }
