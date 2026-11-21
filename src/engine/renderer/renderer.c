@@ -36,8 +36,7 @@ void renderer_end_frame(void) {
 float renderer_get_delta_time(void) {
     return GetFrameTime();
 }
-// Public API: convenience wrapper for drawing an entire texture.
-// cppcheck-suppress unusedFunction
+
 bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, Rectangle destination) {
     if (destination.width <= 0 || destination.height <= 0)
         return false;

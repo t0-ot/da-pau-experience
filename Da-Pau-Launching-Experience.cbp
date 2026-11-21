@@ -111,6 +111,7 @@
 		<Unit filename="include/engine/storage/highscore.h" />
 		<Unit filename="include/engine/storage/storage_path.h" />
 		<Unit filename="include/engine/utils.h" />
+		<Unit filename="include/games/fruit_catcher/fruit_catcher.h" />
 		<Unit filename="include/games/menu/menu.h" />
 		<Unit filename="include/games/pacman/pacman.h" />
 		<Unit filename="include/games/snake/snake.h" />
@@ -156,6 +157,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/fruit_catcher/fruit_catcher.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/games/menu/menu.c">
