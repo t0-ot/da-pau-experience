@@ -51,7 +51,7 @@ To try the application, clone the repository, make sure the required build depen
 ### 1. Clone the Repository
 Include `--recursive` so the Raylib submodule in `external/raylib` is downloaded:
 ```bash
-git clone --recursive https://github.com
+git clone --recursive https://github.com/t0-ot/da-pau-experience.git
 cd da-pau-experience
 ```
 
