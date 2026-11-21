@@ -20,7 +20,7 @@ static void snake_init(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
 
     runtime->texture.assets = asset_manager_create_group(engine->assets);
-    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "src/assets/apple.png");
+    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "assets/apple.png");
 
     runtime->texture.fruit_texture = fruit.handle;
 
