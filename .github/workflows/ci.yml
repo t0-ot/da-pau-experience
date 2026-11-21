@@ -43,7 +43,7 @@ jobs:
         run: |
           mkdir -p dist/linux
           cp bin/Release/Da-Pau-Launching-Experience dist/linux/
-          cp -r src/assets dist/linux/ 2>/dev/null || true
+          cp -r assets dist/linux/ 2>/dev/null || true
 
       - name: Upload Linux Playable Build
         uses: actions/upload-artifact@v7
@@ -97,7 +97,7 @@ jobs:
         run: |
           mkdir -p dist/windows
           cp bin/Release/Da-Pau-Launching-Experience.exe dist/windows/
-          cp -r src/assets dist/windows/ 2>/dev/null || true
+          cp -r assets dist/windows/ 2>/dev/null || true
 
       - name: Upload Windows Playable Build
         uses: actions/upload-artifact@v7
