@@ -48,13 +48,7 @@ bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, R
     if (resource == NULL)
         return false;
 
-    texture_backend_draw(
-        resource,
-        destination.x,
-        destination.y,
-        destination.width,
-        destination.height
-    );
+    texture_backend_draw(resource, destination);
 
     return true;
 }

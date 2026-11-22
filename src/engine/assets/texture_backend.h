@@ -16,7 +16,7 @@ TextureBackendResult texture_backend_load(const char *path, TextureResource **ou
 
 void texture_backend_unload(TextureResource *resource);
 
-void texture_backend_draw(const TextureResource *resource, float x, float y, float width, float height);
+void texture_backend_draw(const TextureResource *resource, Rectangle destination);
 
 void texture_backend_draw_region(const TextureResource *resource, Rectangle source, Rectangle destination, Vector2 origin, float rotation);
 
