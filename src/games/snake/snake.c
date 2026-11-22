@@ -31,7 +31,6 @@ static void snake_init(void *state, EngineContext *engine) {
 
     animation_clip_init(&runtime->fruit_clip, 0, 0, 7, 7, 1, 448, 448, 0.15f, ANIMATION_PLAY_ONCE);
     animation_player_init(&runtime->fruit_player, &runtime->fruit_clip);
-    animation_player_play(&runtime->fruit_player);
 
     runtime->play_width = SNAKE_WIDTH;
     runtime->play_height = SNAKE_HEIGHT;
