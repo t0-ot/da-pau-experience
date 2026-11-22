@@ -54,3 +54,18 @@ void texture_backend_draw(const TextureResource *resource, Rectangle destination
 
     texture_backend_draw_region(resource, (Rectangle){0, 0, (float)resource->texture.width, (float)resource->texture.height}, destination, (Vector2){0, 0}, 0.0f);
 }
+
+void texture_backend_get_size(
+    const TextureResource *resource,
+    int *width,
+    int *height
+) {
+    if (resource == NULL)
+        return;
+
+    if (width != NULL)
+        *width = resource->texture.width;
+
+    if (height != NULL)
+        *height = resource->texture.height;
+}

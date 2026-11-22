@@ -4,9 +4,6 @@
 #include "engine/assets/asset_manager.h"
 #include "texture_backend.h"
 
-TextureResource *asset_manager_resolve_texture(
-    const AssetManager *manager,
-    TextureHandle texture
-);
+TextureResource *asset_manager_resolve_texture(const AssetManager *manager, TextureHandle texture, bool *is_fallback);
 
 #endif // ASSET_MANAGER_INTERNAL_H

@@ -7,6 +7,8 @@
 #include "asset_manager_internal.h"
 #include "texture_backend.h"
 
+#define FALLBACK_TEXTURE_DIR "assets/null.png"
+
 /* -------------------------------------------------- */
 /* Internal structures                                */
 /* -------------------------------------------------- */
@@ -19,6 +21,7 @@ typedef struct {
     TextureResource *resource;
 
     AssetGroupHandle owner;
+    AssetError load_error;
 } TextureSlot;
 
 typedef struct {
@@ -28,6 +31,7 @@ typedef struct {
 
 struct AssetManager {
     TextureSlot *textures;
+    TextureResource *fallback_texture;
     size_t texture_count;
     size_t texture_capacity;
 
@@ -193,7 +197,17 @@ static void unload_texture_slot(TextureSlot *slot) {
 /* -------------------------------------------------- */
 
 AssetManager *asset_manager_create(void) {
-    return calloc(1, sizeof(AssetManager));
+    AssetManager *manager = calloc(1, sizeof(AssetManager));
+
+    if (manager == NULL)
+        return NULL;
+
+    if (texture_backend_load(FALLBACK_TEXTURE_DIR, &manager->fallback_texture) != TEXTURE_BACKEND_SUCCESS) {
+        free(manager);
+        return NULL;
+    }
+
+    return manager;
 }
 
 void asset_manager_destroy(AssetManager *manager) {
@@ -203,6 +217,7 @@ void asset_manager_destroy(AssetManager *manager) {
     for (size_t i = 0; i < manager->texture_count; i++)
         unload_texture_slot(&manager->textures[i]);
 
+    texture_backend_unload(manager->fallback_texture);
     free(manager->textures);
     free(manager->groups);
     free(manager);
@@ -272,7 +287,12 @@ bool asset_manager_destroy_group(AssetManager *manager, AssetGroupHandle group) 
 /* Texture management                                 */
 /* -------------------------------------------------- */
 
-TextureLoadResult asset_manager_load_texture(AssetManager *manager, AssetGroupHandle group, const char *path) {
+
+TextureLoadResult asset_manager_load_texture(
+    AssetManager *manager,
+    AssetGroupHandle group,
+    const char *path
+) {
     if (manager == NULL || path == NULL || path[0] == '\0')
         return make_error(ASSET_ERROR_INVALID_ARGUMENT);
 
@@ -290,16 +310,14 @@ TextureLoadResult asset_manager_load_texture(AssetManager *manager, AssetGroupHa
             slot->owner.generation == group.generation &&
             strcmp(slot->path, path) == 0) {
 
-            TextureLoadResult result = {
+            return (TextureLoadResult){
                 .handle = {
                     .index = (uint32_t)i,
                     .generation = slot->generation
                 },
-                .error = ASSET_ERROR_NONE,
+                .error = slot->load_error,
                 .reused = true
             };
-
-            return result;
         }
     }
 
@@ -333,44 +351,62 @@ TextureLoadResult asset_manager_load_texture(AssetManager *manager, AssetGroupHa
     /* Load through the backend abstraction. */
     TextureResource *resource = NULL;
 
-    TextureBackendResult backend_result = texture_backend_load(path, &resource);
+    TextureBackendResult backend_result =
+        texture_backend_load(path, &resource);
 
-    if (backend_result != TEXTURE_BACKEND_SUCCESS) {
-        free(path_copy);
+    AssetError load_error = ASSET_ERROR_NONE;
 
-        if (backend_result == TEXTURE_BACKEND_FILE_NOT_FOUND)
-            return make_error(ASSET_ERROR_FILE_NOT_FOUND);
+    switch (backend_result) {
+        case TEXTURE_BACKEND_SUCCESS:
+            break;
 
-        if (backend_result == TEXTURE_BACKEND_OUT_OF_MEMORY)
+        case TEXTURE_BACKEND_FILE_NOT_FOUND:
+            load_error = ASSET_ERROR_FILE_NOT_FOUND;
+            break;
+
+        case TEXTURE_BACKEND_OUT_OF_MEMORY:
+            free(path_copy);
             return make_error(ASSET_ERROR_OUT_OF_MEMORY);
 
-        return make_error(ASSET_ERROR_BACKEND);
+        default:
+            load_error = ASSET_ERROR_BACKEND;
+            break;
     }
 
-    /* Commit the successfully loaded texture to its slot. */
+    /* Commit the request, even if loading failed recoverably. */
     slot->path = path_copy;
     slot->resource = resource;
+    slot->load_error = load_error;
     slot->owner = group;
     slot->active = true;
 
     if (new_slot)
         manager->texture_count++;
 
-    TextureLoadResult result = {
+    return (TextureLoadResult){
         .handle = {
             .index = (uint32_t)index,
             .generation = slot->generation
         },
-        .error = ASSET_ERROR_NONE,
+        .error = slot->load_error,
         .reused = false
     };
-
-    return result;
 }
 
-TextureResource *asset_manager_resolve_texture(const AssetManager *manager, TextureHandle texture) {
+TextureResource *asset_manager_resolve_texture(const AssetManager *manager, TextureHandle texture, bool *is_fallback) {
+    if (is_fallback != NULL)
+        *is_fallback = false;
+
     if (!texture_is_valid(manager, texture))
         return NULL;
 
-    return manager->textures[texture.index].resource;
+    const TextureSlot *slot = &manager->textures[texture.index];
+
+    if (slot->resource != NULL)
+        return slot->resource;
+
+    if (is_fallback != NULL)
+        *is_fallback = true;
+
+    return manager->fallback_texture;
 }
