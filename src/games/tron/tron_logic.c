@@ -265,6 +265,7 @@ static void handle_player_death(tron_runtime *runtime, int play_width) {
         runtime->level = 1,
         start_level_intro(runtime);
 
+        runtime->toggle_turbo = 0;
         runtime->last_dir_input.posX = 0;
         runtime->last_dir_input.posY = -1;
         reset_entity(&runtime->player, 1, play_width / 2, 25);
