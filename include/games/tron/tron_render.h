@@ -26,7 +26,8 @@ void tron_render_game(
     int enemy_count,
     int level,
     int level_starting,
-    int turbo
+    int turbo,
+    int attempt_no
 );
 
 #endif // TRON_RENDER_H

@@ -304,6 +304,7 @@ void update_tron_player(
 
     if (!runtime->player.alive) {
         handle_player_death(runtime, play_width);
+        runtime->attempt_number++;
     }
 }
 
