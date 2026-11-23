@@ -13,6 +13,7 @@
 static void tron_init(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
 
+    runtime->attempt_number = 1;
     runtime->player.segments.amt = 1;
     runtime->player.capacity = TRON_WIDTH * TRON_HEIGHT;
     runtime->player.segments.points = calloc(runtime->player.capacity, sizeof(Point));
@@ -131,7 +132,8 @@ static void tron_draw(void *state, EngineContext *engine) {
         runtime->view_enemies.enemy_amt,
         runtime->level,
         runtime->level_starting,
-        runtime->toggle_turbo
+        runtime->toggle_turbo,
+        runtime->attempt_number
     );
 }
 
