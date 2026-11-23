@@ -22,7 +22,7 @@ bool resource_group_manager_register_cleanup(
 void resource_group_manager_unregister_cleanup(
     ResourceGroupManager *manager,
     ResourceGroupCleanupCallback callback,
-    void *context
+    const void *context
 );
 
 #endif //RESOURCE_GROUP_MANAGER_INTERNAL_H
