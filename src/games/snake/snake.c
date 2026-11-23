@@ -19,7 +19,7 @@
 static void snake_init(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
 
-    runtime->texture.assets = asset_manager_create_group(engine->assets);
+    runtime->texture.assets = resource_group_manager_create_group(engine->groups);
     TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "assets/apple.png");
 
     runtime->texture.fruit_texture = fruit.handle;
@@ -153,7 +153,7 @@ static void snake_cleanup(void *state, EngineContext *engine) {
     if (runtime == NULL)
         return;
 
-    asset_manager_destroy_group(engine->assets, runtime->texture.assets);
+    resource_group_manager_destroy_group(engine->groups, runtime->texture.assets);
     free(runtime->snake.segments.points);
     runtime->snake.segments.points = NULL;
 

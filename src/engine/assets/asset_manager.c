@@ -1,9 +1,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
 #include "engine/assets/asset_manager.h"
+#include "../resources/resource_group_manager_internal.h"
 #include "asset_manager_internal.h"
 #include "texture_backend.h"
 
@@ -20,24 +20,17 @@ typedef struct {
     char *path;
     TextureResource *resource;
 
-    AssetGroupHandle owner;
+    ResourceGroupHandle owner;
     AssetError load_error;
 } TextureSlot;
 
-typedef struct {
-    uint32_t generation;
-    bool active;
-} AssetGroupSlot;
-
 struct AssetManager {
+    ResourceGroupManager *groups;
+
     TextureSlot *textures;
     TextureResource *fallback_texture;
     size_t texture_count;
     size_t texture_capacity;
-
-    AssetGroupSlot *groups;
-    size_t group_count;
-    size_t group_capacity;
 };
 
 /* -------------------------------------------------- */
@@ -64,21 +57,6 @@ static uint32_t next_generation(uint32_t generation) {
     return generation;
 }
 
-static bool group_is_valid(
-    const AssetManager *manager,
-    AssetGroupHandle group
-) {
-    if (manager == NULL || group.generation == 0)
-        return false;
-
-    if (group.index >= manager->group_count)
-        return false;
-
-    const AssetGroupSlot *slot = &manager->groups[group.index];
-
-    return slot->active && slot->generation == group.generation;
-}
-
 static bool texture_is_valid(const AssetManager *manager, TextureHandle texture) {
     if (manager == NULL || texture.generation == 0)
         return false;
@@ -100,10 +78,6 @@ static TextureLoadResult make_error(AssetError error) {
 
     return result;
 }
-
-/* -------------------------------------------------- */
-/* Slot allocation                                    */
-/* -------------------------------------------------- */
 
 static bool grow_texture_slots(AssetManager *manager) {
     size_t old_capacity = manager->texture_capacity;
@@ -138,41 +112,6 @@ static bool grow_texture_slots(AssetManager *manager) {
     return true;
 }
 
-static bool grow_group_slots(AssetManager *manager) {
-    size_t old_capacity = manager->group_capacity;
-
-    if (old_capacity > SIZE_MAX / 2)
-        return false;
-
-    size_t new_capacity =
-        old_capacity == 0 ? 4 : old_capacity * 2;
-
-    if (new_capacity > UINT32_MAX ||
-        new_capacity > SIZE_MAX / sizeof(AssetGroupSlot))
-        return false;
-
-    AssetGroupSlot *slots = realloc(
-        manager->groups,
-        new_capacity * sizeof(*slots)
-    );
-
-    if (slots == NULL)
-        return false;
-
-    manager->groups = slots;
-
-    for (size_t i = old_capacity; i < new_capacity; i++) {
-        slots[i] = (AssetGroupSlot){
-            .generation = 1,
-            .active = false
-        };
-    }
-
-    manager->group_capacity = new_capacity;
-
-    return true;
-}
-
 /* -------------------------------------------------- */
 /* Texture cleanup                                    */
 /* -------------------------------------------------- */
@@ -192,76 +131,11 @@ static void unload_texture_slot(TextureSlot *slot) {
     slot->generation = next_generation(slot->generation);
 }
 
-/* -------------------------------------------------- */
-/* Manager lifecycle                                  */
-/* -------------------------------------------------- */
+static void asset_manager_cleanup_group(void *context, ResourceGroupHandle group) {
+    AssetManager *manager = context;
 
-AssetManager *asset_manager_create(void) {
-    AssetManager *manager = calloc(1, sizeof(AssetManager));
-
-    if (manager == NULL)
-        return NULL;
-
-    if (texture_backend_load(FALLBACK_TEXTURE_DIR, &manager->fallback_texture) != TEXTURE_BACKEND_SUCCESS) {
-        free(manager);
-        return NULL;
-    }
-
-    return manager;
-}
-
-void asset_manager_destroy(AssetManager *manager) {
     if (manager == NULL)
         return;
-
-    for (size_t i = 0; i < manager->texture_count; i++)
-        unload_texture_slot(&manager->textures[i]);
-
-    texture_backend_unload(manager->fallback_texture);
-    free(manager->textures);
-    free(manager->groups);
-    free(manager);
-}
-
-/* -------------------------------------------------- */
-/* Ownership groups                                   */
-/* -------------------------------------------------- */
-
-AssetGroupHandle asset_manager_create_group(AssetManager *manager) {
-    if (manager == NULL)
-        return ASSET_GROUP_INVALID;
-
-    size_t index;
-
-    for (index = 0; index < manager->group_count; index++) {
-        if (!manager->groups[index].active)
-            break;
-    }
-
-    if (index == manager->group_count) {
-        if (manager->group_count == manager->group_capacity) {
-            if (!grow_group_slots(manager))
-                return ASSET_GROUP_INVALID;
-        }
-
-        manager->group_count++;
-    }
-
-    AssetGroupSlot *slot = &manager->groups[index];
-
-    slot->active = true;
-
-    AssetGroupHandle handle = {
-        .index = (uint32_t)index,
-        .generation = slot->generation
-    };
-
-    return handle;
-}
-
-bool asset_manager_destroy_group(AssetManager *manager, AssetGroupHandle group) {
-    if (!group_is_valid(manager, group))
-        return false;
 
     for (size_t i = 0; i < manager->texture_count; i++) {
         TextureSlot *texture = &manager->textures[i];
@@ -274,13 +148,51 @@ bool asset_manager_destroy_group(AssetManager *manager, AssetGroupHandle group) 
             unload_texture_slot(texture);
         }
     }
+}
 
-    AssetGroupSlot *slot = &manager->groups[group.index];
+/* -------------------------------------------------- */
+/* Manager lifecycle                                  */
+/* -------------------------------------------------- */
 
-    slot->active = false;
-    slot->generation = next_generation(slot->generation);
+AssetManager *asset_manager_create(ResourceGroupManager *groups) {
+    if (groups == NULL)
+        return NULL;
 
-    return true;
+    AssetManager *manager = calloc(1, sizeof(AssetManager));
+
+    if (manager == NULL)
+        return NULL;
+
+    manager->groups = groups;
+
+    if (texture_backend_load(FALLBACK_TEXTURE_DIR, &manager->fallback_texture) != TEXTURE_BACKEND_SUCCESS) {
+        free(manager);
+        return NULL;
+    }
+
+    /* Register for resource group destruction notifications. */
+    if (!resource_group_manager_register_cleanup(groups, asset_manager_cleanup_group, manager)) {
+        texture_backend_unload(manager->fallback_texture);
+        free(manager);
+        return NULL;
+    }
+
+    return manager;
+}
+
+void asset_manager_destroy(AssetManager *manager) {
+    if (manager == NULL)
+        return;
+
+    resource_group_manager_unregister_cleanup(manager->groups, asset_manager_cleanup_group, manager);
+
+    for (size_t i = 0; i < manager->texture_count; i++)
+        unload_texture_slot(&manager->textures[i]);
+
+    texture_backend_unload(manager->fallback_texture);
+
+    free(manager->textures);
+    free(manager);
 }
 
 /* -------------------------------------------------- */
@@ -290,13 +202,13 @@ bool asset_manager_destroy_group(AssetManager *manager, AssetGroupHandle group) 
 
 TextureLoadResult asset_manager_load_texture(
     AssetManager *manager,
-    AssetGroupHandle group,
+    ResourceGroupHandle group,
     const char *path
 ) {
     if (manager == NULL || path == NULL || path[0] == '\0')
         return make_error(ASSET_ERROR_INVALID_ARGUMENT);
 
-    if (!group_is_valid(manager, group))
+    if (!resource_group_manager_is_valid(manager->groups, group))
         return make_error(ASSET_ERROR_INVALID_GROUP);
 
     /* Reuse an existing texture within this group. */

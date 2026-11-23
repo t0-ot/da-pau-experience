@@ -9,6 +9,7 @@
 #include "engine/session.h"
 #include "engine/renderer/renderer.h"
 #include "engine/input/input.h"
+#include "engine/resources/resource_group_manager.h"
 #include "engine/assets/asset_manager.h"
 #include "app/game_registry.h"
 
@@ -30,16 +31,25 @@ int main(void) {
         return EXIT_FAILURE;
 
     /* Create engine services. */
-    AssetManager *assets = asset_manager_create();
+    ResourceGroupManager *groups = resource_group_manager_create();
+
+    if (groups == NULL) {
+        renderer_close();
+        return EXIT_FAILURE;
+    }
+
+    AssetManager *assets = asset_manager_create(groups);
 
     if (assets == NULL) {
+        resource_group_manager_destroy(groups);
         renderer_close();
         return EXIT_FAILURE;
     }
 
     /* Assemble the engine context. */
     EngineContext engine = {
-        .assets = assets
+        .assets = assets,
+        .groups = groups
     };
 
     /* Initialize centralized input handling. */
@@ -74,6 +84,7 @@ int main(void) {
     /* Release session and graphics resources. */
     session_cleanup(&session);
     asset_manager_destroy(assets);
+    resource_group_manager_destroy(groups);
     renderer_close();
 
     return EXIT_SUCCESS;
