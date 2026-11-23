@@ -197,12 +197,12 @@ bool resource_group_manager_register_cleanup(ResourceGroupManager *manager, Reso
     return true;
 }
 
-void resource_group_manager_unregister_cleanup(ResourceGroupManager *manager, ResourceGroupCleanupCallback callback, void *context) {
+void resource_group_manager_unregister_cleanup(ResourceGroupManager *manager, ResourceGroupCleanupCallback callback, const void *context) {
     if (manager == NULL || callback == NULL)
         return;
 
     for (size_t i = 0; i < manager->callback_count; i++) {
-        ResourceGroupCleanupEntry *entry = &manager->callbacks[i];
+        const ResourceGroupCleanupEntry *entry = &manager->callbacks[i];
 
         if (entry->callback == callback && entry->context == context) {
             manager->callbacks[i] =
