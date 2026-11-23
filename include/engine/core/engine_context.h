@@ -2,6 +2,7 @@
 #define ENGINE_CONTEXT_H
 
 #include "engine/assets/asset_manager.h"
+#include "engine/resources/resource_group_manager.h"
 
 /**
  * @brief Provides access to shared engine services.
@@ -11,6 +12,7 @@
  */
 typedef struct {
     AssetManager *assets;
+    ResourceGroupManager *groups;
 } EngineContext;
 
 #endif // ENGINE_CONTEXT_H

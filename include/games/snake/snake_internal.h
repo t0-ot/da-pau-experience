@@ -31,7 +31,7 @@ typedef struct {
 } fruitData;
 
  typedef struct {
-    AssetGroupHandle assets;
+    ResourceGroupHandle assets;
 
     TextureHandle fruit_texture;
 } snake_textures;
