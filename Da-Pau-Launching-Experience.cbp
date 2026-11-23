@@ -107,6 +107,7 @@
 		<Unit filename="include/engine/input/input.h" />
 		<Unit filename="include/engine/input/movement.h" />
 		<Unit filename="include/engine/renderer/renderer.h" />
+		<Unit filename="include/engine/resources/resource_group_manager.h" />
 		<Unit filename="include/engine/session.h" />
 		<Unit filename="include/engine/storage/highscore.h" />
 		<Unit filename="include/engine/storage/storage_path.h" />
@@ -146,6 +147,10 @@
 		<Unit filename="src/engine/renderer/renderer.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/engine/resources/resource_group_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/resources/resource_group_manager_internal.h" />
 		<Unit filename="src/engine/session.c">
 			<Option compilerVar="CC" />
 		</Unit>
