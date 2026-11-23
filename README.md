@@ -1,4 +1,4 @@
-# Da-Pau Launching Experience 🎮
+# Da Pau Launching Experience 🎮
 > An Unbeaten Launching Experience
 
 **Da-Pau** is a modular multi-game application written in C, built around a shared game-engine architecture. What started as a simple terminal-based Snake game and a way to practice C programming has gradually evolved into a unified application where multiple games can be launched and played through a single interface.
