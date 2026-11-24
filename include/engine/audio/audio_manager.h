@@ -39,11 +39,11 @@ AudioManager *audio_manager_create(ResourceGroupManager *groups);
 void audio_manager_update(AudioManager *manager);
 void audio_manager_destroy(AudioManager *manager);
 
-/* Music Management */
+/* Sound Management */
 MusicLoadResult audio_manager_load_music(AudioManager *manager, ResourceGroupHandle group, const char *path);
 bool audio_manager_play_sound(AudioManager *manager, SoundHandle sound);
 
-/* Sound Management */
+/* Music Management */
 SoundLoadResult audio_manager_load_sound(AudioManager *manager, ResourceGroupHandle group, const char *path);
 bool audio_manager_play_music(AudioManager *manager, MusicHandle music);
 bool audio_manager_pause_music(AudioManager *manager);
