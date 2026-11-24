@@ -6,7 +6,7 @@ struct TextureResource {
 };
 
 TextureBackendResult texture_backend_load(const char *path, TextureResource **out_resource) {
-    if (path == NULL || out_resource == NULL)
+    if (path == NULL || path[0] == '\0' || out_resource == NULL)
         return TEXTURE_BACKEND_FAILURE;
 
     *out_resource = NULL;
