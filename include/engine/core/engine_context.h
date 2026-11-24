@@ -2,6 +2,7 @@
 #define ENGINE_CONTEXT_H
 
 #include "engine/assets/asset_manager.h"
+#include "engine/audio/audio_manager.h"
 #include "engine/resources/resource_group_manager.h"
 
 /**
