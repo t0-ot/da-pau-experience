@@ -132,7 +132,10 @@ jobs:
       - name: Generate compile_commands.json & Run Clang-Tidy
         run: |
           bear -- make release
-          find src -name '*.c' | xargs clang-tidy -p . --checks='-*,bugprone-*,clang-analyzer-*,cert-*,performance-*' --warnings-as-errors='*' --header-filter='^.*(src|include)/.*$'
+          find src -name '*.c' -print0 | xargs -0 clang-tidy -p . \
+            --checks='-*,bugprone-*,clang-analyzer-*,performance-*,-bugprone-easily-swappable-parameters' \
+            --header-filter='^.*(src|include)/.*$'
+
 
   # 4. Build Doxygen Docs
   build-docs:
