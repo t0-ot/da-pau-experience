@@ -450,6 +450,7 @@ bool audio_manager_play_sound(AudioManager *manager, SoundHandle sound) {
 /* Music Management                                   */
 /* -------------------------------------------------- */
 
+// cppcheck-suppress unusedFunction
 MusicLoadResult audio_manager_load_music(
     AudioManager *manager,
     ResourceGroupHandle group,
@@ -555,6 +556,7 @@ MusicLoadResult audio_manager_load_music(
     };
 }
 
+// cppcheck-suppress unusedFunction
 bool audio_manager_play_music(AudioManager *manager, MusicHandle music) {
     if (!music_is_valid(manager, music))
         return false;
@@ -589,6 +591,7 @@ bool audio_manager_play_music(AudioManager *manager, MusicHandle music) {
     return true;
 }
 
+// cppcheck-suppress unusedFunction
 bool audio_manager_pause_music(AudioManager *manager) {
     if (manager == NULL)
         return false;
@@ -617,6 +620,7 @@ bool audio_manager_pause_music(AudioManager *manager) {
     return true;
 }
 
+// cppcheck-suppress unusedFunction
 bool audio_manager_resume_music(AudioManager *manager) {
     if (manager == NULL)
         return false;
@@ -645,6 +649,7 @@ bool audio_manager_resume_music(AudioManager *manager) {
     return true;
 }
 
+// cppcheck-suppress staticFunction
 bool audio_manager_stop_music(AudioManager *manager) {
     if (manager == NULL)
         return false;

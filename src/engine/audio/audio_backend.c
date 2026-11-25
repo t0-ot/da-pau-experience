@@ -140,6 +140,7 @@ void audio_backend_unload_sound(SoundResource *resource) {
     free(resource);
 }
 
+// cppcheck-suppress unusedFunction
 void audio_backend_pause_sound(const SoundResource *resource) {
     if (resource == NULL)
         return;
@@ -149,6 +150,7 @@ void audio_backend_pause_sound(const SoundResource *resource) {
     PauseSound(resource->sound_data);
 }
 
+// cppcheck-suppress unusedFunction
 void audio_backend_resume_sound(const SoundResource *resource) {
     if (resource == NULL)
         return;
@@ -158,6 +160,7 @@ void audio_backend_resume_sound(const SoundResource *resource) {
     ResumeSound(resource->sound_data);
 }
 
+// cppcheck-suppress unusedFunction
 void audio_backend_stop_sound(const SoundResource *resource) {
     if (resource == NULL)
         return;
