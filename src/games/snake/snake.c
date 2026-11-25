@@ -19,10 +19,12 @@
 static void snake_init(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
 
-    runtime->texture.assets = resource_group_manager_create_group(engine->groups);
-    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "assets/apple.png");
+    runtime->resources.assets = resource_group_manager_create_group(engine->groups);
+    SoundLoadResult fruit_nom = audio_manager_load_sound(engine->audio, runtime->resources.assets, "assets/nom.mp3");
+    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->resources.assets, "assets/apple.png");
 
-    runtime->texture.fruit_texture = fruit.handle;
+    runtime->resources.fruit_eat = fruit_nom.handle;
+    runtime->resources.fruit_texture = fruit.handle;
 
     animation_clip_init(&runtime->fruit_clip, 0, 0, 7, 7, 1, 448, 448, 0.15f, ANIMATION_PLAY_ONCE);
     animation_player_init(&runtime->fruit_player, &runtime->fruit_clip);
@@ -123,6 +125,7 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
 
             if (fruit_collision > 0) {
                 handleFruitCollision(&runtime->normalFruitSet, &runtime->snake, fruit_collision, runtime->play_width, runtime->play_height, &runtime->pending_growth);
+                audio_manager_play_sound(engine->audio, runtime->resources.fruit_eat);
             }
 
             runtime->snake.alive = check_seg_entity_life(&runtime->snake, &runtime->last_dir_input, runtime->play_width, runtime->play_height);
@@ -153,7 +156,7 @@ static void snake_cleanup(void *state, EngineContext *engine) {
     if (runtime == NULL)
         return;
 
-    resource_group_manager_destroy_group(engine->groups, runtime->texture.assets);
+    resource_group_manager_destroy_group(engine->groups, runtime->resources.assets);
     free(runtime->snake.segments.points);
     runtime->snake.segments.points = NULL;
 
