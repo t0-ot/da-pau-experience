@@ -289,7 +289,7 @@ void audio_manager_update(AudioManager *manager) {
         return;
     }
 
-    MusicSlot *music = &manager->music[manager->active_music.index];
+    const MusicSlot *music = &manager->music[manager->active_music.index];
 
     if (music->resource == NULL) {
         manager->active_music = MUSIC_HANDLE_INVALID;
@@ -436,7 +436,7 @@ bool audio_manager_play_sound(AudioManager *manager, SoundHandle sound) {
     if (!sound_is_valid(manager, sound))
         return false;
 
-    SoundSlot *slot = &manager->sounds[sound.index];
+    const SoundSlot *slot = &manager->sounds[sound.index];
 
     if (slot->resource == NULL)
         return false;
@@ -561,7 +561,7 @@ bool audio_manager_play_music(AudioManager *manager, MusicHandle music) {
     if (!music_is_valid(manager, music))
         return false;
 
-    MusicSlot *slot = &manager->music[music.index];
+    const MusicSlot *slot = &manager->music[music.index];
 
     if (slot->resource == NULL)
         return false;
@@ -605,7 +605,7 @@ bool audio_manager_pause_music(AudioManager *manager) {
         return false;
     }
 
-    MusicSlot *slot = &manager->music[manager->active_music.index];
+    const MusicSlot *slot = &manager->music[manager->active_music.index];
 
     if (slot->resource == NULL) {
         manager->active_music = MUSIC_HANDLE_INVALID;
@@ -634,7 +634,7 @@ bool audio_manager_resume_music(AudioManager *manager) {
         return false;
     }
 
-    MusicSlot *slot = &manager->music[manager->active_music.index];
+    const MusicSlot *slot = &manager->music[manager->active_music.index];
 
     if (slot->resource == NULL) {
         manager->active_music = MUSIC_HANDLE_INVALID;
@@ -657,7 +657,7 @@ bool audio_manager_stop_music(AudioManager *manager) {
     if (manager->music_state != MUSIC_STATE_STOPPED &&
         music_is_valid(manager, manager->active_music)) {
 
-        MusicSlot *slot = &manager->music[manager->active_music.index];
+        const MusicSlot *slot = &manager->music[manager->active_music.index];
 
         if (slot->resource != NULL)
             audio_backend_stop_music(slot->resource);
