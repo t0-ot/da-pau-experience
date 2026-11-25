@@ -56,6 +56,14 @@ jobs:
           make -C external/raylib/src clean
           make asan
 
+      - name: Configure Virtual Audio Output
+        run: |
+          cat > "$HOME/.asoundrc" <<'EOF'
+          pcm.!default {
+              type null
+          }
+          EOF
+
       - name: Run Headless Startup Smoke Test (ASan)
         run: |
           timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
@@ -169,4 +177,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
