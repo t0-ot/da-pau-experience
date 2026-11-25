@@ -172,6 +172,8 @@ void audio_manager_destroy(AudioManager *manager) {
 
     resource_group_manager_unregister_cleanup(manager->groups, audio_manager_cleanup_group, manager);
 
+    audio_manager_stop_music(manager);
+
     for (size_t i = 0; i < manager->music_count; i++)
         unload_music_slot(&manager->music[i]);
 
