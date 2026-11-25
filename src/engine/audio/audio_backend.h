@@ -15,11 +15,13 @@ typedef enum {
 /* Music Related Func                                 */
 /* -------------------------------------------------- */
 AudioBackendResult audio_backend_load_music(const char *path, MusicResource **out_resource);
+void audio_backend_unload_music(MusicResource *resource);
 
 /* -------------------------------------------------- */
 /* Sound Related Func                                 */
 /* -------------------------------------------------- */
 AudioBackendResult audio_backend_load_sound(const char *path, SoundResource **out_resource);
+void audio_backend_unload_sound(SoundResource *resource);
 
 
 #endif // AUDIO_BACKEND_H

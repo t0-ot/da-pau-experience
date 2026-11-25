@@ -41,7 +41,11 @@ AudioBackendResult audio_backend_load_music(const char *path, MusicResource **ou
 }
 
 void audio_backend_unload_music(MusicResource *resource) {
+    if (resource == NULL)
+        return;
 
+    UnloadMusicStream(resource->music_data);
+    free(resource);
 }
 
 /* -------------------------------------------------- */
@@ -71,4 +75,12 @@ AudioBackendResult audio_backend_load_sound(const char *path, SoundResource **ou
     *out_resource = resource;
 
     return AUDIO_BACKEND_SUCCESS;
+}
+
+void audio_backend_unload_sound(SoundResource *resource) {
+    if (resource == NULL)
+        return;
+
+    UnloadSound(resource->sound_data);
+    free(resource);
 }
