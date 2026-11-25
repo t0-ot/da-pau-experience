@@ -40,6 +40,52 @@ AudioBackendResult audio_backend_load_music(const char *path, MusicResource **ou
     return AUDIO_BACKEND_SUCCESS;
 }
 
+void audio_backend_update_music(const MusicResource *resource) {
+    if (resource == NULL)
+        return;
+
+    if (!IsMusicValid(resource->music_data))
+        return;
+
+    UpdateMusicStream(resource->music_data);
+}
+
+void audio_backend_play_music(const MusicResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsMusicValid(resource->music_data))
+        return;
+
+    PlayMusicStream(resource->music_data);
+}
+
+void audio_backend_pause_music(const MusicResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsMusicValid(resource->music_data))
+        return;
+
+    PauseMusicStream(resource->music_data);
+}
+void audio_backend_resume_music(const MusicResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsMusicValid(resource->music_data))
+        return;
+
+    ResumeMusicStream(resource->music_data);
+}
+
+void audio_backend_stop_music(const MusicResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsMusicValid(resource->music_data))
+        return;
+
+    StopMusicStream(resource->music_data);
+}
+
+
 void audio_backend_unload_music(MusicResource *resource) {
     if (resource == NULL)
         return;
@@ -77,10 +123,46 @@ AudioBackendResult audio_backend_load_sound(const char *path, SoundResource **ou
     return AUDIO_BACKEND_SUCCESS;
 }
 
+void audio_backend_play_sound(const SoundResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsSoundValid(resource->sound_data))
+        return;
+
+    PlaySound(resource->sound_data);
+}
+
 void audio_backend_unload_sound(SoundResource *resource) {
     if (resource == NULL)
         return;
 
     UnloadSound(resource->sound_data);
     free(resource);
+}
+
+void audio_backend_pause_sound(const SoundResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsSoundValid(resource->sound_data))
+        return;
+
+    PauseSound(resource->sound_data);
+}
+
+void audio_backend_resume_sound(const SoundResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsSoundValid(resource->sound_data))
+        return;
+
+    ResumeSound(resource->sound_data);
+}
+
+void audio_backend_stop_sound(const SoundResource *resource) {
+    if (resource == NULL)
+        return;
+    if (!IsSoundValid(resource->sound_data))
+        return;
+
+    StopSound(resource->sound_data);
 }
