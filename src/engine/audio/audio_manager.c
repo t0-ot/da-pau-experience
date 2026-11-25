@@ -66,6 +66,78 @@ static uint32_t next_generation(uint32_t generation) {
     return generation;
 }
 
+static bool grow_music_slots(AudioManager *manager) {
+    size_t old_capacity = manager->music_capacity;
+
+    if (old_capacity > SIZE_MAX / 2)
+        return false;
+
+    size_t new_capacity = old_capacity == 0 ? 8 : old_capacity * 2;
+
+    if (new_capacity > UINT32_MAX || new_capacity > SIZE_MAX / sizeof(MusicSlot))
+        return false;
+
+    MusicSlot *slots = realloc(manager->music, new_capacity * sizeof(*slots));
+
+    if (slots == NULL)
+        return false;
+
+    manager->music = slots;
+
+    for (size_t i = old_capacity; i < new_capacity; i++) {
+        slots[i] = (MusicSlot){0};
+        slots[i].generation = 1;
+    }
+
+    manager->music_capacity = new_capacity;
+    return true;
+}
+
+static bool grow_sound_slots(AudioManager *manager) {
+    size_t old_capacity = manager->sound_capacity;
+
+    if (old_capacity > SIZE_MAX / 2)
+        return false;
+
+    size_t new_capacity = old_capacity == 0 ? 8 : old_capacity * 2;
+
+    if (new_capacity > UINT32_MAX || new_capacity > SIZE_MAX / sizeof(SoundSlot))
+        return false;
+
+    SoundSlot *slots = realloc(manager->sounds, new_capacity * sizeof(*slots));
+
+    if (slots == NULL)
+        return false;
+
+    manager->sounds = slots;
+
+    for (size_t i = old_capacity; i < new_capacity; i++) {
+        slots[i] = (SoundSlot){0};
+        slots[i].generation = 1;
+    }
+
+    manager->sound_capacity = new_capacity;
+    return true;
+}
+
+static MusicLoadResult make_music_error(AudioError error) {
+    MusicLoadResult result = {
+        .handle = MUSIC_HANDLE_INVALID,
+        .error = error,
+        .reused = false
+    };
+    return result;
+}
+
+static SoundLoadResult make_sound_error(AudioError error) {
+    SoundLoadResult result = {
+        .handle = SOUND_HANDLE_INVALID,
+        .error = error,
+        .reused = false
+    };
+    return result;
+}
+
 /* -------------------------------------------------- */
 /* Audio Cleanup                                      */
 /* -------------------------------------------------- */
@@ -185,4 +257,32 @@ void audio_manager_destroy(AudioManager *manager) {
     free(manager->sounds);
     free(manager);
 
+}
+
+/* -------------------------------------------------- */
+/* Audio management                                   */
+/* -------------------------------------------------- */
+
+/* Sound Management */
+SoundLoadResult audio_manager_load_sound(AudioManager *manager, ResourceGroupHandle group, const char *path) {
+    if (manager == NULL || path == NULL || path[0] == '\0')
+        return make_sound_error(AUDIO_ERROR_INVALID_ARGUMENT);
+
+}
+
+bool audio_manager_play_sound(AudioManager *manager, SoundHandle sound) {
+
+}
+
+
+/* Music Management */
+MusicLoadResult audio_manager_load_music(AudioManager *manager, ResourceGroupHandle group, const char *path) {
+}
+bool audio_manager_play_music(AudioManager *manager, MusicHandle music) {
+}
+bool audio_manager_pause_music(AudioManager *manager) {
+}
+bool audio_manager_resume_music(AudioManager *manager) {
+}
+bool audio_manager_stop_music(AudioManager *manager) {
 }
