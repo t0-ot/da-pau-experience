@@ -99,6 +99,10 @@
 		<Unit filename="include/engine/animation/animation.h" />
 		<Unit filename="include/engine/assets/asset_manager.h" />
 		<Unit filename="include/engine/assets/texture.h" />
+		<Unit filename="include/engine/audio/audio_device.h" />
+		<Unit filename="include/engine/audio/audio_manager.h" />
+		<Unit filename="include/engine/audio/music.h" />
+		<Unit filename="include/engine/audio/sound.h" />
 		<Unit filename="include/engine/core/engine_context.h" />
 		<Unit filename="include/engine/core/game_input.h" />
 		<Unit filename="include/engine/core/game_module.h" />
@@ -136,6 +140,16 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/assets/texture_backend.h" />
+		<Unit filename="src/engine/audio/audio_backend.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/audio/audio_backend.h" />
+		<Unit filename="src/engine/audio/audio_device.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/audio/audio_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/engine/entity.c">
 			<Option compilerVar="CC" />
 		</Unit>
