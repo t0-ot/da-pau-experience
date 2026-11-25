@@ -13,6 +13,7 @@
  */
 typedef struct {
     AssetManager *assets;
+    AudioManager *audio;
     ResourceGroupManager *groups;
 } EngineContext;
 

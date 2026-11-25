@@ -8,9 +8,11 @@
 
 #include "engine/session.h"
 #include "engine/renderer/renderer.h"
+#include "engine/audio/audio_device.h"
 #include "engine/input/input.h"
 #include "engine/resources/resource_group_manager.h"
 #include "engine/assets/asset_manager.h"
+#include "engine/audio/audio_manager.h"
 #include "app/game_registry.h"
 
 /**
@@ -38,6 +40,22 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
+    if (!audio_device_init()) {
+        resource_group_manager_destroy(groups);
+        renderer_close();
+        return EXIT_FAILURE;
+    }
+    /* Create the audio manager. */
+    AudioManager *audio = audio_manager_create(groups);
+
+    if (audio == NULL) {
+        audio_device_close();
+        resource_group_manager_destroy(groups);
+        renderer_close();
+        return EXIT_FAILURE;
+    }
+
+    /* Create the asset manager */
     AssetManager *assets = asset_manager_create(groups);
 
     if (assets == NULL) {
@@ -49,6 +67,7 @@ int main(void) {
     /* Assemble the engine context. */
     EngineContext engine = {
         .assets = assets,
+        .audio = audio,
         .groups = groups
     };
 
@@ -83,8 +102,11 @@ int main(void) {
 
     /* Release session and graphics resources. */
     session_cleanup(&session);
+    audio_manager_destroy(audio);
     asset_manager_destroy(assets);
     resource_group_manager_destroy(groups);
+
+    audio_device_close();
     renderer_close();
 
     return EXIT_SUCCESS;
