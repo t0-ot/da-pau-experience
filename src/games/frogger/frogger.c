@@ -1,6 +1,6 @@
 /**
  * @file frogger.c
- * @brief Main module entry points, AssetManager lifecycle, and GameModule vtable for Frogger.
+ * @brief Main module entry points, ResourceGroup lifecycle, and GameModule vtable for Frogger.
  */
 
 #include <stddef.h>
@@ -8,27 +8,29 @@
 #include "games/frogger/frogger_internal.h"
 #include "games/frogger/frogger_logic.h"
 #include "games/frogger/frogger_render.h"
+#include "engine/core/engine_context.h"
 #include "engine/core/game_input.h"
+#include "engine/resources/resource_group_manager.h"
 #include "engine/assets/asset_manager.h"
 #include "engine/animation/animation.h"
 
 static void frogger_init(void *state, EngineContext *ctx) {
-    (void)ctx;
     frogger_runtime *runtime = state;
 
     if (runtime == NULL)
         return;
 
-    runtime->assets = asset_manager_create();
-    runtime->asset_group = asset_manager_create_group(runtime->assets);
+    runtime->asset_group = RESOURCE_GROUP_INVALID;
     runtime->player_tex = TEXTURE_HANDLE_INVALID;
     runtime->vehicle_tex = TEXTURE_HANDLE_INVALID;
     runtime->has_player_sprite = false;
     runtime->has_vehicle_sprite = false;
 
-    if (runtime->assets != NULL) {
+    if (ctx != NULL && ctx->groups != NULL && ctx->assets != NULL) {
+        runtime->asset_group = resource_group_manager_create_group(ctx->groups);
+
         TextureLoadResult p_res = asset_manager_load_texture(
-            runtime->assets,
+            ctx->assets,
             runtime->asset_group,
             "assets/frogger/player.png"
         );
@@ -38,7 +40,7 @@ static void frogger_init(void *state, EngineContext *ctx) {
         }
 
         TextureLoadResult v_res = asset_manager_load_texture(
-            runtime->assets,
+            ctx->assets,
             runtime->asset_group,
             "assets/frogger/vehicles.png"
         );
@@ -95,17 +97,14 @@ static void frogger_draw(void *state, EngineContext *ctx) {
 }
 
 static void frogger_cleanup(void *state, EngineContext *ctx) {
-    (void)ctx;
     frogger_runtime *runtime = state;
 
     if (runtime == NULL)
         return;
 
-    if (runtime->assets != NULL) {
-        asset_manager_destroy_group(runtime->assets, runtime->asset_group);
-        asset_manager_destroy(runtime->assets);
-        runtime->assets = NULL;
-        runtime->asset_group = ASSET_GROUP_INVALID;
+    if (ctx != NULL && ctx->groups != NULL) {
+        resource_group_manager_destroy_group(ctx->groups, runtime->asset_group);
+        runtime->asset_group = RESOURCE_GROUP_INVALID;
     }
 }
 

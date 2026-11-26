@@ -1,6 +1,11 @@
 #include "engine/renderer/renderer.h"
 
+#include "../assets/asset_manager_internal.h"
+#include "../assets/texture_backend.h"
 #include "raylib.h"
+
+#include <stdbool.h>
+#include <stddef.h>
 
 bool renderer_init(int width, int height, const char *title) {
     SetConfigFlags(FLAG_VSYNC_HINT);
@@ -31,4 +36,43 @@ void renderer_end_frame(void) {
 
 float renderer_get_delta_time(void) {
     return GetFrameTime();
+}
+
+bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, Rectangle destination) {
+    if (destination.width <= 0 || destination.height <= 0)
+        return false;
+
+    bool is_fallback = false;
+    const TextureResource *resource =
+        asset_manager_resolve_texture(manager, texture, &is_fallback);
+
+    if (resource == NULL)
+        return false;
+
+    texture_backend_draw(resource, destination);
+
+    return true;
+}
+
+bool renderer_draw_texture_region(const AssetManager *manager, TextureHandle texture, Rectangle source, Rectangle destination, Vector2 origin, float rotation) {
+    if (source.width == 0 || source.height == 0 ||
+        destination.width <= 0 || destination.height <= 0)
+        return false;
+
+    bool is_fallback = false;
+    const TextureResource *resource =
+        asset_manager_resolve_texture(manager, texture, &is_fallback);
+
+    if (resource == NULL)
+        return false;
+
+    texture_backend_draw_region(
+        resource,
+        source,
+        destination,
+        origin,
+        rotation
+    );
+
+    return true;
 }

@@ -1,208 +1,323 @@
 /**
- * @file frogger_render.c
- * @brief Raylib rendering implementation for the endless Pinoy street game.
+ * @file frogger_logic.c
+ * @brief Implements endless vertical scrolling, Pinoy traffic spawning, and collisions.
  */
 
-#include "raylib.h"
-#include "engine/utils.h"
+#include <stdlib.h>
+#include <math.h>
 #include "engine/animation/animation.h"
-#include "games/frogger/frogger_render.h"
-#include "games/frogger/frogger_internal.h"
 #include "games/frogger/frogger_logic.h"
+#include "games/frogger/frogger_internal.h"
+#include "engine/storage/highscore.h"
 
-#define STREET_CELL_SIZE 40
+static StreetRow *get_mutable_row(frogger_runtime *runtime, int world_row) {
+    int idx = world_row % FROGGER_BUFFER_ROWS;
+    if (idx < 0)
+        idx += FROGGER_BUFFER_ROWS;
+    return &runtime->rows[idx];
+}
 
-static const Color JEEPNEY_COLORS[] = {
-    YELLOW,
-    ORANGE,
-    RED,
-    SKYBLUE,
-    MAGENTA
-};
+const StreetRow *frogger_get_row(const frogger_runtime *runtime, int world_row) {
+    int idx = world_row % FROGGER_BUFFER_ROWS;
+    if (idx < 0)
+        idx += FROGGER_BUFFER_ROWS;
+    return &runtime->rows[idx];
+}
 
-static void draw_vehicle_or_plank(
-    LaneObject obj,
-    int draw_x,
-    int draw_w,
-    int row_y
-) {
-    if (obj.kind == OBJ_PLANK) {
-        DrawRectangle(draw_x + 2, row_y + 6, draw_w - 4, STREET_CELL_SIZE - 12, BROWN);
-        DrawRectangleLines(draw_x + 2, row_y + 6, draw_w - 4, STREET_CELL_SIZE - 12, BEIGE);
+static void generate_row(frogger_runtime *runtime, int world_row) {
+    StreetRow *row = get_mutable_row(runtime, world_row);
+    row->world_row = world_row;
+    row->object_count = 0;
+    row->speed = 0.0f;
+
+    for (int c = 0; c < FROGGER_COLS; c++) {
+        row->blocked_cols[c] = false;
+    }
+
+    if (world_row <= 2) {
+        row->type = LANE_SIDEWALK;
         return;
     }
 
-    if (obj.kind == OBJ_JEEPNEY) {
-        Color body = JEEPNEY_COLORS[obj.color_idx % 5];
-        DrawRectangle(draw_x + 2, row_y + 4, draw_w - 4, STREET_CELL_SIZE - 8, body);
-        DrawRectangle(draw_x + 6, row_y + 8, draw_w - 12, STREET_CELL_SIZE - 16, LIGHTGRAY);
-        DrawRectangleLines(draw_x + 2, row_y + 4, draw_w - 4, STREET_CELL_SIZE - 8, WHITE);
-    } else if (obj.kind == OBJ_BUS) {
-        DrawRectangle(draw_x + 2, row_y + 3, draw_w - 4, STREET_CELL_SIZE - 6, (Color){220, 60, 40, 255});
-        DrawRectangle(draw_x + 6, row_y + 7, draw_w - 12, 8, SKYBLUE);
-    } else if (obj.kind == OBJ_TRICYCLE) {
-        int half_h = (STREET_CELL_SIZE - 10) / 2;
-        DrawRectangle(draw_x + 3, row_y + 4, draw_w - 6, half_h, BLUE);
-        DrawRectangle(draw_x + 3, row_y + 5 + half_h, draw_w - 6, half_h, GOLD);
+    float difficulty = 1.0f + (float)world_row * 0.015f;
+    if (difficulty > 2.6f)
+        difficulty = 2.6f;
+
+    const StreetRow *prev1 = frogger_get_row(runtime, world_row - 1);
+    const StreetRow *prev2 = frogger_get_row(runtime, world_row - 2);
+    const StreetRow *prev3 = frogger_get_row(runtime, world_row - 3);
+    const StreetRow *prev4 = frogger_get_row(runtime, world_row - 4);
+
+    bool force_sidewalk = (prev1->type != LANE_SIDEWALK &&
+                           prev2->type != LANE_SIDEWALK &&
+                           prev3->type != LANE_SIDEWALK &&
+                           prev4->type != LANE_SIDEWALK);
+
+    int roll = rand() % 100;
+
+    if (force_sidewalk || roll < 26) {
+        row->type = LANE_SIDEWALK;
+
+        int posts = 0;
+        for (int c = 0; c < FROGGER_COLS; c++) {
+            if (world_row == 3 && c == FROGGER_COLS / 2)
+                continue;
+
+            if (posts < 5 && (rand() % 100) < 22) {
+                row->blocked_cols[c] = true;
+                posts++;
+            }
+        }
+    } else if (roll < 82) {
+        row->type = LANE_KALSADA;
+
+        int dir = (rand() % 2 == 0) ? 1 : -1;
+        if (prev1->type == LANE_KALSADA && (prev1->speed * (float)dir) > 0.0f) {
+            dir = -dir;
+        }
+
+        int vehicle_roll = rand() % 100;
+        ObjectKind kind;
+        float width;
+        float base_speed;
+        int count;
+
+        if (vehicle_roll < 25) {
+            kind = OBJ_MOTOR;
+            width = 1.0f;
+            base_speed = 4.6f;
+            count = 3;
+        } else if (vehicle_roll < 52) {
+            kind = OBJ_TRICYCLE;
+            width = 1.4f;
+            base_speed = 2.6f;
+            count = 3;
+        } else if (vehicle_roll < 85) {
+            kind = OBJ_JEEPNEY;
+            width = 2.2f;
+            base_speed = 3.2f;
+            count = 2 + (rand() % 2);
+        } else {
+            kind = OBJ_BUS;
+            width = 3.2f;
+            base_speed = 2.2f;
+            count = 2;
+        }
+
+        row->speed = (float)dir * base_speed * difficulty;
+        row->object_count = count;
+
+        float spacing = (float)FROGGER_COLS / (float)count;
+        float start_offset = (float)(rand() % 5);
+
+        for (int i = 0; i < count; i++) {
+            row->objects[i] = (LaneObject){
+                .x = fmodf(start_offset + (float)i * spacing, (float)FROGGER_COLS),
+                .width = width,
+                .kind = kind,
+                .color_idx = rand() % 5
+            };
+        }
     } else {
-        /* OBJ_MOTOR */
-        DrawRectangle(draw_x + 6, row_y + 10, draw_w - 12, STREET_CELL_SIZE - 20, LIME);
+        row->type = LANE_BAHA;
+
+        int dir = (prev1->type == LANE_BAHA && prev1->speed > 0.0f) ? -1 : 1;
+        row->speed = (float)dir * (2.0f + (float)(rand() % 10) * 0.12f) * difficulty;
+        row->object_count = 3;
+
+        float spacing = (float)FROGGER_COLS / 3.0f;
+        float start_offset = (float)(rand() % 4);
+
+        for (int i = 0; i < 3; i++) {
+            row->objects[i] = (LaneObject){
+                .x = fmodf(start_offset + (float)i * spacing, (float)FROGGER_COLS),
+                .width = 2.8f,
+                .kind = OBJ_PLANK,
+                .color_idx = 0
+            };
+        }
     }
 }
 
-void frogger_render_game(const frogger_runtime *runtime) {
-    int board_width  = FROGGER_COLS * STREET_CELL_SIZE;
-    int board_height = FROGGER_VISIBLE_ROWS * STREET_CELL_SIZE;
-
-    int offset_x = 50;
-    int offset_y = (GetScreenHeight() - board_height) / 2;
-
-    /* Outer board frame matching Snake's visual style */
-    DrawRectangle(offset_x - 3, offset_y - 3, board_width + 6, board_height + 6, DARKGRAY);
-
-    /* Right-hand HUD panel */
-    int panel_x = offset_x + board_width + 50;
-    DrawText("TAWID KALSADA", panel_x, offset_y + 7, 40, PINK);
-    DrawLine(
-        panel_x,
-        offset_y + 60,
-        panel_x + MeasureText("TAWID KALSADA", 40),
-        offset_y + 60,
-        GOLD
-    );
-
-    DrawRectangle(panel_x, 150, 440, 210, DARKGRAY);
-    DrawRectangle(panel_x + 6, 150, 434, 210, (Color){20, 25, 30, 255});
-    DrawText("STATISTICS", panel_x + 20, 170, 30, GOLD);
-    DrawText(TextFormat("SCORE: %d", runtime->score), panel_x + 40, 230, 20, GOLD);
-    DrawText(TextFormat("HI-SCORE: %d", runtime->current_hi_score), panel_x + 40, 260, 20, GOLD);
-    DrawText(TextFormat("SPEED: %.1fx", runtime->scroll_speed), panel_x + 40, 290, 20, SKYBLUE);
-        /* Distance margin before falling behind the camera (NADAPA meter) */
-    float margin = ((float)runtime->player.posY - (runtime->camera_row - 0.35f)) / ((float)FROGGER_VISIBLE_ROWS * 0.55f);
-    if (margin < 0.0f) margin = 0.0f;
-    if (margin > 1.0f) margin = 1.0f;
-
-    Color bar_color = GREEN;
-    if (margin < 0.25f) {
-        bar_color = RED;
-    } else if (margin < 0.50f) {
-        bar_color = ORANGE;
+static void save_if_high_score(frogger_runtime *runtime) {
+    if (runtime->score > runtime->current_hi_score) {
+        runtime->current_hi_score = runtime->score;
+        highscore_save("frogger", runtime->current_hi_score);
     }
+}
 
-    DrawText("ORAS / STAMINA:", panel_x + 40, 322, 16, LIGHTGRAY);
-    DrawRectangleLines(panel_x + 200, 322, 180, 16, GRAY);
-    DrawRectangle(panel_x + 202, 324, (int)(176.0f * margin), 12, bar_color);
+static void trigger_game_over(frogger_runtime *runtime, DeathReason reason) {
+    runtime->game_over = true;
+    runtime->death_reason = reason;
+    animation_player_pause(&runtime->hop_anim);
+    save_if_high_score(runtime);
+}
 
+void frogger_init_state(frogger_runtime *runtime) {
+    runtime->player = (Point){ FROGGER_COLS / 2, 1 };
+    runtime->player_float_x = (float)runtime->player.posX;
 
-    /* Clip scrolling street rows strictly inside the play board */
-    BeginScissorMode(offset_x, offset_y, board_width, board_height);
+    runtime->hop_ease_timer = 0.0f;
+    runtime->hop_ease_duration = 0.12f;
 
-    int min_row = (int)runtime->camera_row - 1;
-    int max_row = (int)runtime->camera_row + FROGGER_VISIBLE_ROWS + 1;
+    animation_player_reset(&runtime->hop_anim);
+    animation_player_play(&runtime->hop_anim);
 
-    for (int w_row = min_row; w_row <= max_row; w_row++) {
-        if (w_row < 0)
-            continue;
+    runtime->camera_row = 0.0f;
+    runtime->scroll_speed = 1.15f;
 
-        const StreetRow *row = frogger_get_row(runtime, w_row);
-        float screen_row_offset = (float)w_row - runtime->camera_row;
-        int row_y = offset_y + board_height - (int)((screen_row_offset + 1.0f) * STREET_CELL_SIZE);
+    runtime->score = 0;
+    runtime->current_hi_score = highscore_load("frogger");
+    runtime->game_over = false;
+    runtime->death_reason = DEATH_NONE;
 
-        /* Terrain background */
-        Color bg = (Color){68, 72, 82, 255}; /* Sidewalk concrete */
-        if (row->type == LANE_KALSADA) {
-            bg = (Color){26, 28, 34, 255};   /* Asphalt road */
-        } else if (row->type == LANE_BAHA) {
-            bg = (Color){22, 68, 112, 255};  /* Floodwater / estero */
-        }
-
-        DrawRectangle(offset_x, row_y, board_width, STREET_CELL_SIZE, bg);
-
-        /* Dashed asphalt lane lines */
-        if (row->type == LANE_KALSADA) {
-            for (int c = 0; c < FROGGER_COLS; c += 2) {
-                DrawRectangle(
-                    offset_x + c * STREET_CELL_SIZE + 8,
-                    row_y + STREET_CELL_SIZE - 3,
-                    STREET_CELL_SIZE / 2,
-                    2,
-                    (Color){90, 90, 70, 255}
-                );
-            }
-        }
-
-        /* Sidewalk street posts / barriers */
-        if (row->type == LANE_SIDEWALK) {
-            for (int c = 0; c < FROGGER_COLS; c++) {
-                if (row->blocked_cols[c]) {
-                    int post_x = offset_x + c * STREET_CELL_SIZE;
-                    DrawRectangle(post_x + 8, row_y + 8, STREET_CELL_SIZE - 16, STREET_CELL_SIZE - 16, DARKBROWN);
-                    DrawRectangleLines(post_x + 8, row_y + 8, STREET_CELL_SIZE - 16, STREET_CELL_SIZE - 16, ORANGE);
-                }
-            }
-        }
-
-        /* Moving vehicles or floating planks */
-        for (int i = 0; i < row->object_count; i++) {
-            LaneObject obj = row->objects[i];
-            int obj_x = offset_x + (int)(obj.x * STREET_CELL_SIZE);
-            int obj_w = (int)(obj.width * STREET_CELL_SIZE);
-
-            draw_vehicle_or_plank(obj, obj_x, obj_w, row_y);
-        }
+    runtime->highest_generated_row = -1;
+    for (int r = 0; r < FROGGER_BUFFER_ROWS; r++) {
+        generate_row(runtime, r);
+        runtime->highest_generated_row = r;
     }
+}
 
-    /* Compute hop squash/stretch using ease() and animation frame index */
-    float hop_expand = 0.0f;
-    if (runtime->hop_ease_timer > 0.0f && runtime->hop_ease_duration > 0.0f) {
-        float elapsed = runtime->hop_ease_duration - runtime->hop_ease_timer;
-        hop_expand = ease(elapsed, 4.0f, -4.0f, runtime->hop_ease_duration);
-    }
-
-    Rectangle src_rect = {0};
-    animation_player_get_source(&runtime->hop_anim, &src_rect);
-
-    float player_screen_row = (float)runtime->player.posY - runtime->camera_row;
-    int px = offset_x + (int)(runtime->player_float_x * STREET_CELL_SIZE) - (int)hop_expand;
-    int py = offset_y + board_height - (int)((player_screen_row + 1.0f) * STREET_CELL_SIZE) - (int)hop_expand;
-    int p_size = STREET_CELL_SIZE - 12 + (int)(hop_expand * 2.0f);
-
-    Color player_tint = (runtime->hop_anim.current_frame % 2 == 0) ? GREEN : LIME;
-    DrawRectangle(px + 6, py + 6, p_size, p_size, player_tint);
-    DrawRectangleLines(px + 6, py + 6, p_size, p_size, RAYWHITE);
-
-    /* Game Over Overlay */
-       /* Game Over Overlay */
+void frogger_update_logic(
+    frogger_runtime *runtime,
+    const GameInput *input,
+    float delta_time
+) {
     if (runtime->game_over) {
-        DrawRectangle(offset_x, offset_y, board_width, board_height, Fade(BLACK, 0.72f));
-
-        const char *msg1 = "GAME OVER!";
-        Color msg_color = RED;
-
-        if (runtime->death_reason == DEATH_NASAGASAAN) {
-            msg1 = "NASAGASAAN!";
-            msg_color = RED;
-        } else if (runtime->death_reason == DEATH_NALUNOD) {
-            msg1 = "NALUNOD!";
-            msg_color = SKYBLUE;
-        } else if (runtime->death_reason == DEATH_NADAPA) {
-            msg1 = "NADAPA!";
-            msg_color = ORANGE;
+        if (input->confirm) {
+            frogger_init_state(runtime);
         }
-
-        const char *msg2 = "PRESS ENTER / SPACE TO RETRY";
-        int w1 = MeasureText(msg1, 36);
-        int w2 = MeasureText(msg2, 18);
-
-        int x1 = offset_x + (board_width - w1) / 2;
-        int x2 = offset_x + (board_width - w2) / 2;
-
-        DrawText(msg1, x1, offset_y + board_height / 2 - 30, 36, msg_color);
-        DrawText(msg2, x2, offset_y + board_height / 2 + 18, 18, WHITE);
+        return;
     }
 
+    animation_player_update(&runtime->hop_anim, delta_time);
 
-    EndScissorMode();
+    if (runtime->hop_ease_timer > 0.0f) {
+        runtime->hop_ease_timer -= delta_time;
+        if (runtime->hop_ease_timer < 0.0f)
+            runtime->hop_ease_timer = 0.0f;
+    }
 
-    DrawText("WASD / ARROWS: MOVE     Q: MENU     ESC: QUIT", panel_x, 385, 18, GRAY);
+    /* 1. Discrete Grid Movement */
+    int target_col = runtime->player.posX;
+    int target_row = runtime->player.posY;
+    bool moved = false;
+
+    if (input->up) {
+        target_row++;
+        moved = true;
+    } else if (input->down && runtime->player.posY > 0) {
+        target_row--;
+        moved = true;
+    } else if (input->left && runtime->player.posX > 0) {
+        target_col--;
+        moved = true;
+    } else if (input->right && runtime->player.posX < FROGGER_COLS - 1) {
+        target_col++;
+        moved = true;
+    }
+
+    if (moved) {
+        while (runtime->highest_generated_row < target_row + FROGGER_VISIBLE_ROWS) {
+            runtime->highest_generated_row++;
+            generate_row(runtime, runtime->highest_generated_row);
+        }
+
+        const StreetRow *dest = frogger_get_row(runtime, target_row);
+        bool blocked = (dest->type == LANE_SIDEWALK && dest->blocked_cols[target_col]);
+
+        if (!blocked) {
+            runtime->player.posX = target_col;
+            runtime->player.posY = target_row;
+            runtime->player_float_x = (float)target_col;
+            runtime->hop_ease_timer = runtime->hop_ease_duration;
+
+            int progress = runtime->player.posY - 1;
+            if (progress > runtime->score) {
+                runtime->score = progress;
+                save_if_high_score(runtime);
+            }
+        }
+    }
+
+    /* 2. Continuous Upward Camera Scroll */
+    float dynamic_scroll = 1.15f + (float)runtime->score * 0.012f;
+    if (dynamic_scroll > 3.2f)
+        dynamic_scroll = 3.2f;
+    runtime->scroll_speed = dynamic_scroll;
+
+    runtime->camera_row += runtime->scroll_speed * delta_time;
+
+    float min_camera_for_player = (float)runtime->player.posY - ((float)FROGGER_VISIBLE_ROWS * 0.55f);
+    if (min_camera_for_player > runtime->camera_row) {
+        runtime->camera_row += (min_camera_for_player - runtime->camera_row) * 8.0f * delta_time;
+    }
+
+    int top_needed = (int)runtime->camera_row + FROGGER_VISIBLE_ROWS + 4;
+    while (runtime->highest_generated_row < top_needed) {
+        runtime->highest_generated_row++;
+        generate_row(runtime, runtime->highest_generated_row);
+    }
+
+    if ((float)runtime->player.posY < runtime->camera_row - 0.35f) {
+        trigger_game_over(runtime, DEATH_NADAPA);
+        return;
+    }
+
+    /* 3. Update All Active Vehicles & Floating Planks */
+    int first_active = (int)runtime->camera_row - 1;
+    if (first_active < 0)
+        first_active = 0;
+
+    for (int r = first_active; r <= runtime->highest_generated_row; r++) {
+        StreetRow *row = get_mutable_row(runtime, r);
+        for (int i = 0; i < row->object_count; i++) {
+            row->objects[i].x += row->speed * delta_time;
+
+            if (row->speed > 0.0f && row->objects[i].x > (float)FROGGER_COLS) {
+                row->objects[i].x = -row->objects[i].width;
+            } else if (row->speed < 0.0f &&
+                       row->objects[i].x + row->objects[i].width < 0.0f) {
+                row->objects[i].x = (float)FROGGER_COLS;
+            }
+        }
+    }
+
+    /* 4. Check Current Row Hazards */
+    const StreetRow *curr = frogger_get_row(runtime, runtime->player.posY);
+
+    if (curr->type == LANE_KALSADA) {
+        float px = runtime->player_float_x;
+        for (int i = 0; i < curr->object_count; i++) {
+            LaneObject veh = curr->objects[i];
+            if (px + 0.78f > veh.x && px + 0.22f < veh.x + veh.width) {
+                trigger_game_over(runtime, DEATH_NASAGASAAN);
+                return;
+            }
+        }
+    } else if (curr->type == LANE_BAHA) {
+        bool on_plank = false;
+        float px = runtime->player_float_x;
+
+        for (int i = 0; i < curr->object_count; i++) {
+            LaneObject plank = curr->objects[i];
+            if (px + 0.55f >= plank.x && px + 0.45f <= plank.x + plank.width) {
+                on_plank = true;
+                break;
+            }
+        }
+
+        if (!on_plank) {
+            trigger_game_over(runtime, DEATH_NALUNOD);
+            return;
+        }
+
+        runtime->player_float_x += curr->speed * delta_time;
+        runtime->player.posX = (int)roundf(runtime->player_float_x);
+if (runtime->player_float_x < -0.4f ||
+runtime->player_float_x > (float)FROGGER_COLS - 0.6f) {
+trigger_game_over(runtime, DEATH_NALUNOD);
+return;
+}
+}
 }

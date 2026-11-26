@@ -1,0 +1,77 @@
+#include <stdlib.h>
+#include "texture_backend.h"
+
+struct TextureResource {
+    Texture2D texture;
+};
+
+TextureBackendResult texture_backend_load(const char *path, TextureResource **out_resource) {
+    if (path == NULL || out_resource == NULL)
+        return TEXTURE_BACKEND_FAILURE;
+
+    *out_resource = NULL;
+
+    if (!FileExists(path))
+        return TEXTURE_BACKEND_FILE_NOT_FOUND;
+
+    TextureResource *resource = malloc(sizeof(*resource));
+
+    if (resource == NULL)
+        return TEXTURE_BACKEND_OUT_OF_MEMORY;
+
+    resource->texture = LoadTexture(path);
+
+    if (resource->texture.id == 0) {
+        free(resource);
+        return TEXTURE_BACKEND_FAILURE;
+    }
+
+    *out_resource = resource;
+
+    return TEXTURE_BACKEND_SUCCESS;
+}
+
+void texture_backend_unload(TextureResource *resource) {
+    if (resource == NULL)
+        return;
+
+    UnloadTexture(resource->texture);
+    free(resource);
+}
+
+void texture_backend_draw(const TextureResource *resource, Rectangle destination) {
+    if (resource == NULL ||
+        destination.width <= 0 || destination.height <= 0)
+        return;
+
+    Rectangle source = {
+        0.0f,
+        0.0f,
+        (float)resource->texture.width,
+        (float)resource->texture.height
+    };
+
+    DrawTexturePro(resource->texture, source, destination, (Vector2){0.0f, 0.0f}, 0.0f, WHITE);
+}
+
+void texture_backend_draw_region(const TextureResource *resource, Rectangle source, Rectangle destination, Vector2 origin, float rotation) {
+    if (resource == NULL ||
+        source.width == 0 || source.height == 0 ||
+        destination.width <= 0 || destination.height <= 0)
+        return;
+
+    DrawTexturePro(resource->texture, source, destination, origin, rotation, WHITE);
+}
+
+void texture_backend_get_size(const TextureResource *resource, int *width, int *height) {
+    if (resource == NULL) {
+        if (width != NULL) *width = 0;
+        if (height != NULL) *height = 0;
+        return;
+    }
+
+    if (width != NULL)
+        *width = resource->texture.width;
+    if (height != NULL)
+        *height = resource->texture.height;
+}
