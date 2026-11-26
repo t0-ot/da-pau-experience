@@ -2,6 +2,8 @@
 
 #include "engine/session.h"
 #include "engine/input/input.h"
+#include "engine/core/engine_context.h"
+#include "engine/core/game_module.h"
 #include "engine/renderer/renderer.h"
 #include "audio/audio_manager_internal.h"
 

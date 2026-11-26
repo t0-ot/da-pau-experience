@@ -11,8 +11,10 @@
 
 #include <stdbool.h>
 
-#include "engine/core/game_module.h"
-#include "engine/core/engine_context.h"
+enum ModuleAction : int;
+typedef enum ModuleAction ModuleAction;
+typedef struct GameModule GameModule;
+typedef struct EngineContext EngineContext;
 
 /**
  * @brief Holds the state of the currently active game session.

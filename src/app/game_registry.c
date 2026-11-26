@@ -2,6 +2,7 @@
 #include <stddef.h>
 
 #include "app/game_registry.h"
+#include "games/menu/menu.h"
 #include "games/snake/snake.h"
 #include "games/tron/tron.h"
 #include "games/pacman/pacman.h"

@@ -2,7 +2,7 @@
 #define ASSET_MANAGER_INTERNAL_H
 
 #include "engine/assets/asset_manager.h"
-#include "texture_backend.h"
+typedef struct TextureResource TextureResource;
 
 /* Manager lifecycle. */
 AssetManager *asset_manager_create(ResourceGroupManager *groups);

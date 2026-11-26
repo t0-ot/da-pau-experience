@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "engine/session.h"
+#include "engine/core/engine_context.h"
 #include "engine/renderer/renderer.h"
 #include "engine/audio/audio_device.h"
 #include "engine/input/input.h"

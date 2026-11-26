@@ -1,9 +1,9 @@
 #ifndef ENGINE_CONTEXT_H
 #define ENGINE_CONTEXT_H
 
-#include "engine/assets/asset_manager.h"
-#include "engine/audio/audio_manager.h"
-#include "engine/resources/resource_group_manager.h"
+typedef struct AssetManager AssetManager;
+typedef struct AudioManager AudioManager;
+typedef struct ResourceGroupManager ResourceGroupManager;
 
 /**
  * @brief Provides access to shared engine services.
@@ -11,7 +11,7 @@
  * The context references services owned and managed
  * by the application.
  */
-typedef struct {
+typedef struct EngineContext {
     AssetManager *assets;
     AudioManager *audio;
     ResourceGroupManager *groups;
