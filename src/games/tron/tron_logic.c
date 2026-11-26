@@ -111,8 +111,8 @@ static int check_breathing_room(
     }
 
     static const int directions[4][2] = {
-        { 0,  1},  // North
-        { 0, -1},  // South
+        { 0, -1},  // North
+        { 0,  1},  // South
         { 1,  0},  // East
         {-1,  0}   // West
     };
@@ -220,9 +220,16 @@ static void enemy_ai_fatal_error(const char *message) {
     exit(EXIT_FAILURE);
 }
 
-/* -------------------------------------------------- */
-/* Enemy AI                                           */
-/* -------------------------------------------------- */
+/**
+ * Enemy AI strategy:
+ *
+ * 1. Collect occupied cells from the player and other enemies.
+ * 2. Evaluate each possible movement direction.
+ * 3. Use flood fill to estimate available space.
+ * 4. Prefer the direction with the most available space.
+ * 5. Break ties using player distance or randomness when distracted.
+ * 6. If no safe direction exists, mark the enemy as dead.
+ */
 
 void enemy_lightcycle_ai(
     Enemy_list *view_enemies,
@@ -330,18 +337,18 @@ void enemy_lightcycle_ai(
         /*
          * 3. BUILD THE OBSTACLE LIST
          */
+        if (obstacle_count == 0) {
+            enemy_ai_fatal_error("No obstacles to evaluate");
+        }
+
         if (obstacle_count > SIZE_MAX / sizeof(Point)) {
             enemy_ai_fatal_error("Obstacle allocation size overflow");
         }
 
-        Point *obstacles = NULL;
+        Point *obstacles = malloc(obstacle_count * sizeof(*obstacles));
 
-        if (obstacle_count > 0) {
-            obstacles = malloc(obstacle_count * sizeof(*obstacles));
-
-            if (obstacles == NULL) {
-                enemy_ai_fatal_error("Failed to allocate obstacles");
-            }
+        if (obstacles == NULL) {
+            enemy_ai_fatal_error("Failed to allocate obstacles");
         }
 
         size_t obstacle_index = 0;
