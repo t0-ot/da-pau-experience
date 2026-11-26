@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <limits.h>
+#include <stdint.h>
 #include "games/tron/tron_logic.h"
 #include "games/tron/tron_internal.h"
 #include "engine/utils.h"
@@ -22,231 +24,477 @@ const char *level_names[] = {
  *
  * Stores grid positions while tracking accessible territory.
  */
-typedef struct {
-    int x; /**< Horizontal grid coordinate. */
-    int y; /**< Vertical grid coordinate. */
-} FillPoint;
+/* -------------------------------------------------- */
+/* Enemy AI helpers                                   */
+/* -------------------------------------------------- */
 
-// Helper function to check if a specific point matches another
 static bool same_point(Point a, Point b) {
     return a.posX == b.posX && a.posY == b.posY;
 }
 
-// Check if a point hits any current light trails or player segments
-static bool point_is_obstacle(const Point *obstacles, int count, Point point) {
-    for (int i = 0; i < count; i++) {
+static bool point_is_obstacle(
+    const Point *obstacles,
+    size_t obstacle_count,
+    Point point
+) {
+    for (size_t i = 0; i < obstacle_count; i++) {
         if (same_point(obstacles[i], point)) {
             return true;
         }
     }
+
     return false;
 }
 
-// Bounded Flood Fill algorithm to grade available open territory
-static int check_breathing_room(Point start, const Point *obstacles, int obstacle_count, int play_width, int play_height, int max_cells) {
-    // 1. Instantly fail if the starting tile is out-of-bounds or an immediate crash
-    if (start.posX < 0 || start.posX >= play_width || start.posY < 0 || start.posY >= play_height) {
+static bool point_was_visited(
+    const Point *queue,
+    size_t queue_count,
+    int x,
+    int y
+) {
+    for (size_t i = 0; i < queue_count; i++) {
+        if (queue[i].posX == x && queue[i].posY == y) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief Counts the reachable free cells around a candidate move.
+ *
+ * Uses a bounded breadth-first search. The search stops after
+ * max_cells have been explored, since additional space does not
+ * improve the AI's evaluation.
+ */
+static int check_breathing_room(
+    Point start,
+    const Point *obstacles,
+    size_t obstacle_count,
+    int play_width,
+    int play_height,
+    int max_cells
+) {
+    if (max_cells <= 0 || play_width <= 0 || play_height <= 0) {
         return 0;
     }
+
+    if (start.posX < 0 || start.posX >= play_width ||
+        start.posY < 0 || start.posY >= play_height) {
+        return 0;
+    }
+
+    if (obstacle_count > 0 && obstacles == NULL) {
+        return 0;
+    }
+
     if (point_is_obstacle(obstacles, obstacle_count, start)) {
         return 0;
     }
 
-    // Allocate tracking arrays safely on the stack using our max cell constraint
-    FillPoint *stack = malloc(max_cells * sizeof(FillPoint));
-    FillPoint *visited = malloc(max_cells * sizeof(FillPoint));
-    if (stack == NULL || visited == NULL) {
-        free(stack);
-        free(visited);
+    const size_t capacity = (size_t)max_cells;
+
+    if (capacity > SIZE_MAX / sizeof(Point)) {
         return 0;
     }
 
-    int stack_count = 0;
-    int visited_count = 0;
+    /*
+     * The queue also acts as the visited list.
+     * A cell is recorded when it is enqueued, so it cannot
+     * be added more than once.
+     */
+    Point *queue = malloc(capacity * sizeof(*queue));
 
-    // Push initial starting coordinate
-    stack[stack_count++] = (FillPoint){start.posX, start.posY};
-    visited[visited_count++] = (FillPoint){start.posX, start.posY};
+    if (queue == NULL) {
+        return 0;
+    }
 
-    int space_count = 0;
+    static const int directions[4][2] = {
+        { 0,  1},  // North
+        { 0, -1},  // South
+        { 1,  0},  // East
+        {-1,  0}   // West
+    };
 
-    // Process nodes until the stack empties or we hit our target comfort threshold
-    while (stack_count > 0 && space_count < max_cells) {
-        // Pop the top point off the stack
-        FillPoint curr = stack[--stack_count];
-        space_count++;
+    size_t queue_count = 1;
+    size_t next_point = 0;
 
-        // Explore all 4 adjacent neighbors (North, South, East, West)
-        const int dx[] = {0, 0, 1, -1};
-        const int dy[] = {1, -1, 0, 0};
+    queue[0] = (Point){start.posX, start.posY};
+
+    while (next_point < queue_count && next_point < capacity) {
+        Point current = queue[next_point++];
 
         for (int i = 0; i < 4; i++) {
-            int nx = curr.x + dx[i];
-            int ny = curr.y + dy[i];
-            Point neighbor = {nx, ny};
+            int next_x = current.posX + directions[i][0];
+            int next_y = current.posY + directions[i][1];
 
-            // Enforce arena boundaries
-            if (nx < 0 || nx >= play_width || ny < 0 || ny >= play_height) {
+            // Reject positions outside the arena.
+            if (next_x < 0 || next_x >= play_width ||
+                next_y < 0 || next_y >= play_height) {
                 continue;
             }
 
-            // Enforce trail obstacle avoidance
+            Point neighbor = {next_x, next_y};
+
+            // Reject occupied positions.
             if (point_is_obstacle(obstacles, obstacle_count, neighbor)) {
                 continue;
             }
 
-            // Verify if we already cataloged this grid cell
-            bool already_visited = false;
-            for (int v = 0; v < visited_count; v++) {
-                if (visited[v].x == nx && visited[v].y == ny) {
-                    already_visited = true;
-                    break;
-                }
+            // Reject positions already discovered.
+            if (point_was_visited(queue, queue_count, next_x, next_y)) {
+                continue;
             }
 
-            // If empty, unvisited, and we have stack room left, queue it
-            if (!already_visited && visited_count < max_cells && stack_count < max_cells) {
-                visited[visited_count++] = (FillPoint){nx, ny};
-                stack[stack_count++] = (FillPoint){nx, ny};
+            // Stop adding cells once the search reaches its limit.
+            if (queue_count >= capacity) {
+                continue;
             }
+
+            queue[queue_count++] = (Point){next_x, next_y};
         }
     }
 
-    free(stack);
-    free(visited);
-    return space_count;
+    free(queue);
+
+    return (int)next_point;
 }
 
+/**
+ * @brief Validates a circular entity segment buffer.
+ */
+static bool valid_segment_buffer(
+    int amount,
+    int capacity,
+    int head,
+    int tail,
+    const Point *points
+) {
+    return amount > 0 &&
+           capacity > 0 &&
+           amount <= capacity &&
+           head >= 0 && head < capacity &&
+           tail >= 0 && tail < capacity &&
+           points != NULL;
+}
 
-void enemy_lightcycle_ai(Enemy_list *view_enemies, Segmented_entity *player, int distraction_modifier, int play_width,int play_height) {
+/**
+ * @brief Adds an amount to an obstacle count without overflowing.
+ */
+static bool add_obstacle_count(size_t *total, size_t amount) {
+    if (amount > SIZE_MAX - *total) {
+        return false;
+    }
+
+    *total += amount;
+    return true;
+}
+
+/**
+ * @brief Copies segments from a circular buffer into the obstacle list.
+ *
+ * Segments are copied starting at the tail, preserving the existing
+ * ring-buffer traversal order.
+ */
+static void append_obstacle_segments(
+    Point *obstacles,
+    size_t *obstacle_index,
+    const Point *points,
+    size_t capacity,
+    size_t tail,
+    size_t amount
+) {
+    for (size_t i = 0; i < amount; i++) {
+        size_t point_index = (tail + i) % capacity;
+
+        obstacles[(*obstacle_index)++] = points[point_index];
+    }
+}
+
+/**
+ * @brief Terminates the game on invalid internal AI state.
+ */
+static void enemy_ai_fatal_error(const char *message) {
+    fprintf(stderr, "Tron enemy AI error: %s\n", message);
+    exit(EXIT_FAILURE);
+}
+
+/* -------------------------------------------------- */
+/* Enemy AI                                           */
+/* -------------------------------------------------- */
+
+void enemy_lightcycle_ai(
+    Enemy_list *view_enemies,
+    Segmented_entity *player,
+    int distraction_modifier,
+    int play_width,
+    int play_height
+) {
+    if (view_enemies == NULL || player == NULL) {
+        return;
+    }
+
+    if (view_enemies->enemy_amt <= 0 || view_enemies->enemy == NULL) {
+        return;
+    }
+
+    if (!valid_segment_buffer(
+            player->segments.amt,
+            player->capacity,
+            player->head,
+            player->tail,
+            player->segments.points)) {
+        enemy_ai_fatal_error("Invalid player segment buffer");
+    }
+
     for (int i = 0; i < view_enemies->enemy_amt; i++) {
-        if (!(view_enemies->enemy[i].alive))
+        if (!view_enemies->enemy[i].alive) {
             continue;
+        }
 
-        // Extend and shift the enemy's trail.
+        /*
+         * 1. PREPARE THE ENEMY
+         *
+         * Grow the trail before evaluating movement, preserving
+         * the original behavior.
+         */
+        if (!valid_segment_buffer(
+                view_enemies->enemy[i].segments.amt,
+                view_enemies->enemy[i].capacity,
+                view_enemies->enemy[i].head,
+                view_enemies->enemy[i].tail,
+                view_enemies->enemy[i].segments.points)) {
+            enemy_ai_fatal_error("Invalid enemy segment buffer");
+        }
+
         grow_entity(&view_enemies->enemy[i]);
 
-        // Capture starting position (the current head of the enemy cycle)
-        Point enemy_start = view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head];
+        if (!valid_segment_buffer(
+                view_enemies->enemy[i].segments.amt,
+                view_enemies->enemy[i].capacity,
+                view_enemies->enemy[i].head,
+                view_enemies->enemy[i].tail,
+                view_enemies->enemy[i].segments.points)) {
+            enemy_ai_fatal_error("Invalid enemy buffer after growth");
+        }
 
-        // =========================================
-        // 1. BUILD THE OBSTACLE LIST
-        // =========================================
-        int obstacle_count = player->segments.amt;
+        Point enemy_start =
+            view_enemies->enemy[i].segments.points[
+                view_enemies->enemy[i].head
+            ];
+
+        /*
+         * 2. COUNT ALL OBSTACLES
+         *
+         * Include:
+         * - Every player segment.
+         * - Every living enemy's segments.
+         * - Exclude this enemy's own head.
+         */
+        size_t obstacle_count = 0;
+
+        if (!add_obstacle_count(
+                &obstacle_count,
+                (size_t)player->segments.amt)) {
+            enemy_ai_fatal_error("Obstacle count overflow");
+        }
+
         for (int k = 0; k < view_enemies->enemy_amt; k++) {
-            if (!(view_enemies->enemy[k].alive))
+            if (!view_enemies->enemy[k].alive) {
                 continue;
+            }
+
+            if (!valid_segment_buffer(
+                    view_enemies->enemy[k].segments.amt,
+                    view_enemies->enemy[k].capacity,
+                    view_enemies->enemy[k].head,
+                    view_enemies->enemy[k].tail,
+                    view_enemies->enemy[k].segments.points)) {
+                enemy_ai_fatal_error("Invalid obstacle segment buffer");
+            }
+
+            size_t segment_count =
+                (size_t)view_enemies->enemy[k].segments.amt;
+
+            // The current enemy must not collide with its own head.
             if (k == i) {
-                obstacle_count += view_enemies->enemy[k].segments.amt - 1;
-            } else {
-                obstacle_count += view_enemies->enemy[k].segments.amt;
+                segment_count--;
+            }
+
+            if (!add_obstacle_count(&obstacle_count, segment_count)) {
+                enemy_ai_fatal_error("Obstacle count overflow");
             }
         }
 
-        Point *obstacles = malloc(obstacle_count * sizeof(Point));
-        if (obstacles == NULL && obstacle_count > 0) {
-            fprintf(stderr, "Failed to allocate obstacles!\n");
-            exit(EXIT_FAILURE);
+        /*
+         * 3. BUILD THE OBSTACLE LIST
+         */
+        if (obstacle_count > SIZE_MAX / sizeof(Point)) {
+            enemy_ai_fatal_error("Obstacle allocation size overflow");
         }
 
-        int obstacle_index = 0;
+        Point *obstacles = NULL;
 
-        // Populate obstacles with the player's tail
-        for (int j = 0; j < player->segments.amt; j++) {
-            int player_index = (player->tail + j) % player->capacity;
-            obstacles[obstacle_index++] = player->segments.points[player_index];
+        if (obstacle_count > 0) {
+            obstacles = malloc(obstacle_count * sizeof(*obstacles));
+
+            if (obstacles == NULL) {
+                enemy_ai_fatal_error("Failed to allocate obstacles");
+            }
         }
 
-        // Populate obstacles with enemy trails
+        size_t obstacle_index = 0;
+
+        // Add the player's entire trail.
+        append_obstacle_segments(
+            obstacles,
+            &obstacle_index,
+            player->segments.points,
+            (size_t)player->capacity,
+            (size_t)player->tail,
+            (size_t)player->segments.amt
+        );
+
+        // Add every living enemy's trail.
         for (int k = 0; k < view_enemies->enemy_amt; k++) {
-            if (!(view_enemies->enemy[k].alive))
+            if (!view_enemies->enemy[k].alive) {
                 continue;
-            int segment_limit = view_enemies->enemy[k].segments.amt;
-
-            if (k == i)
-                segment_limit--;
-
-            for (int j = 0; j < segment_limit; j++) {
-                int enemy_index = (view_enemies->enemy[k].tail + j) % view_enemies->enemy[k].capacity;
-                obstacles[obstacle_index++] = view_enemies->enemy[k].segments.points[enemy_index];
             }
+
+            size_t segment_count =
+                (size_t)view_enemies->enemy[k].segments.amt;
+
+            // Exclude this enemy's current head.
+            if (k == i) {
+                segment_count--;
+            }
+
+            append_obstacle_segments(
+                obstacles,
+                &obstacle_index,
+                view_enemies->enemy[k].segments.points,
+                (size_t)view_enemies->enemy[k].capacity,
+                (size_t)view_enemies->enemy[k].tail,
+                segment_count
+            );
         }
 
-        // =========================================
-        // 2. RUN BREATHING ROOM CHECKS FOR ALL 4 MOVES
-        // =========================================
-        Point move_up    = {enemy_start.posX,     enemy_start.posY - 1};
-        Point move_down  = {enemy_start.posX,     enemy_start.posY + 1};
-        Point move_left  = {enemy_start.posX - 1, enemy_start.posY};
-        Point move_right = {enemy_start.posX + 1, enemy_start.posY};
+        // The count and population passes must agree.
+        if (obstacle_index != obstacle_count) {
+            free(obstacles);
+            enemy_ai_fatal_error("Obstacle count does not match populated list");
+        }
 
-        // Grade each square by counting accessible tiles
-        int up_score    = check_breathing_room(move_up,    obstacles, obstacle_count, play_width, play_height, 35);
-        int down_score  = check_breathing_room(move_down,  obstacles, obstacle_count, play_width, play_height, 35);
-        int left_score  = check_breathing_room(move_left,  obstacles, obstacle_count, play_width, play_height, 35);
-        int right_score = check_breathing_room(move_right, obstacles, obstacle_count, play_width, play_height, 35);
+        /*
+         * 4. GENERATE POSSIBLE MOVES
+         */
+        Point possible_moves[4] = {
+            {enemy_start.posX,     enemy_start.posY - 1},
+            {enemy_start.posX,     enemy_start.posY + 1},
+            {enemy_start.posX - 1, enemy_start.posY},
+            {enemy_start.posX + 1, enemy_start.posY}
+        };
 
-        // Get the player's head position to calculate distance
-        Point player_head = player->segments.points[player->head];
-
-        // Group options into an array so we can loop through them easily
-        Point options[] = {move_up, move_down, move_left, move_right};
-        const int scores[]    = {up_score, down_score, left_score, right_score};
-
-        int best_score = -1;
-        int best_dist  = 999999;
-        Point best_move = enemy_start;
-
-        /* Introduce a 15% chance per frame that the AI gets distracted
-         and just picks ANY safe space instead of perfectly copying you.*/
-        bool is_distracted = (rand() % 100) < distraction_modifier;
+        int move_scores[4];
 
         for (int j = 0; j < 4; j++) {
-            // If this move instantly crashes, skip it completely
-            if (scores[j] == 0) continue;
+            move_scores[j] = check_breathing_room(
+                possible_moves[j],
+                obstacles,
+                obstacle_count,
+                play_width,
+                play_height,
+                35
+            );
+        }
 
-            int current_dist = calc_point_dist(&options[j], &player_head);
+        /*
+         * 5. EVALUATE POSSIBLE MOVES
+         */
+        Point player_head =
+            player->segments.points[player->head];
 
+        bool is_distracted =
+            (rand() % 100) < distraction_modifier;
+
+        bool found_safe_move = false;
+
+        int best_score = -1;
+        int best_distance = INT_MAX;
+
+        Point best_move = enemy_start;
+
+        for (int j = 0; j < 4; j++) {
+            // A score of zero means the move immediately crashes.
+            if (move_scores[j] == 0) {
+                continue;
+            }
+
+            int current_distance = 0;
+
+            if (!is_distracted)
+                current_distance = calc_point_dist(&possible_moves[j], &player_head);
+
+            // Always accept the first safe move.
+            if (!found_safe_move) {
+                found_safe_move = true;
+                best_score = move_scores[j];
+                best_distance = current_distance;
+                best_move = possible_moves[j];
+                continue;
+            }
+
+            // Territory is always the primary priority.
+            if (move_scores[j] > best_score) {
+                best_score = move_scores[j];
+                best_distance = current_distance;
+                best_move = possible_moves[j];
+                continue;
+            }
+
+            // Ignore moves with less available territory.
+            if (move_scores[j] < best_score) {
+                continue;
+            }
+
+            // Equal scores: distracted enemies choose randomly.
             if (is_distracted) {
-                // If distracted, survival is still priority #1,
-                // but we randomize the tie-breaker instead of targeting the player.
-                if (scores[j] > best_score || (scores[j] == best_score && (rand() % 2 == 0))) {
-                    best_score = scores[j];
-                    best_move  = options[j];
+                if (rand() % 2 == 0) {
+                    best_move = possible_moves[j];
                 }
-            } else {
-                // Standard Smart/Aggressive AI behavior
-                if (scores[j] > best_score) {
-                    best_score = scores[j];
-                    best_dist  = current_dist;
-                    best_move  = options[j];
-                }
-                else if (scores[j] == best_score) {
-                    if (current_dist < best_dist) {
-                        best_dist  = current_dist;
-                        best_move  = options[j];
-                    }
-                }
+
+                continue;
+            }
+
+            // Equal scores: normal enemies move toward the player.
+            if (current_distance < best_distance) {
+                best_distance = current_distance;
+                best_move = possible_moves[j];
             }
         }
 
-        // =========================================
-        // 3. EXECUTE MOVEMENT
-        // =========================================
-        // Apply our best calculated position directly to the cycle's head if the best move is the same coordinate as the current position it means they are dead
-        if (best_move.posX == view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head].posX &&
-            best_move.posY == view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head].posY) {
-
+        /*
+         * 6. EXECUTE THE SELECTED MOVE
+         */
+        if (!found_safe_move) {
             view_enemies->enemy[i].alive = false;
+            best_move = enemy_start;
         }
-        view_enemies->enemy[i].head = (view_enemies->enemy[i].head + 1) % view_enemies->enemy[i].capacity;
-        view_enemies->enemy[i].segments.points[view_enemies->enemy[i].head] = best_move;
-        // Housekeeping
+
+        // Advance the circular buffer's head.
+        view_enemies->enemy[i].head =
+            (view_enemies->enemy[i].head + 1) %
+            view_enemies->enemy[i].capacity;
+
+        view_enemies->enemy[i].segments.points[
+            view_enemies->enemy[i].head
+        ] = best_move;
+
         free(obstacles);
-
-
     }
 }
+
 
 static void start_level_intro(tron_runtime *runtime) {
     runtime->level_starting = 1;
