@@ -50,18 +50,8 @@ static void frogger_init(void *state, EngineContext *ctx) {
         }
     }
 
-    animation_clip_init(
-        &runtime->hop_clip,
-        0,
-        0,
-        2,
-        2,
-        1,
-        32,
-        32,
-        0.22f,
-        ANIMATION_LOOP
-    );
+    //initialize frog hopping animation
+    animation_clip_init(&runtime->hop_clip, 0, 0, 2, 2, 1, 32, 32, 0.22f, ANIMATION_LOOP);
     animation_player_init(&runtime->hop_anim, &runtime->hop_clip);
 
     frogger_init_state(runtime);
