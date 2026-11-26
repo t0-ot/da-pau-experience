@@ -10,9 +10,9 @@
 #include "engine/renderer/renderer.h"
 #include "engine/audio/audio_device.h"
 #include "engine/input/input.h"
-#include "engine/resources/resource_group_manager.h"
-#include "engine/assets/asset_manager.h"
-#include "engine/audio/audio_manager.h"
+#include "engine/resources/resource_group_manager_internal.h"
+#include "engine/assets/asset_manager_internal.h"
+#include "engine/audio/audio_manager_internal.h"
 #include "app/game_registry.h"
 
 /**

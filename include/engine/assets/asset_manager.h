@@ -27,10 +27,6 @@ typedef struct {
     bool reused;
 } TextureLoadResult;
 
-/* Manager lifecycle. */
-AssetManager *asset_manager_create(ResourceGroupManager *groups);
-void asset_manager_destroy(AssetManager *manager);
-
 /* Texture management. */
 TextureLoadResult asset_manager_load_texture(
     AssetManager *manager,

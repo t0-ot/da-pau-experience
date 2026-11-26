@@ -15,10 +15,6 @@ typedef struct {
 
 #define RESOURCE_GROUP_INVALID ((ResourceGroupHandle){0, 0})
 
-/* Manager lifecycle. */
-ResourceGroupManager *resource_group_manager_create(void);
-void resource_group_manager_destroy(ResourceGroupManager *manager);
-
 /* Resource group management. */
 ResourceGroupHandle resource_group_manager_create_group(
     ResourceGroupManager *manager

@@ -3,7 +3,7 @@
 #include "engine/session.h"
 #include "engine/input/input.h"
 #include "engine/renderer/renderer.h"
-#include "engine/audio/audio_manager.h"
+#include "audio/audio_manager_internal.h"
 
 void session_init(GameSession *session, EngineContext *engine) {
     if (session == NULL)

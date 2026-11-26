@@ -3,6 +3,10 @@
 
 #include "engine/resources/resource_group_manager.h"
 
+/* Manager lifecycle. */
+ResourceGroupManager *resource_group_manager_create(void);
+void resource_group_manager_destroy(ResourceGroupManager *manager);
+
 typedef void (*ResourceGroupCleanupCallback)(
     void *context,
     ResourceGroupHandle group
