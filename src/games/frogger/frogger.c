@@ -88,7 +88,7 @@ static ModuleAction frogger_update(
 
 static void frogger_draw(void *state, EngineContext *ctx) {
     (void)ctx;
-    frogger_runtime *runtime = state;
+    const frogger_runtime *runtime = state;
 
     if (runtime == NULL)
         return;
