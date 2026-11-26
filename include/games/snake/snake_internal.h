@@ -1,6 +1,7 @@
 #ifndef SNAKE_INTERNAL_H
+#include "engine/resources/resource_group_manager.h"
 #define SNAKE_INTERNAL_H
-
+#include "engine/resources/resource_group_manager.h"
 #include "engine/entity.h"
 #include "engine/animation/animation.h"
 #include "engine/assets/asset_manager.h"

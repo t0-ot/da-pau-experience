@@ -116,8 +116,11 @@
 		<Unit filename="include/engine/storage/highscore.h" />
 		<Unit filename="include/engine/storage/storage_path.h" />
 		<Unit filename="include/engine/utils.h" />
+		<Unit filename="include/games/frogger/frogger.h" />
+		<Unit filename="include/games/frogger/frogger_internal.h" />
+		<Unit filename="include/games/frogger/frogger_logic.h" />
+		<Unit filename="include/games/frogger/frogger_render.h" />
 		<Unit filename="include/games/menu/menu.h" />
-		<Unit filename="include/games/pacman/pacman.h" />
 		<Unit filename="include/games/snake/snake.h" />
 		<Unit filename="include/games/snake/snake_internal.h" />
 		<Unit filename="include/games/snake/snake_logic.h" />
@@ -179,10 +182,16 @@
 		<Unit filename="src/engine/utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/games/menu/menu.c">
+		<Unit filename="src/games/frogger/frogger.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/games/pacman/pacman.c">
+		<Unit filename="src/games/frogger/frogger_logic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/frogger/frogger_render.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/menu/menu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/games/snake/snake.c">

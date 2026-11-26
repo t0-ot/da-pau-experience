@@ -49,7 +49,6 @@ static void snake_init(void *state, EngineContext *engine) {
         runtime->snake.alive = false;
         return;
     }
-
     int start_x = runtime->play_width / 2;
     int start_y = runtime->play_height / 2;
 

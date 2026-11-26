@@ -59,7 +59,6 @@ bool renderer_draw_texture_region(const AssetManager *manager, TextureHandle tex
         return false;
 
     bool is_fallback = false;
-
     const TextureResource *resource =
         asset_manager_resolve_texture(manager, texture, &is_fallback);
 
