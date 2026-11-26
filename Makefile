@@ -1,3 +1,4 @@
+
 CC = gcc
 TARGET_NAME = Da-Pau-Launching-Experience
 RAYLIB_DIR = external/raylib/src
@@ -57,6 +58,8 @@ SHARED_DIR = bin/$(MODE_DIR)
 TARGET = $(OUT_DIR)/$(TARGET_NAME)$(EXT)
 SHARED_TARGET = $(SHARED_DIR)/$(TARGET_NAME)$(EXT)
 OBJS = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRC))
+DEPS = $(OBJS:.o=.d)
+
 RAYLIB_LIB = $(RAYLIB_DIR)/libraylib.a
 
 .PHONY: all debug release asan clean clean-all
@@ -85,9 +88,13 @@ ifeq ($(OS),Windows_NT)
 	@$(call CP_FILE,$@,$(SHARED_TARGET))
 endif
 
+# Compile source files and generate header dependencies
 $(OBJ_DIR)/%.o: %.c
 	@$(call MKDIR,$(dir $@))
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+# Include automatically generated header dependencies
+-include $(DEPS)
 
 clean:
 	@$(call RM_DIR,bin)
@@ -95,3 +102,4 @@ clean:
 
 clean-all: clean
 	$(MAKE) -C $(RAYLIB_DIR) clean
+
