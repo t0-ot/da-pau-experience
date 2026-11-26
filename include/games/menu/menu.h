@@ -18,6 +18,7 @@
 typedef enum {
     MENU_CHOICE_PLAY_SNAKE, /**< Launch Snake. */
     MENU_CHOICE_PLAY_TRON,  /**< Launch Tron. */
+    MENU_CHOICE_PLAY_PACMAN,
     MENU_CHOICE_PLAY_FROGGER, /**< Launch Pacman */
     MENU_CHOICE_NONE,       /**< No selection has been made. */
     MENU_CHOICE_QUIT        /**< Exit the application. */
@@ -36,6 +37,6 @@ extern const GameModule menu_module;
  * @param state Pointer to the menu's runtime state.
  * @return The selected menu choice, or MENU_CHOICE_NONE if state is NULL.
  */
-menu_choice_type menu_get_exit_choice(void *state);
+menu_choice_type menu_get_exit_choice(const void *state);
 
 #endif /* MENU_H */

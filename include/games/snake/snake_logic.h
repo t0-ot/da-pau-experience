@@ -8,26 +8,9 @@
 #define SNAKE_LOGIC_H
 
 #include "engine/entity.h"
+#include "games/snake/snake_internal.h"
 
 typedef struct snake_runtime snake_runtime;
-
-/**
- * @brief Properties of the standard fruit.
- */
-typedef struct {
-    int8_t scoreAmt; /**< Number of segments added when the fruit is eaten. */
-} defaultFruit;
-
-/**
- * @brief Stores fruit gameplay data and its positions.
- *
- * Rendering information is deliberately excluded.
- */
-typedef struct {
-    void *fruitType; /**< Pointer to the specific fruit type and its properties. */
-    void (*onEat)(void *fruit, Segmented_entity *snake); /**< Eating behavior assigned to the fruit. */
-    Point_list pointList; /**< Positions of the fruit instances. */
-} fruitData;
 
 
 /**
@@ -51,13 +34,7 @@ int hiScoreCounter(int currentScore, int *highestScore);
  * @param play_width Width of the play area.
  * @param play_height Height of the play area.
  */
-void handleDeath(
-    Segmented_entity *snake,
-    Point_list *fruit,
-    Point *lastDirInput,
-    int play_width,
-    int play_height
-);
+void handleDeath(Segmented_entity *snake1, Point_list *fruit, Point *lastDirInput, int play_width, int play_height, bool *has_started, int *pending_growth);
 
 /**
  * @brief Generates a fruit position that does not overlap the snake.
@@ -71,13 +48,7 @@ void handleDeath(
  * @param spawnWidth Width of the play area.
  * @param spawnHeight Height of the play area.
  */
-void spawnFruit(
-    Point_list fruitView,
-    int fruitNumber,
-    Point_list snakeView,
-    int spawnWidth,
-    int spawnHeight
-);
+void spawnFruit(Point_list fruitView, int fruitNumber, const Segmented_entity *snake, int spawnWidth, int spawnHeight);
 
 /**
  * @brief Applies the standard fruit's score to the snake.
@@ -88,25 +59,7 @@ void spawnFruit(
  * @param fruit Pointer to the fruit's gameplay data.
  * @param snake Pointer to the snake entity receiving the score.
  */
-void baseEat(void *fruit, Segmented_entity *snake);
-
-/**
- * @brief Spawns an additional fruit when the snake reaches a milestone.
- *
- * Checks whether the snake's segment count meets the milestone
- * condition and, if so, adds another fruit to the fruit position list.
- *
- * @param fruitAwardTarget Pointer to the fruit data receiving the new fruit.
- * @param snakeScore Pointer to the snake's segment list.
- * @param play_width Width of the play area.
- * @param play_height Height of the play area.
- */
-void handleMilestoneFruit(
-    fruitData *fruitAwardTarget,
-    Point_list *snakeScore,
-    int play_width,
-    int play_height
-);
+void baseEat(void *fruit, Segmented_entity *snake, int *pending_growth);
 
 /**
  * @brief Handles the snake's collision with a fruit.
@@ -121,12 +74,6 @@ void handleMilestoneFruit(
  * @param play_width Width of the play area.
  * @param play_height Height of the play area.
  */
-void handleFruitCollision(
-    fruitData *collidedFruitData,
-    Segmented_entity *snakeInfo,
-    int collidedFruitNum,
-    int play_width,
-    int play_height
-);
+void handleFruitCollision(fruitData *collidedFruitData, Segmented_entity *snakeInfo, int collidedFruitNum, int play_width, int play_height, int *pending_growth);
 
 #endif // SNAKE_LOGIC_H

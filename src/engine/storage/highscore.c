@@ -1,8 +1,9 @@
 #include "engine/storage/highscore.h"
 #include "engine/storage/storage_path.h"
+#include "raylib.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
 
 int highscore_load(const char *game_name) {
     if (game_name == NULL || game_name[0] == '\0') {
@@ -10,34 +11,29 @@ int highscore_load(const char *game_name) {
     }
 
     char directory[512];
-
     if (!storage_path_init(directory, sizeof(directory))) {
         return 0;
     }
 
-    char file_path[512];
+    const char *file_path = TextFormat("%s/%s.txt", directory, game_name);
 
-    int length = snprintf(file_path, sizeof(file_path), "%s/%s.txt", directory, game_name);
-
-    if (length < 0 || (size_t)length >= sizeof(file_path)) {
+    if (!FileExists(file_path)) {
         return 0;
     }
 
-    FILE *file = fopen(file_path, "r");
-
-    if (file == NULL) {
+    char *text = LoadFileText(file_path);
+    if (text == NULL) {
         return 0;
     }
+    char* first_invalid;
+    long long score = strtoll(text, &first_invalid, 10);
 
-    int score = 0;
-
-    if (fscanf(file, "%d", &score) != 1 || score < 0) {
+    if (first_invalid == text || score <  INT_MIN || score > INT_MAX)
         score = 0;
-    }
 
-    fclose(file);
+    UnloadFileText(text);
 
-    return score;
+    return (int)score;
 }
 
 void highscore_save(const char *game_name, int score) {
@@ -46,32 +42,12 @@ void highscore_save(const char *game_name, int score) {
     }
 
     char directory[512];
-
     if (!storage_path_init(directory, sizeof(directory))) {
         return;
     }
 
-    char file_path[512];
+    const char *file_path = TextFormat("%s/%s.txt", directory, game_name);
+    const char *content = TextFormat("%d\n", score);
 
-    int length = snprintf(
-        file_path,
-        sizeof(file_path),
-        "%s/%s.txt",
-        directory,
-        game_name
-    );
-
-    if (length < 0 || (size_t)length >= sizeof(file_path)) {
-        return;
-    }
-
-    FILE *file = fopen(file_path, "w");
-
-    if (file == NULL) {
-        return;
-    }
-
-    fprintf(file, "%d\n", score);
-
-    fclose(file);
+    SaveFileText(file_path, content);
 }

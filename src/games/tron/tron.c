@@ -1,7 +1,4 @@
-
 #include <stdlib.h>
-
-#include "raylib.h"
 
 #include "engine/input/input.h"
 #include "engine/input/movement.h"
@@ -13,22 +10,28 @@
 #define TRON_MOVE_INTERVAL 0.10f
 #define MAX_INPUT_BUFFER 5
 
-static void tron_init(void *state) {
+static void tron_init(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
 
     runtime->player.segments.amt = 1;
-    runtime->player.segments.points = calloc(1, sizeof(Point));
+    runtime->player.capacity = TRON_WIDTH * TRON_HEIGHT;
+    runtime->player.segments.points = calloc(runtime->player.capacity, sizeof(Point));
 
     runtime->view_enemies.enemy = runtime->enemy;
     runtime->view_enemies.enemy_amt = 1;
 
+    runtime->player.head = 0;
+    runtime->player.tail = 0;
     runtime->player.alive = true;
 
     runtime->player.segments.points[0] = (Point){TRON_WIDTH / 2, 25};
 
     for (int i = 0; i < 3; i++) {
+        runtime->enemy[i].head = 0;
+        runtime->enemy[i].tail = 0;
         runtime->enemy[i].segments.amt = 1;
-        runtime->enemy[i].segments.points = calloc(1, sizeof(Point));
+        runtime->enemy[i].capacity = TRON_WIDTH * TRON_HEIGHT;
+        runtime->enemy[i].segments.points = calloc(runtime->enemy[i].capacity, sizeof(Point));
         runtime->enemy[i].alive = true;
 
         runtime->enemy[i].segments.points[0] = (Point){
@@ -58,7 +61,8 @@ static void tron_init(void *state) {
 static ModuleAction tron_update(
     void *state,
     const GameInput *input,
-    float delta_time
+    float delta_time,
+    EngineContext *engine
 ) {
     tron_runtime *runtime = state;
 
@@ -83,6 +87,10 @@ static ModuleAction tron_update(
     runtime->move_timer += delta_time;
     runtime->enemy_move_timer += delta_time;
     latch_movement_no_reversal(&runtime->last_dir_input, runtime->buffered_dir, input, &runtime->buffered_dir_amt);
+    if (runtime->toggle_turbo)
+        runtime->move_interval = 0.05f;
+    else
+        runtime->move_interval = 0.10f;
 
     if (runtime->move_timer >= runtime->move_interval) {
         runtime->move_timer -= runtime->move_interval;
@@ -96,11 +104,11 @@ static ModuleAction tron_update(
             TRON_HEIGHT
         );
     }
-    while (runtime->enemy_move_timer >= runtime->enemy_move_interval) {
+    if (runtime->enemy_move_timer >= runtime->enemy_move_interval) {
         runtime->enemy_move_timer -= runtime->enemy_move_interval;
         enemy_lightcycle_ai(
             &runtime->view_enemies,
-            &runtime->player.segments,
+            &runtime->player,
             runtime->enemy_distracted,
             TRON_WIDTH,
             TRON_HEIGHT
@@ -112,7 +120,7 @@ static ModuleAction tron_update(
     return MODULE_CONTINUE;
 }
 
-static void tron_draw(void *state) {
+static void tron_draw(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
     if (runtime == NULL || runtime->player.segments.points == NULL)
         return;
@@ -127,7 +135,7 @@ static void tron_draw(void *state) {
     );
 }
 
-static void tron_cleanup(void *state) {
+static void tron_cleanup(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
 
     if (runtime == NULL)
