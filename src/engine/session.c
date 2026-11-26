@@ -2,7 +2,10 @@
 
 #include "engine/session.h"
 #include "engine/input/input.h"
+#include "engine/core/engine_context.h"
+#include "engine/core/game_module.h"
 #include "engine/renderer/renderer.h"
+#include "audio/audio_manager_internal.h"
 
 void session_init(GameSession *session, EngineContext *engine) {
     if (session == NULL)
@@ -56,6 +59,9 @@ ModuleAction session_run(GameSession *session) {
         }
 
         float delta_time = renderer_get_delta_time();
+
+        /* Update engine audio streaming. */
+        audio_manager_update(session->engine->audio);
 
         ModuleAction action = session->current_module->update(
             session->current_state,

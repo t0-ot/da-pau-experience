@@ -47,6 +47,7 @@ typedef struct tron_runtime {
     int buffered_dir_amt; /**< Whether a direction is currently queued. */
 
     int level_starting; /**< State indicating whether a level introduction is active. */
+    int attempt_number;
 } tron_runtime;
 
 /** @brief Initial horizontal positions of the three enemies. */

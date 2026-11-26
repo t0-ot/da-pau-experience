@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "engine/utils.h"
 
+
+//TODO: Replace ease with raylib equivalent in reasings.h
 float ease(float time, float startValue, float change, float duration) {
      time /= duration / 2;
      if (time < 1)  {

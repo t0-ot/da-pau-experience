@@ -7,9 +7,13 @@
 #include <time.h>
 
 #include "engine/session.h"
+#include "engine/core/engine_context.h"
 #include "engine/renderer/renderer.h"
+#include "engine/audio/audio_device.h"
 #include "engine/input/input.h"
-#include "engine/assets/asset_manager.h"
+#include "engine/resources/resource_group_manager_internal.h"
+#include "engine/assets/asset_manager_internal.h"
+#include "engine/audio/audio_manager_internal.h"
 #include "app/game_registry.h"
 
 /**
@@ -30,16 +34,44 @@ int main(void) {
         return EXIT_FAILURE;
 
     /* Create engine services. */
-    AssetManager *assets = asset_manager_create();
+    ResourceGroupManager *groups = resource_group_manager_create();
+
+    if (groups == NULL) {
+        renderer_close();
+        return EXIT_FAILURE;
+    }
+
+    if (!audio_device_init()) {
+        resource_group_manager_destroy(groups);
+        renderer_close();
+        return EXIT_FAILURE;
+    }
+    /* Create the audio manager. */
+    AudioManager *audio = audio_manager_create(groups);
+
+    if (audio == NULL) {
+        audio_device_close();
+        resource_group_manager_destroy(groups);
+        renderer_close();
+        return EXIT_FAILURE;
+    }
+
+    /* Create the asset manager */
+    AssetManager *assets = asset_manager_create(groups);
 
     if (assets == NULL) {
+        audio_manager_destroy(audio);
+        audio_device_close();
+        resource_group_manager_destroy(groups);
         renderer_close();
         return EXIT_FAILURE;
     }
 
     /* Assemble the engine context. */
     EngineContext engine = {
-        .assets = assets
+        .assets = assets,
+        .audio = audio,
+        .groups = groups
     };
 
     /* Initialize centralized input handling. */
@@ -73,7 +105,11 @@ int main(void) {
 
     /* Release session and graphics resources. */
     session_cleanup(&session);
+    audio_manager_destroy(audio);
     asset_manager_destroy(assets);
+    resource_group_manager_destroy(groups);
+
+    audio_device_close();
     renderer_close();
 
     return EXIT_SUCCESS;

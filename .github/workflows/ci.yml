@@ -1,0 +1,179 @@
+name: Build, Test & Deploy Docs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. Linux Compile + ASan Memory/Crash Smoke Test
+  linux-build-and-test:
+    name: Linux Build & ASan Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo & Raylib submodule
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install Linux X11/OpenGL & Xvfb dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev xvfb
+
+      - name: Cache compiled Raylib (Linux)
+        uses: actions/cache@v5
+        with:
+          path: external/raylib/src/libraylib.a
+          key: raylib-linux-${{ hashFiles('external/raylib/src/raylib.h') }}
+
+      - name: Compile Release
+        run: make release
+
+      - name: Package Linux Release
+        run: |
+          mkdir -p dist/linux
+          cp bin/Release/Da-Pau-Launching-Experience dist/linux/
+          cp -r assets dist/linux/ 2>/dev/null || true
+
+      - name: Upload Linux Playable Build
+        uses: actions/upload-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Linux
+          path: dist/linux
+
+      - name: Rebuild Raylib & Compile ASan Debug
+        run: |
+          make -C external/raylib/src clean
+          make asan
+
+      - name: Configure Virtual Audio Output
+        run: |
+          cat > "$HOME/.asoundrc" <<'EOF'
+          pcm.!default {
+              type null
+          }
+          EOF
+
+      - name: Run Headless Startup Smoke Test (ASan)
+        run: |
+          timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
+
+  # 2. Windows Cross-Platform Build & Playable .zip
+  windows-build:
+    name: Windows Build (.exe)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Checkout repo & Raylib submodule
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Setup MSYS2 UCRT64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: >-
+            make
+            mingw-w64-ucrt-x86_64-gcc
+
+      - name: Cache compiled Raylib (Windows)
+        uses: actions/cache@v5
+        with:
+          path: external/raylib/src/libraylib.a
+          key: raylib-windows-${{ hashFiles('external/raylib/src/raylib.h') }}
+
+      - name: Compile Windows Debug & Release
+        run: |
+          make debug
+          make -C external/raylib/src clean
+          make release
+
+      - name: Package Windows Release
+        run: |
+          mkdir -p dist/windows
+          cp bin/Release/Da-Pau-Launching-Experience.exe dist/windows/
+          cp -r assets dist/windows/ 2>/dev/null || true
+
+      - name: Upload Windows Playable Build
+        uses: actions/upload-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Windows
+          path: dist/windows
+
+  # 3. C Static Analysis (Cppcheck + Clang-Tidy)
+  static-analysis:
+    name: C Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo & Raylib submodule
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install analysis tools & headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck clang-tidy bear libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev
+
+      - name: Cache compiled Raylib (Linux)
+        uses: actions/cache@v5
+        with:
+          path: external/raylib/src/libraylib.a
+          key: raylib-linux-${{ hashFiles('external/raylib/src/raylib.h') }}
+
+      - name: Scan src/ and include/ with Cppcheck
+        run: cppcheck --enable=all --std=c17 --check-level=exhaustive --inline-suppr --suppress=missingIncludeSystem --suppress=constParameterCallback --suppress=*:*external/raylib/* --error-exitcode=1 -I include -I external/raylib/src src/
+
+      - name: Generate compile_commands.json & Run Clang-Tidy
+        run: |
+          bear -- make release
+          find src -name '*.c' -print0 | xargs -0 clang-tidy -p . \
+            --checks='-*,bugprone-*,clang-analyzer-*,performance-*,-bugprone-easily-swappable-parameters' \
+            --header-filter='^.*(src|include)/.*$'
+
+
+  # 4. Build Doxygen Docs
+  build-docs:
+    name: Generate Doxygen Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Install Doxygen & Graphviz
+        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
+      - name: Run Doxygen
+        run: doxygen docs/Doxyfile
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/html
+
+  # 5. Auto-Publish Docs to GitHub Pages (only on main/master push)
+  deploy-docs:
+    name: Deploy Docs to GitHub Pages
+    needs: build-docs
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

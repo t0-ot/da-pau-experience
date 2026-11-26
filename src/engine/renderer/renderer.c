@@ -4,7 +4,6 @@
 #include "../assets/texture_backend.h"
 #include "raylib.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
 bool renderer_init(int width, int height, const char *title) {
@@ -37,14 +36,14 @@ void renderer_end_frame(void) {
 float renderer_get_delta_time(void) {
     return GetFrameTime();
 }
-
+// Public API: convenience wrapper for drawing an entire texture.
+// cppcheck-suppress unusedFunction
 bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, Rectangle destination) {
     if (destination.width <= 0 || destination.height <= 0)
         return false;
 
-    bool is_fallback = false;
     const TextureResource *resource =
-        asset_manager_resolve_texture(manager, texture, &is_fallback);
+        asset_manager_resolve_texture(manager, texture, NULL);
 
     if (resource == NULL)
         return false;
@@ -65,6 +64,15 @@ bool renderer_draw_texture_region(const AssetManager *manager, TextureHandle tex
 
     if (resource == NULL)
         return false;
+
+    if (is_fallback) {
+        int width;
+        int height;
+
+        texture_backend_get_size(resource, &width, &height);
+
+        source = (Rectangle){0, 0, (float)width, (float)height};
+    }
 
     texture_backend_draw_region(
         resource,

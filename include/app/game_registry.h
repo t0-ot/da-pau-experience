@@ -10,7 +10,8 @@
 #define GAME_REGISTRY_H
 
 #include "engine/core/game_module.h"
-#include "games/menu/menu.h"
+enum menu_choice_type : int;
+typedef enum menu_choice_type menu_choice_type;
 
 /**
  * @brief Represents a registered game module.
@@ -33,17 +34,9 @@ typedef struct {
  */
 const Game_Entry *game_registry_get_next(
     const GameModule *current_mod,
-    void *state,
+    const void *state,
     ModuleAction action
 );
-
-/**
- * @brief Retrieves a registered game using its menu selection.
- *
- * @param choice Menu selection to look up.
- * @return Matching registry entry, or NULL if no match exists.
- */
-const Game_Entry *game_registry_get_entry(menu_choice_type choice);
 
 /**
  * @brief Retrieves the application's starting menu module.

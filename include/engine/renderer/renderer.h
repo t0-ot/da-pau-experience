@@ -9,6 +9,10 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+
+typedef struct AssetManager AssetManager;
+typedef struct TextureHandle TextureHandle;
+#include "raylib.h"
 #include <stdbool.h>
 
 /**
@@ -56,5 +60,20 @@ void renderer_end_frame(void);
  * @return The frame time in seconds.
  */
 float renderer_get_delta_time(void);
+
+bool renderer_draw_texture(
+    const AssetManager *manager,
+    TextureHandle texture,
+    Rectangle texture_data
+);
+
+bool renderer_draw_texture_region(
+    const AssetManager *manager,
+    TextureHandle texture,
+    Rectangle source,
+    Rectangle destination,
+    Vector2 origin,
+    float rotation
+);
 
 #endif // RENDERER_H

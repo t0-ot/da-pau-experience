@@ -99,6 +99,10 @@
 		<Unit filename="include/engine/animation/animation.h" />
 		<Unit filename="include/engine/assets/asset_manager.h" />
 		<Unit filename="include/engine/assets/texture.h" />
+		<Unit filename="include/engine/audio/audio_device.h" />
+		<Unit filename="include/engine/audio/audio_manager.h" />
+		<Unit filename="include/engine/audio/music.h" />
+		<Unit filename="include/engine/audio/sound.h" />
 		<Unit filename="include/engine/core/engine_context.h" />
 		<Unit filename="include/engine/core/game_input.h" />
 		<Unit filename="include/engine/core/game_module.h" />
@@ -107,6 +111,7 @@
 		<Unit filename="include/engine/input/input.h" />
 		<Unit filename="include/engine/input/movement.h" />
 		<Unit filename="include/engine/renderer/renderer.h" />
+		<Unit filename="include/engine/resources/resource_group_manager.h" />
 		<Unit filename="include/engine/session.h" />
 		<Unit filename="include/engine/storage/highscore.h" />
 		<Unit filename="include/engine/storage/storage_path.h" />
@@ -134,10 +139,22 @@
 		<Unit filename="src/engine/assets/asset_manager.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/engine/assets/asset_manager_internal.h" />
 		<Unit filename="src/engine/assets/texture.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/assets/texture_backend.h" />
+		<Unit filename="src/engine/audio/audio_backend.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/audio/audio_backend.h" />
+		<Unit filename="src/engine/audio/audio_device.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/audio/audio_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/audio/audio_manager_internal.h" />
 		<Unit filename="src/engine/entity.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -150,6 +167,10 @@
 		<Unit filename="src/engine/renderer/renderer.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/engine/resources/resource_group_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/engine/resources/resource_group_manager_internal.h" />
 		<Unit filename="src/engine/session.c">
 			<Option compilerVar="CC" />
 		</Unit>

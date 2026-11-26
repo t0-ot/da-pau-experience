@@ -41,7 +41,8 @@ void tron_render_game(
     int enemy_count,
     int level,
     int level_starting,
-    int turbo
+    int turbo,
+    int attempt_no
 ) {
     int board_width = TRON_WIDTH * TRON_CELL_SIZE;
     int board_height = TRON_HEIGHT * TRON_CELL_SIZE;
@@ -69,6 +70,6 @@ void tron_render_game(
 
         DrawText(intro, (GetScreenWidth() - width) / 2, GetScreenHeight() / 2, 40, RAYWHITE);
     }
-
+    DrawText(TextFormat("Attempt No: %d", attempt_no), 45, 200, 20, WHITE);
     DrawText("WASD / ARROWS: MOVE     E: TURBO     ESC: MENU", 30, GetScreenHeight() - 52, 18, GRAY);
 }

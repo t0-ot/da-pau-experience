@@ -11,11 +11,12 @@
 
 #include <stddef.h>
 #include "game_input.h"
+typedef struct EngineContext EngineContext;
 
 /**
  * @brief Describes the result of a game module's update operation.
  */
-typedef enum {
+typedef enum ModuleAction : int {
     MODULE_CONTINUE, /**< Continue running the current module. */
     MODULE_QUIT,     /**< Request termination of the application. */
     MODULE_FINISHED  /**< Indicate that the current module has finished. */
@@ -27,7 +28,7 @@ typedef enum {
  * Each game module provides callbacks for initialization, updating,
  * rendering, and cleanup. The session manages the allocation of its state.
  */
-typedef struct {
+typedef struct GameModule {
     /** @brief Size of the module's runtime state in bytes. */
     size_t state_size;
 
@@ -35,7 +36,7 @@ typedef struct {
      * @brief Initializes the module's runtime state.
      * @param state Pointer to the allocated runtime state.
      */
-    void (*init)(void *state);
+    void (*init)(void *state, EngineContext *engine);
 
     /**
      * @brief Updates the module's game logic.
@@ -48,20 +49,21 @@ typedef struct {
     ModuleAction (*update)(
         void *state,
         const GameInput *input,
-        float delta_time
+        float delta_time,
+        EngineContext *engine
     );
 
     /**
      * @brief Draws the current state of the module.
      * @param state Pointer to the module's runtime state.
      */
-    void (*draw)(void *state);
+    void (*draw)(void *state, EngineContext *engine);
 
     /**
      * @brief Releases resources owned by the module's runtime state.
      * @param state Pointer to the module's runtime state.
      */
-    void (*cleanup)(void *state);
+    void (*cleanup)(void *state, EngineContext *engine);
 
 } GameModule;
 
