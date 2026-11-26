@@ -314,10 +314,10 @@ void frogger_update_logic(
 
         runtime->player_float_x += curr->speed * delta_time;
         runtime->player.posX = (int)roundf(runtime->player_float_x);
-if (runtime->player_float_x < -0.4f ||
-runtime->player_float_x > (float)FROGGER_COLS - 0.6f) {
-trigger_game_over(runtime, DEATH_NALUNOD);
-return;
-}
-}
+        if (runtime->player_float_x < -0.4f ||
+        runtime->player_float_x > (float)FROGGER_COLS - 0.6f) {
+        trigger_game_over(runtime, DEATH_NALUNOD);
+            return;
+        }
+    }
 }
