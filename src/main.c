@@ -59,6 +59,8 @@ int main(void) {
     AssetManager *assets = asset_manager_create(groups);
 
     if (assets == NULL) {
+        audio_manager_destroy(audio);
+        audio_device_close();
         resource_group_manager_destroy(groups);
         renderer_close();
         return EXIT_FAILURE;
