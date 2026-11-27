@@ -113,7 +113,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
-
       - name: Prepare AppDir
         run: |
           APP_DIR="AppDir"
@@ -168,7 +167,6 @@ jobs:
 
           echo "Checking generated icon:"
           file "$ICON_DIR/DaPau.png"
-
 
       - name: Download linuxdeploy
         run: |
@@ -447,6 +445,10 @@ jobs:
       contents: write
 
     steps:
+      # Checkout is required so gh can identify the repository.
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Download Linux AppImage
         uses: actions/download-artifact@v7
         with:
@@ -487,4 +489,3 @@ jobs:
             release/portable/Da-Pau-Launching-Experience-Windows.zip \
             release/windows-installer/Da-Pau-Launching-Experience-Setup.exe \
             "${FLAGS[@]}"
-
