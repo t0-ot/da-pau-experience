@@ -174,7 +174,7 @@ static void draw_cycle(
 }
 
 void tron_render_game(
-    AssetManager *manager,
+    const AssetManager *manager,
     TextureHandle cycle_texture,
     TextureHandle enemy_cycle_texture,
     const Segmented_entity *player,
