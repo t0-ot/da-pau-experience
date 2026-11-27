@@ -1,10 +1,7 @@
 #include "engine/input/movement.h"
 #include "engine/core/game_types.h"
 
-
-// cppcheck-suppress staticFunction
-// Intentionally non-static: this handler will be called from other modules.
-void latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
+bool grid_movement_handler(Point *buffer, const GameInput *input, int *buffered_amt) {
     int dx = 0, dy = 0;
 
     if (input->up)    dy = -1;
@@ -12,7 +9,27 @@ void latch_movement_handler(const Point *target, Point *buffer, const GameInput 
     if (input->left)  dx = -1;
     if (input->right) dx = 1;
 
-    if (dx == 0 && dy == 0) return;
+    if (dx == 0 && dy == 0) return false;
+    if (dx != 0 && dy != 0) dx = 0;
+
+    if (*buffered_amt < 5) {
+        buffer[*buffered_amt] = (Point){dx, dy};
+        (*buffered_amt)++;
+    }
+    return true;
+}
+
+// cppcheck-suppress staticFunction
+// Intentionally non-static: this handler will be called from other modules.
+bool latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
+    int dx = 0, dy = 0;
+
+    if (input->up)    dy = -1;
+    if (input->down)  dy = 1;
+    if (input->left)  dx = -1;
+    if (input->right) dx = 1;
+
+    if (dx == 0 && dy == 0) return false;
     if (dx != 0 && dy != 0) dx = 0;
 
     Point reference_direction;
@@ -24,12 +41,13 @@ void latch_movement_handler(const Point *target, Point *buffer, const GameInput 
     bool is_same_dir = (dx == reference_direction.posX && dy == reference_direction.posY);
 
     if (is_same_dir)
-        return;
+        return false;
 
     if (*buffered_amt < 5) {
         buffer[*buffered_amt] = (Point){dx, dy};
         (*buffered_amt)++;
     }
+    return true;
 }
 
 void latch_movement_no_reversal(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {

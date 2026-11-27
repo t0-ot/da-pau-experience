@@ -56,6 +56,14 @@ jobs:
           make -C external/raylib/src clean
           make asan
 
+      - name: Configure Virtual Audio Output
+        run: |
+          cat > "$HOME/.asoundrc" <<'EOF'
+          pcm.!default {
+              type null
+          }
+          EOF
+
       - name: Run Headless Startup Smoke Test (ASan)
         run: |
           timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
@@ -105,9 +113,9 @@ jobs:
           name: Da-Pau-Launching-Experience-Windows
           path: dist/windows
 
-  # 3. C Static Analysis (Bug & Memory Scanner)
+  # 3. C Static Analysis (Cppcheck + Clang-Tidy)
   static-analysis:
-    name: Cppcheck Static Analysis
+    name: C Static Analysis
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo & Raylib submodule
@@ -115,11 +123,27 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install cppcheck
-        run: sudo apt-get update && sudo apt-get install -y cppcheck
+      - name: Install analysis tools & headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck clang-tidy bear libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev
 
-      - name: Scan src/ and include/ for C bugs
+      - name: Cache compiled Raylib (Linux)
+        uses: actions/cache@v5
+        with:
+          path: external/raylib/src/libraylib.a
+          key: raylib-linux-${{ hashFiles('external/raylib/src/raylib.h') }}
+
+      - name: Scan src/ and include/ with Cppcheck
         run: cppcheck --enable=all --std=c17 --check-level=exhaustive --inline-suppr --suppress=missingIncludeSystem --suppress=constParameterCallback --suppress=*:*external/raylib/* --error-exitcode=1 -I include -I external/raylib/src src/
+
+      - name: Generate compile_commands.json & Run Clang-Tidy
+        run: |
+          bear -- make release
+          find src -name '*.c' -print0 | xargs -0 clang-tidy -p . \
+            --checks='-*,bugprone-*,clang-analyzer-*,performance-*,-bugprone-easily-swappable-parameters' \
+            --header-filter='^.*(src|include)/.*$'
+
 
   # 4. Build Doxygen Docs
   build-docs:

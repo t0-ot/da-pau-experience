@@ -11,12 +11,12 @@
 
 #include <stddef.h>
 #include "game_input.h"
-#include "engine/core/engine_context.h"
+typedef struct EngineContext EngineContext;
 
 /**
  * @brief Describes the result of a game module's update operation.
  */
-typedef enum {
+typedef enum ModuleAction : int {
     MODULE_CONTINUE, /**< Continue running the current module. */
     MODULE_QUIT,     /**< Request termination of the application. */
     MODULE_FINISHED  /**< Indicate that the current module has finished. */
@@ -28,7 +28,7 @@ typedef enum {
  * Each game module provides callbacks for initialization, updating,
  * rendering, and cleanup. The session manages the allocation of its state.
  */
-typedef struct {
+typedef struct GameModule {
     /** @brief Size of the module's runtime state in bytes. */
     size_t state_size;
 

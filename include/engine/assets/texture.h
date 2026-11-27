@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct {
+typedef struct TextureHandle {
     uint32_t index;
     uint32_t generation;
 } TextureHandle;

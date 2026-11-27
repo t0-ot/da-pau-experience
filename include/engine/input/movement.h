@@ -5,7 +5,8 @@
 #include "engine/core/game_types.h"
 #include "engine/core/game_input.h"
 
-void latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt);
+bool grid_movement_handler(Point *buffer, const GameInput *input, int *buffered_amt);
+bool latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt);
 void latch_movement_no_reversal(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt);
 bool consume_buffer_input(Point *target, Point *buffer, int *buffer_amt);
 bool has_directional_input(const GameInput *input);

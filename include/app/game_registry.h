@@ -10,7 +10,8 @@
 #define GAME_REGISTRY_H
 
 #include "engine/core/game_module.h"
-#include "games/menu/menu.h"
+enum menu_choice_type : int;
+typedef enum menu_choice_type menu_choice_type;
 
 /**
  * @brief Represents a registered game module.

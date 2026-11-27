@@ -1,9 +1,11 @@
 #ifndef SNAKE_INTERNAL_H
+#include "engine/resources/resource_group_manager.h"
 #define SNAKE_INTERNAL_H
-
+#include "engine/resources/resource_group_manager.h"
 #include "engine/entity.h"
 #include "engine/animation/animation.h"
 #include "engine/assets/asset_manager.h"
+#include "engine/audio/audio_manager.h"
 
 /**
  * @brief Stores the runtime state of a Snake game session.
@@ -31,13 +33,14 @@ typedef struct {
 } fruitData;
 
  typedef struct {
-    AssetGroupHandle assets;
+    ResourceGroupHandle assets;
 
+    SoundHandle fruit_eat;
     TextureHandle fruit_texture;
-} snake_textures;
+} snake_resources;
 
 typedef struct snake_runtime {
-    snake_textures texture;
+    snake_resources resources;
     Segmented_entity snake; /**< The player's snake entity. */
     defaultFruit baseFruit; /**< Properties of the standard fruit. */
     fruitData normalFruitSet; /**< Gameplay data and positions of active fruits. */

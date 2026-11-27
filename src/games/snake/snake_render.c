@@ -43,7 +43,7 @@ void snake_render_game(snake_runtime *snake_data, const EngineContext *engine) {
         if (animation_player_get_source(&snake_data->fruit_player, &source) == ANIM_SUCCESSFUL_SOURCE) {
             renderer_draw_texture_region(
                 engine->assets,
-                snake_data->texture.fruit_texture,
+                snake_data->resources.fruit_texture,
                 source,
                 (Rectangle){x-16, y-19, CELL_SIZE*2, CELL_SIZE*2},
                 (Vector2){0, 0},

@@ -9,7 +9,9 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "engine/assets/asset_manager.h"
+
+typedef struct AssetManager AssetManager;
+typedef struct TextureHandle TextureHandle;
 #include "raylib.h"
 #include <stdbool.h>
 

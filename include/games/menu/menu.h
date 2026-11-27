@@ -15,11 +15,11 @@
 /**
  * @brief Available selections in the main menu.
  */
-typedef enum {
+typedef enum menu_choice_type : int {
     MENU_CHOICE_PLAY_SNAKE, /**< Launch Snake. */
     MENU_CHOICE_PLAY_TRON,  /**< Launch Tron. */
-    MENU_CHOICE_PLAY_PACMAN, /**< Launch Pacman */
     MENU_CHOICE_PLAY_FRUITCATCHER, /**< Launch Fruit Catcher */
+    MENU_CHOICE_PLAY_FROGGER, /**< Launch Pacman */
     MENU_CHOICE_NONE,       /**< No selection has been made. */
     MENU_CHOICE_QUIT        /**< Exit the application. */
 } menu_choice_type;
