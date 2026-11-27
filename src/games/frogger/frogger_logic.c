@@ -165,7 +165,7 @@ void frogger_init_state(frogger_runtime *runtime) {
     animation_player_play(&runtime->hop_anim);
 
     runtime->camera_row = 0.0f;
-    runtime->scroll_speed = 1.15f;
+    runtime->scroll_speed = .65f;
 
     runtime->score = 0;
     runtime->current_hi_score = highscore_load("frogger");
@@ -253,8 +253,8 @@ void frogger_update_logic(
 
     /* 2. Continuous Upward Camera Scroll */
     float dynamic_scroll = 1.15f + (float)runtime->score * 0.012f;
-    if (dynamic_scroll > 3.2f)
-        dynamic_scroll = 3.2f;
+    if (dynamic_scroll > 3.7f)
+        dynamic_scroll = 3.7f;
     runtime->scroll_speed = dynamic_scroll;
 
     runtime->camera_row += runtime->scroll_speed * delta_time;
