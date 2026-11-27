@@ -1,5 +1,5 @@
-name: Build, Test & Deploy Docs
 
+name: Build, Test & Deploy Docs
 
 on:
   push:
@@ -68,7 +68,6 @@ jobs:
           cp bin/Release/Da-Pau-Launching-Experience "$APP_DIR/"
           cp -a assets "$APP_DIR/"
 
-
       - name: Upload Linux Playable Build
         uses: actions/upload-artifact@v7
         with:
@@ -92,7 +91,6 @@ jobs:
         run: |
           timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
 
-
   # 2. Build Linux AppImage
   linux-appimage:
     name: Build Linux AppImage
@@ -110,12 +108,18 @@ jobs:
           name: Da-Pau-Launching-Experience-Linux
           path: dist/linux
 
+      - name: Install AppImage Packaging Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
       - name: Prepare AppDir
         run: |
           APP_DIR="AppDir"
           BIN_DIR="$APP_DIR/usr/bin"
 
           mkdir -p "$BIN_DIR"
+          mkdir -p "$APP_DIR/usr/share/applications"
 
           # Copy executable with explicit executable permissions.
           install -m 755 \
@@ -125,10 +129,16 @@ jobs:
           # Preserve the complete assets directory.
           cp -a dist/linux/Da-Pau-Launching-Experience/assets "$BIN_DIR/"
 
-          # Copy AppImage metadata and launcher.
-          cp installer/linux/DaPau.desktop "$APP_DIR/"
-          cp installer/linux/DaPau.svg "$APP_DIR/"
+          # Install desktop integration metadata.
+          cp installer/linux/DaPau.desktop \
+            "$APP_DIR/usr/share/applications/DaPau.desktop"
 
+          # Generate the PNG icon expected by appimagetool.
+          convert installer/linux/DaPau.svg \
+            -resize 256x256 \
+            "$APP_DIR/DaPau.png"
+
+          # Copy AppImage launcher.
           cp installer/linux/AppRun "$APP_DIR/"
           chmod +x "$APP_DIR/AppRun"
 
@@ -148,6 +158,12 @@ jobs:
             echo "ERROR: AppRun is not executable!"
             exit 1
           }
+
+          echo "Checking desktop file:"
+          test -f "$APP_DIR/usr/share/applications/DaPau.desktop"
+
+          echo "Checking PNG icon:"
+          file "$APP_DIR/DaPau.png"
 
       - name: Download linuxdeploy
         run: |
@@ -241,7 +257,6 @@ jobs:
         with:
           name: Da-Pau-Launching-Experience-Windows
           path: dist/windows
-
 
   # 4. Build Windows Installer
   windows-installer:
@@ -362,7 +377,6 @@ jobs:
             --checks='-*,bugprone-*,clang-analyzer-*,performance-*,-bugprone-easily-swappable-parameters' \
             --header-filter='^.*(src|include)/.*$'
 
-
   # 7. Build Doxygen Docs
   build-docs:
     name: Generate Doxygen Docs
@@ -395,3 +409,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
