@@ -1,10 +1,6 @@
 #include "engine/input/movement.h"
 #include "engine/core/game_types.h"
 
-
-// cppcheck-suppress staticFunction
-// Intentionally non-static: this handler will be called from other modules.
-
 bool grid_movement_handler(Point *buffer, const GameInput *input, int *buffered_amt) {
     int dx = 0, dy = 0;
 
@@ -23,6 +19,8 @@ bool grid_movement_handler(Point *buffer, const GameInput *input, int *buffered_
     return true;
 }
 
+// cppcheck-suppress staticFunction
+// Intentionally non-static: this handler will be called from other modules.
 bool latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
     int dx = 0, dy = 0;
 
