@@ -138,7 +138,51 @@ jobs:
           name: Da-Pau-Launching-Experience-Windows
           path: dist/windows
 
-  # 3. C Static Analysis (Cppcheck + Clang-Tidy)
+  # 3. Generate Portable Release Archives
+  package-portable-builds:
+    name: Generate Portable Packages
+    needs:
+      - linux-build-and-test
+      - windows-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Linux Build
+        uses: actions/download-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Linux
+          path: dist/linux
+
+      - name: Download Windows Build
+        uses: actions/download-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Windows
+          path: dist/windows
+
+      - name: Install ZIP Utility
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Create Portable Archives
+        run: |
+          mkdir -p release
+
+          # Linux TAR.GZ
+          tar -czf release/Da-Pau-Launching-Experience-Linux.tar.gz \
+            -C dist/linux Da-Pau-Launching-Experience
+
+          # Windows ZIP
+          cd dist/windows
+          zip -r ../../release/Da-Pau-Launching-Experience-Windows.zip \
+            Da-Pau-Launching-Experience
+
+      - name: Upload Portable Packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Portable-Packages
+          path: release/
+          if-no-files-found: error
+
+  # 4. C Static Analysis (Cppcheck + Clang-Tidy)
   static-analysis:
     name: C Static Analysis
     runs-on: ubuntu-latest
@@ -170,7 +214,7 @@ jobs:
             --header-filter='^.*(src|include)/.*$'
 
 
-  # 4. Build Doxygen Docs
+  # 5. Build Doxygen Docs
   build-docs:
     name: Generate Doxygen Docs
     runs-on: ubuntu-latest
@@ -189,7 +233,7 @@ jobs:
         with:
           path: docs/html
 
-  # 5. Auto-Publish Docs to GitHub Pages (only on main/master push)
+  # 6. Auto-Publish Docs to GitHub Pages (only on main/master push)
   deploy-docs:
     name: Deploy Docs to GitHub Pages
     needs: build-docs
