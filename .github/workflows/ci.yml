@@ -428,3 +428,63 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+  # 9. Publish GitHub Release
+  publish-release:
+    name: Publish GitHub Release
+    needs:
+      - linux-appimage
+      - windows-installer
+      - package-portable-builds
+      - static-analysis
+
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.publish_release == true
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Linux AppImage
+        uses: actions/download-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Linux-AppImage
+          path: release/linux-appimage
+
+      - name: Download Linux and Windows Portable Packages
+        uses: actions/download-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Portable-Packages
+          path: release/portable
+
+      - name: Download Windows Installer
+        uses: actions/download-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Windows-Installer
+          path: release/windows-installer
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          FLAGS=(
+            --target "$GITHUB_SHA"
+            --title "Da Pau Eating Experience $RELEASE_TAG"
+            --generate-notes
+          )
+
+          if [[ "$PRERELEASE" == "true" ]]; then
+            FLAGS+=(--prerelease)
+          fi
+
+          gh release create "$RELEASE_TAG" \
+            release/linux-appimage/Da-Pau-Launching-Experience.AppImage \
+            release/portable/Da-Pau-Launching-Experience-Linux.tar.gz \
+            release/portable/Da-Pau-Launching-Experience-Windows.zip \
+            release/windows-installer/Da-Pau-Launching-Experience-Setup.exe \
+            "${FLAGS[@]}"
+
