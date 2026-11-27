@@ -120,6 +120,7 @@
 		<Unit filename="include/games/frogger/frogger_internal.h" />
 		<Unit filename="include/games/frogger/frogger_logic.h" />
 		<Unit filename="include/games/frogger/frogger_render.h" />
+		<Unit filename="include/games/fruit_catcher/fruit_catcher.h" />
 		<Unit filename="include/games/menu/menu.h" />
 		<Unit filename="include/games/snake/snake.h" />
 		<Unit filename="include/games/snake/snake_internal.h" />

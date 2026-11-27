@@ -22,4 +22,6 @@ void texture_backend_draw_region(const TextureResource *resource, Rectangle sour
 
 void texture_backend_get_size(const TextureResource *resource, int *width, int *height);
 
+void texture_backend_draw_region(const TextureResource *resource, Rectangle source, Rectangle destination, Vector2 origin, float rotation);
+
 #endif // TEXTURE_BACKEND_H
