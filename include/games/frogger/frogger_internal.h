@@ -61,6 +61,8 @@ typedef struct StreetRow {
 typedef struct frogger_runtime {
     Point player;
     float player_float_x;
+    Point input_buffer[5];
+    int buffered_amt;
 
     ResourceGroupHandle asset_group;
     TextureHandle player_tex;

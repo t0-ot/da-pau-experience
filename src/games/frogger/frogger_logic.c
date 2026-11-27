@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "engine/animation/animation.h"
+#include "engine/input/movement.h"
 #include "games/frogger/frogger_logic.h"
 #include "games/frogger/frogger_internal.h"
 #include "engine/storage/highscore.h"
@@ -198,44 +199,54 @@ void frogger_update_logic(
             runtime->hop_ease_timer = 0.0f;
     }
 
-    /* 1. Discrete Grid Movement */
-    int target_col = runtime->player.posX;
-    int target_row = runtime->player.posY;
-    bool moved = false;
+    /* 1. Capture directional input */
+    grid_movement_handler(runtime->input_buffer, input, &runtime->buffered_amt);
 
-    if (input->up) {
-        target_row++;
-        moved = true;
-    } else if (input->down && runtime->player.posY > 0) {
-        target_row--;
-        moved = true;
-    } else if (input->left && runtime->player.posX > 0) {
-        target_col--;
-        moved = true;
-    } else if (input->right && runtime->player.posX < FROGGER_COLS - 1) {
-        target_col++;
-        moved = true;
-    }
+    /* 2. Consume buffered input when ready */
+    if (runtime->hop_ease_timer <= 0.0f) {
+        Point direction;
 
-    if (moved) {
-        while (runtime->highest_generated_row < target_row + FROGGER_VISIBLE_ROWS) {
-            runtime->highest_generated_row++;
-            generate_row(runtime, runtime->highest_generated_row);
-        }
+        if (consume_buffer_input(
+                &direction,
+                runtime->input_buffer,
+                &runtime->buffered_amt)) {
 
-        const StreetRow *dest = frogger_get_row(runtime, target_row);
-        bool blocked = (dest->type == LANE_SIDEWALK && dest->blocked_cols[target_col]);
+            int target_col = runtime->player.posX + direction.posX;
+            int target_row = runtime->player.posY - direction.posY;
 
-        if (!blocked) {
-            runtime->player.posX = target_col;
-            runtime->player.posY = target_row;
-            runtime->player_float_x = (float)target_col;
-            runtime->hop_ease_timer = runtime->hop_ease_duration;
+            /* 3. Check destination boundaries */
+            if (target_col >= 0 && target_col < FROGGER_COLS &&
+                target_row >= 0) {
 
-            int progress = runtime->player.posY - 1;
-            if (progress > runtime->score) {
-                runtime->score = progress;
-                save_if_high_score(runtime);
+                /* 4. Generate rows ahead */
+                while (runtime->highest_generated_row <
+                       target_row + FROGGER_VISIBLE_ROWS) {
+                    runtime->highest_generated_row++;
+                    generate_row(runtime, runtime->highest_generated_row);
+                }
+
+                /* 5. Check collision */
+                const StreetRow *dest = frogger_get_row(runtime, target_row);
+
+                bool blocked =
+                    dest->type == LANE_SIDEWALK &&
+                    dest->blocked_cols[target_col];
+
+                if (!blocked) {
+                    runtime->player.posX = target_col;
+                    runtime->player.posY = target_row;
+
+                    runtime->player_float_x = (float)target_col;
+                    runtime->hop_ease_timer = runtime->hop_ease_duration;
+
+                    /* 6. Update score */
+                    int progress = runtime->player.posY - 1;
+
+                    if (progress > runtime->score) {
+                        runtime->score = progress;
+                        save_if_high_score(runtime);
+                    }
+                }
             }
         }
     }
