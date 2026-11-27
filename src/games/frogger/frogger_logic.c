@@ -1,6 +1,6 @@
 /**
  * @file frogger_logic.c
- * @brief Implements endless vertical scrolling, Pinoy traffic spawning, and collisions.
+ * @brief Implements endless vertical scrolling, Pinoy traffic spawning, buffs, and collisions.
  */
 
 #include <stdlib.h>
@@ -30,6 +30,8 @@ static void generate_row(frogger_runtime *runtime, int world_row) {
     row->world_row = world_row;
     row->object_count = 0;
     row->speed = 0.0f;
+    row->pickup_type = PICKUP_NONE;
+    row->pickup_col = -1;
 
     for (int c = 0; c < FROGGER_COLS; c++) {
         row->blocked_cols[c] = false;
@@ -122,7 +124,10 @@ static void generate_row(frogger_runtime *runtime, int world_row) {
     } else {
         row->type = LANE_BAHA;
 
-        int dir = (prev1->type == LANE_BAHA && prev1->speed > 0.0f) ? -1 : 1;
+         int dir = (rand() % 2 == 0) ? 1 : -1;
+        if (prev1->type == LANE_BAHA && (prev1->speed * (float)dir) > 0.0f) {
+            dir = -dir;
+        }
         row->speed = (float)dir * (2.0f + (float)(rand() % 10) * 0.12f) * difficulty;
         row->object_count = 3;
 
@@ -138,6 +143,42 @@ static void generate_row(frogger_runtime *runtime, int world_row) {
             };
         }
     }
+}
+
+static void spawn_guaranteed_buff(frogger_runtime *runtime) {
+    int base_row = runtime->player.posY + 3 + (rand() % 4);
+    if (base_row <= (int)runtime->camera_row + 2) {
+        base_row = (int)runtime->camera_row + 3;
+    }
+
+    while (runtime->highest_generated_row < base_row + 6) {
+        runtime->highest_generated_row++;
+        generate_row(runtime, runtime->highest_generated_row);
+    }
+
+    int target_row = base_row;
+    for (int offset = 0; offset < 5; offset++) {
+        const StreetRow *candidate = frogger_get_row(runtime, base_row + offset);
+        if (candidate->type != LANE_BAHA) {
+            target_row = base_row + offset;
+            break;
+        }
+    }
+
+    const StreetRow *row = frogger_get_row(runtime, target_row);
+
+    int col = 2 + (rand() % (FROGGER_COLS - 4));
+    for (int tries = 0; tries < FROGGER_COLS; tries++) {
+        int test_col = (col + tries) % FROGGER_COLS;
+        if (row->type != LANE_SIDEWALK || !row->blocked_cols[test_col]) {
+            col = test_col;
+            break;
+        }
+    }
+
+    runtime->active_pickup_type = (rand() % 2 == 0) ? PICKUP_KWEKKWEK : PICKUP_FISHBALL;
+    runtime->active_pickup_row = target_row;
+    runtime->active_pickup_col = col;
 }
 
 static void save_if_high_score(frogger_runtime *runtime) {
@@ -157,6 +198,7 @@ static void trigger_game_over(frogger_runtime *runtime, DeathReason reason) {
 void frogger_init_state(frogger_runtime *runtime) {
     runtime->player = (Point){ FROGGER_COLS / 2, 1 };
     runtime->player_float_x = (float)runtime->player.posX;
+    runtime->buffered_amt = 0;
 
     runtime->hop_ease_timer = 0.0f;
     runtime->hop_ease_duration = 0.12f;
@@ -165,7 +207,22 @@ void frogger_init_state(frogger_runtime *runtime) {
     animation_player_play(&runtime->hop_anim);
 
     runtime->camera_row = 0.0f;
-    runtime->scroll_speed = 1.15f;
+    runtime->scroll_speed = 0.65f;
+
+
+    runtime->kwekkwek_timer = 0.0f;
+    runtime->fishball_timer = 0.0f;
+    runtime->buff_cooldown_timer = 0.0f;
+    runtime->buff_window_timer = 0.0f;
+    runtime->buff_spawn_trigger = 5.0f;
+    runtime->buff_window_active = true;
+
+    runtime->active_pickup_type = PICKUP_NONE;
+    runtime->active_pickup_row = -1;
+    runtime->active_pickup_col = -1;
+
+    runtime->popup_timer = 0.0f;
+    runtime->popup_text = NULL;
 
     runtime->score = 0;
     runtime->current_hi_score = highscore_load("frogger");
@@ -199,6 +256,41 @@ void frogger_update_logic(
             runtime->hop_ease_timer = 0.0f;
     }
 
+    if (runtime->kwekkwek_timer > 0.0f) {
+        runtime->kwekkwek_timer -= delta_time;
+        if (runtime->kwekkwek_timer < 0.0f)
+            runtime->kwekkwek_timer = 0.0f;
+    }
+    if (runtime->fishball_timer > 0.0f) {
+        runtime->fishball_timer -= delta_time;
+        if (runtime->fishball_timer < 0.0f)
+            runtime->fishball_timer = 0.0f;
+    }
+    if (runtime->popup_timer > 0.0f) {
+        runtime->popup_timer -= delta_time;
+        if (runtime->popup_timer <= 0.0f) {
+            runtime->popup_timer = 0.0f;
+            runtime->popup_text = NULL;
+        }
+    }
+
+    /* Buff Spawner: 20s gap -> guaranteed spawn within next 20s window */
+    if (!runtime->buff_window_active) {
+        runtime->buff_cooldown_timer -= delta_time;
+        if (runtime->buff_cooldown_timer <= 0.0f) {
+            runtime->buff_window_active = true;
+            runtime->buff_window_timer = 0.0f;
+            runtime->buff_spawn_trigger = (float)(rand() % 200) / 10.0f;
+        }
+    } else {
+        runtime->buff_window_timer += delta_time;
+        if (runtime->buff_window_timer >= runtime->buff_spawn_trigger) {
+            spawn_guaranteed_buff(runtime);
+            runtime->buff_window_active = false;
+            runtime->buff_cooldown_timer = 20.0f;
+        }
+    }
+
     /* 1. Capture directional input */
     grid_movement_handler(runtime->input_buffer, input, &runtime->buffered_amt);
 
@@ -214,18 +306,15 @@ void frogger_update_logic(
             int target_col = runtime->player.posX + direction.posX;
             int target_row = runtime->player.posY - direction.posY;
 
-            /* 3. Check destination boundaries */
             if (target_col >= 0 && target_col < FROGGER_COLS &&
                 target_row >= 0) {
 
-                /* 4. Generate rows ahead */
                 while (runtime->highest_generated_row <
                        target_row + FROGGER_VISIBLE_ROWS) {
-                    runtime->highest_generated_row++;
+                        runtime->highest_generated_row++;
                     generate_row(runtime, runtime->highest_generated_row);
                 }
 
-                /* 5. Check collision */
                 const StreetRow *dest = frogger_get_row(runtime, target_row);
 
                 bool blocked =
@@ -239,7 +328,6 @@ void frogger_update_logic(
                     runtime->player_float_x = (float)target_col;
                     runtime->hop_ease_timer = runtime->hop_ease_duration;
 
-                    /* 6. Update score */
                     int progress = runtime->player.posY - 1;
 
                     if (progress > runtime->score) {
@@ -251,13 +339,17 @@ void frogger_update_logic(
         }
     }
 
-    /* 2. Continuous Upward Camera Scroll */
-    float dynamic_scroll = 1.15f + (float)runtime->score * 0.012f;
-    if (dynamic_scroll > 3.2f)
-        dynamic_scroll = 3.2f;
-    runtime->scroll_speed = dynamic_scroll;
+    /* 7. Continuous Upward Camera Scroll (Frozen while Kwek-Kwek is active!) */
+    float dynamic_scroll = 0.65f + (float)runtime->score * 0.008f;
+    if (dynamic_scroll > 2.2f)
+        dynamic_scroll = 2.2f;
 
-    runtime->camera_row += runtime->scroll_speed * delta_time;
+    if (runtime->kwekkwek_timer > 0.0f) {
+        runtime->scroll_speed = 0.0f;
+    } else {
+        runtime->scroll_speed = dynamic_scroll;
+        runtime->camera_row += runtime->scroll_speed * delta_time;
+    }
 
     float min_camera_for_player = (float)runtime->player.posY - ((float)FROGGER_VISIBLE_ROWS * 0.55f);
     if (min_camera_for_player > runtime->camera_row) {
@@ -270,12 +362,13 @@ void frogger_update_logic(
         generate_row(runtime, runtime->highest_generated_row);
     }
 
-    if ((float)runtime->player.posY < runtime->camera_row - 0.35f) {
+    if (runtime->kwekkwek_timer <= 0.0f &&
+        (float)runtime->player.posY < runtime->camera_row - 0.35f) {
         trigger_game_over(runtime, DEATH_NADAPA);
         return;
     }
 
-    /* 3. Update All Active Vehicles & Floating Planks */
+    /* 8. Update All Active Vehicles & Floating Planks */
     int first_active = (int)runtime->camera_row - 1;
     if (first_active < 0)
         first_active = 0;
@@ -294,16 +387,56 @@ void frogger_update_logic(
         }
     }
 
-    /* 4. Check Current Row Hazards */
+    /* 9. Check Street-Food Pickup on Player's Row */
+    if (runtime->active_pickup_type != PICKUP_NONE) {
+        if (runtime->active_pickup_row < (int)runtime->camera_row - 1) {
+            runtime->active_pickup_type = PICKUP_NONE;
+            runtime->active_pickup_row = -1;
+            runtime->active_pickup_col = -1;
+        } else if (runtime->active_pickup_row == runtime->player.posY &&
+                   runtime->active_pickup_col == runtime->player.posX) {
+            if (runtime->active_pickup_type == PICKUP_KWEKKWEK) {
+                runtime->kwekkwek_timer = 10.0f;
+                runtime->popup_text = "KWEK-KWEK! TIME FREEZE (10s)";
+                runtime->popup_timer = 2.5f;
+            } else if (runtime->active_pickup_type == PICKUP_FISHBALL) {
+                runtime->fishball_timer = 10.0f;
+                runtime->popup_text = "FISHBALL! RIDE VEHICLES (10s)";
+                runtime->popup_timer = 2.5f;
+            }
+            runtime->active_pickup_type = PICKUP_NONE;
+            runtime->active_pickup_row = -1;
+            runtime->active_pickup_col = -1;
+        }
+    }
+
+    /* 10. Check Current Row Hazards */
     const StreetRow *curr = frogger_get_row(runtime, runtime->player.posY);
 
     if (curr->type == LANE_KALSADA) {
         float px = runtime->player_float_x;
-        for (int i = 0; i < curr->object_count; i++) {
-            LaneObject veh = curr->objects[i];
-            if (px + 0.78f > veh.x && px + 0.22f < veh.x + veh.width) {
-                trigger_game_over(runtime, DEATH_NASAGASAAN);
-                return;
+
+        if (runtime->fishball_timer > 0.0f) {
+            for (int i = 0; i < curr->object_count; i++) {
+                LaneObject veh = curr->objects[i];
+                if (px + 0.55f >= veh.x && px + 0.45f <= veh.x + veh.width) {
+                    runtime->player_float_x += curr->speed * delta_time;
+                    runtime->player.posX = (int)roundf(runtime->player_float_x);
+                    if (runtime->player_float_x < -0.4f ||
+                        runtime->player_float_x > (float)FROGGER_COLS - 0.6f) {
+                        trigger_game_over(runtime, DEATH_NASAGASAAN);
+                        return;
+                    }
+                    break;
+                }
+            }
+        } else {
+            for (int i = 0; i < curr->object_count; i++) {
+                LaneObject veh = curr->objects[i];
+                if (px + 0.78f > veh.x && px + 0.22f < veh.x + veh.width) {
+                    trigger_game_over(runtime, DEATH_NASAGASAAN);
+                    return;
+                }
             }
         }
     } else if (curr->type == LANE_BAHA) {
@@ -326,8 +459,8 @@ void frogger_update_logic(
         runtime->player_float_x += curr->speed * delta_time;
         runtime->player.posX = (int)roundf(runtime->player_float_x);
         if (runtime->player_float_x < -0.4f ||
-        runtime->player_float_x > (float)FROGGER_COLS - 0.6f) {
-        trigger_game_over(runtime, DEATH_NALUNOD);
+            runtime->player_float_x > (float)FROGGER_COLS - 0.6f) {
+            trigger_game_over(runtime, DEATH_NALUNOD);
             return;
         }
     }
