@@ -92,6 +92,7 @@ jobs:
         run: |
           timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
 
+
   # 2. Build Linux AppImage
   linux-appimage:
     name: Build Linux AppImage
@@ -116,15 +117,37 @@ jobs:
 
           mkdir -p "$BIN_DIR"
 
-          cp dist/linux/Da-Pau-Launching-Experience/Da-Pau-Launching-Experience "$BIN_DIR/"
-          chmod +x "$BIN_DIR/Da-Pau-Launching-Experience"
+          # Copy executable with explicit executable permissions.
+          install -m 755 \
+            dist/linux/Da-Pau-Launching-Experience/Da-Pau-Launching-Experience \
+            "$BIN_DIR/Da-Pau-Launching-Experience"
+
+          # Preserve the complete assets directory.
           cp -a dist/linux/Da-Pau-Launching-Experience/assets "$BIN_DIR/"
 
+          # Copy AppImage metadata and launcher.
           cp installer/linux/DaPau.desktop "$APP_DIR/"
           cp installer/linux/DaPau.svg "$APP_DIR/"
 
           cp installer/linux/AppRun "$APP_DIR/"
           chmod +x "$APP_DIR/AppRun"
+
+          # Verify permissions before packaging.
+          echo "Checking game executable permissions:"
+          ls -l "$BIN_DIR/Da-Pau-Launching-Experience"
+
+          test -x "$BIN_DIR/Da-Pau-Launching-Experience" || {
+            echo "ERROR: Game executable is not executable!"
+            exit 1
+          }
+
+          echo "Checking AppRun permissions:"
+          ls -l "$APP_DIR/AppRun"
+
+          test -x "$APP_DIR/AppRun" || {
+            echo "ERROR: AppRun is not executable!"
+            exit 1
+          }
 
       - name: Download linuxdeploy
         run: |
@@ -143,6 +166,28 @@ jobs:
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
             --output appimage
+
+          # Verify the executable inside the finished AppImage.
+          echo "Verifying generated AppImage..."
+
+          VERIFY_DIR="$(mktemp -d)"
+
+          (
+            cd "$VERIFY_DIR"
+
+            "$GITHUB_WORKSPACE/release/Da-Pau-Launching-Experience.AppImage" \
+              --appimage-extract
+
+            echo "Checking executable inside AppImage:"
+            ls -l squashfs-root/usr/bin/Da-Pau-Launching-Experience
+
+            test -x squashfs-root/usr/bin/Da-Pau-Launching-Experience || {
+              echo "ERROR: Executable permissions were lost during AppImage packaging!"
+              exit 1
+            }
+          )
+
+          echo "AppImage executable verification successful!"
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v7
