@@ -30,6 +30,7 @@ typedef struct {
     ResourceGroupHandle assets;
 
     TextureHandle player_texture;
+    TextureHandle enemy_texture;
 } tron_resources;
 /**
  * @brief Stores the runtime state of a Tron game session.

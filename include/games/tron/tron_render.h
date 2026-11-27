@@ -23,6 +23,7 @@
 void tron_render_game(
     AssetManager *manager,
     TextureHandle cycle_texture,
+    TextureHandle enemy_cycle_texture,
     const Segmented_entity *player,
     const Point *last_dir_input,
     const Segmented_entity enemies[],

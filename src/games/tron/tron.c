@@ -17,8 +17,9 @@ static void tron_init(void *state, EngineContext *engine) {
 
     runtime->resources.assets = resource_group_manager_create_group(engine->groups);
     TextureLoadResult player_cycle_texture = asset_manager_load_texture(engine->assets, runtime->resources.assets, "assets/lightcycle_player.png");
-
+    TextureLoadResult enemy_cycle_texture = asset_manager_load_texture(engine->assets, runtime->resources.assets, "assets/lightcycle_enemy.png");
     runtime->resources.player_texture = player_cycle_texture.handle;
+    runtime->resources.enemy_texture = enemy_cycle_texture.handle;
 
     runtime->attempt_number = 1;
     runtime->player.segments.amt = 1;
@@ -136,6 +137,7 @@ static void tron_draw(void *state, EngineContext *engine) {
     tron_render_game(
         engine->assets,
         runtime->resources.player_texture,
+        runtime->resources.enemy_texture,
         &runtime->player,
         &runtime->last_dir_input,
         runtime->enemy,
