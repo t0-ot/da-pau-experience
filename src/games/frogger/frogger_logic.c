@@ -209,12 +209,12 @@ void frogger_init_state(frogger_runtime *runtime) {
     runtime->camera_row = 0.0f;
     runtime->scroll_speed = 0.65f;
 
-    /* First buff spawns in 2-6s; afterward: 20s gap -> 20s guaranteed window */
+
     runtime->kwekkwek_timer = 0.0f;
     runtime->fishball_timer = 0.0f;
     runtime->buff_cooldown_timer = 0.0f;
     runtime->buff_window_timer = 0.0f;
-    runtime->buff_spawn_trigger = 2.0f + (float)(rand() % 40) / 10.0f;
+    runtime->buff_spawn_trigger = 5;
     runtime->buff_window_active = true;
 
     runtime->active_pickup_type = PICKUP_NONE;
@@ -287,7 +287,7 @@ void frogger_update_logic(
         if (runtime->buff_window_timer >= runtime->buff_spawn_trigger) {
             spawn_guaranteed_buff(runtime);
             runtime->buff_window_active = false;
-            runtime->buff_cooldown_timer = 10.0f;
+            runtime->buff_cooldown_timer = 20.0f;
         }
     }
 
@@ -340,7 +340,7 @@ void frogger_update_logic(
     }
 
     /* 7. Continuous Upward Camera Scroll (Frozen while Kwek-Kwek is active!) */
-    float dynamic_scroll = 0.65f + (float)runtime->score * 0.001f;
+    float dynamic_scroll = 0.65f + (float)runtime->score * 0.008f;
     if (dynamic_scroll > 2.2f)
         dynamic_scroll = 2.2f;
 
