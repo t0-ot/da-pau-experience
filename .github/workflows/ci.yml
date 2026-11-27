@@ -92,7 +92,65 @@ jobs:
         run: |
           timeout --preserve-status 3s xvfb-run -a ./bin/Debug-Asan/Da-Pau-Launching-Experience || [ $? -eq 143 ] || [ $? -eq 124 ]
 
-  # 2. Windows Cross-Platform Build & Playable .zip
+  # 2. Build Linux AppImage
+  linux-appimage:
+    name: Build Linux AppImage
+    needs: linux-build-and-test
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Download Linux Build
+        uses: actions/download-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Linux
+          path: dist/linux
+
+      - name: Prepare AppDir
+        run: |
+          APP_DIR="AppDir"
+          BIN_DIR="$APP_DIR/usr/bin"
+
+          mkdir -p "$BIN_DIR"
+
+          cp dist/linux/Da-Pau-Launching-Experience/Da-Pau-Launching-Experience "$BIN_DIR/"
+          cp -a dist/linux/Da-Pau-Launching-Experience/assets "$BIN_DIR/"
+
+          cp installer/linux/DaPau.desktop "$APP_DIR/"
+          cp installer/linux/DaPau.svg "$APP_DIR/"
+
+          cp installer/linux/AppRun "$APP_DIR/"
+          chmod +x "$APP_DIR/AppRun"
+
+      - name: Download linuxdeploy
+        run: |
+          wget -O linuxdeploy-x86_64.AppImage \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+
+          chmod +x linuxdeploy-x86_64.AppImage
+
+      - name: Build AppImage
+        run: |
+          mkdir -p release
+
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          export LDAI_OUTPUT="$GITHUB_WORKSPACE/release/Da-Pau-Launching-Experience.AppImage"
+
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --output appimage
+
+      - name: Upload Linux AppImage
+        uses: actions/upload-artifact@v7
+        with:
+          name: Da-Pau-Launching-Experience-Linux-AppImage
+          path: release/Da-Pau-Launching-Experience.AppImage
+          if-no-files-found: error
+
+  # 3. Windows Cross-Platform Build & Playable .zip
   windows-build:
     name: Windows Build (.exe)
     runs-on: windows-latest
@@ -139,7 +197,7 @@ jobs:
           path: dist/windows
 
 
-  # 3. Build Windows Installer
+  # 4. Build Windows Installer
   windows-installer:
     name: Build Windows Installer
     needs: windows-build
@@ -183,7 +241,7 @@ jobs:
           path: dist/installer/windows/Da-Pau-Launching-Experience-Setup.exe
           if-no-files-found: error
 
-  # 4. Generate Portable Release Archives
+  # 5. Generate Portable Release Archives
   package-portable-builds:
     name: Generate Portable Packages
     needs:
@@ -227,7 +285,7 @@ jobs:
           path: release/
           if-no-files-found: error
 
-  # 5. C Static Analysis (Cppcheck + Clang-Tidy)
+  # 6. C Static Analysis (Cppcheck + Clang-Tidy)
   static-analysis:
     name: C Static Analysis
     runs-on: ubuntu-latest
@@ -259,7 +317,7 @@ jobs:
             --header-filter='^.*(src|include)/.*$'
 
 
-  # 6. Build Doxygen Docs
+  # 7. Build Doxygen Docs
   build-docs:
     name: Generate Doxygen Docs
     runs-on: ubuntu-latest
@@ -278,7 +336,7 @@ jobs:
         with:
           path: docs/html
 
-  # 7. Auto-Publish Docs to GitHub Pages (only on main/master push)
+  # 8. Auto-Publish Docs to GitHub Pages (only on main/master push)
   deploy-docs:
     name: Deploy Docs to GitHub Pages
     needs: build-docs

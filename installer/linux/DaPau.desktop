@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Da Pau Eating Experience
+Comment=A collection of games
+Exec=Da-Pau-Launching-Experience
+Icon=DaPau
+Categories=Game;
+Terminal=false
+

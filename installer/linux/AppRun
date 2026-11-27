@@ -1,0 +1,10 @@
+#!/bin/sh
+
+HERE="$(dirname "$(readlink -f "$0")")"
+APP_DIR="$HERE/usr/bin"
+
+# Your game expects assets/ beside its executable.
+cd "$APP_DIR" || exit 1
+
+exec "$APP_DIR/Da-Pau-Launching-Experience" "$@"
+
