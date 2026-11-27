@@ -113,13 +113,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
+
       - name: Prepare AppDir
         run: |
           APP_DIR="AppDir"
           BIN_DIR="$APP_DIR/usr/bin"
+          ICON_DIR="$APP_DIR/usr/share/icons/hicolor/256x256/apps"
 
           mkdir -p "$BIN_DIR"
           mkdir -p "$APP_DIR/usr/share/applications"
+          mkdir -p "$ICON_DIR"
 
           # Copy executable with explicit executable permissions.
           install -m 755 \
@@ -133,16 +136,16 @@ jobs:
           cp installer/linux/DaPau.desktop \
             "$APP_DIR/usr/share/applications/DaPau.desktop"
 
-          # Generate the PNG icon expected by appimagetool.
+          # Generate icon in the standard hicolor directory.
           convert installer/linux/DaPau.svg \
             -resize 256x256 \
-            "$APP_DIR/DaPau.png"
+            "$ICON_DIR/DaPau.png"
 
           # Copy AppImage launcher.
           cp installer/linux/AppRun "$APP_DIR/"
           chmod +x "$APP_DIR/AppRun"
 
-          # Verify permissions before packaging.
+          # Verify executable permissions.
           echo "Checking game executable permissions:"
           ls -l "$BIN_DIR/Da-Pau-Launching-Experience"
 
@@ -159,11 +162,13 @@ jobs:
             exit 1
           }
 
-          echo "Checking desktop file:"
+          # Verify desktop file and icon.
           test -f "$APP_DIR/usr/share/applications/DaPau.desktop"
+          test -f "$ICON_DIR/DaPau.png"
 
-          echo "Checking PNG icon:"
-          file "$APP_DIR/DaPau.png"
+          echo "Checking generated icon:"
+          file "$ICON_DIR/DaPau.png"
+
 
       - name: Download linuxdeploy
         run: |
@@ -181,6 +186,7 @@ jobs:
 
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
+            --desktop-file AppDir/usr/share/applications/DaPau.desktop \
             --output appimage
 
           # Verify the executable inside the finished AppImage.
@@ -201,9 +207,21 @@ jobs:
               echo "ERROR: Executable permissions were lost during AppImage packaging!"
               exit 1
             }
+
+            echo "Checking packaged icon:"
+            test -f squashfs-root/DaPau.png || {
+              echo "ERROR: Root icon is missing!"
+              exit 1
+            }
+
+            echo "Checking packaged desktop file:"
+            test -f squashfs-root/usr/share/applications/DaPau.desktop || {
+              echo "ERROR: Desktop file is missing!"
+              exit 1
+            }
           )
 
-          echo "AppImage executable verification successful!"
+          echo "AppImage verification successful!"
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v7
