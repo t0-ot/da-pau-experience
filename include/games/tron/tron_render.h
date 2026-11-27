@@ -21,7 +21,7 @@
  * @param turbo Whether the player is using turbo movement.
  */
 void tron_render_game(
-    const AssetManager *manager,
+    AssetManager *manager,
     TextureHandle cycle_texture,
     TextureHandle enemy_cycle_texture,
     const Segmented_entity *player,

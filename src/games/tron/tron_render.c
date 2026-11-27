@@ -51,7 +51,7 @@ static Point get_cycle_direction(
  * Draw an individual lightcycle and its trail.
  */
 static void draw_cycle(
-    AssetManager *manager,
+    const AssetManager *manager,
     const Segmented_entity *cycle,
     const Point *facing_direction,
     Color color,
@@ -174,7 +174,7 @@ static void draw_cycle(
 }
 
 void tron_render_game(
-    const AssetManager *manager,
+    AssetManager *manager,
     TextureHandle cycle_texture,
     TextureHandle enemy_cycle_texture,
     const Segmented_entity *player,
