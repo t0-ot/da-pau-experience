@@ -4,6 +4,7 @@
  */
 
 #include <math.h>
+#include <stddef.h>
 #include "raylib.h"
 #include "engine/utils.h"
 #include "engine/animation/animation.h"
