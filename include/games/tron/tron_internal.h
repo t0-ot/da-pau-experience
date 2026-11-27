@@ -7,6 +7,9 @@
 #define TRON_INTERNAL_H
 
 #include "engine/entity.h"
+#include "engine/resources/resource_group_manager.h"
+#include "engine/assets/asset_manager.h"
+#include "engine/audio/audio_manager.h"
 
 /** @brief Width of the Tron play area in grid cells. */
 #define TRON_WIDTH 30
@@ -22,12 +25,19 @@ typedef struct Enemy_list {
     int enemy_amt;           /**< Number of enemies in the array. */
 } Enemy_list;
 
+
+typedef struct {
+    ResourceGroupHandle assets;
+
+    TextureHandle player_texture;
+} tron_resources;
 /**
  * @brief Stores the runtime state of a Tron game session.
  */
 typedef struct tron_runtime {
     Segmented_entity player; /**< Player's lightcycle and trail. */
     Segmented_entity enemy[3]; /**< Enemy lightcycles and their trails. */
+    tron_resources resources;
 
     Enemy_list view_enemies; /**< Enemy collection used by game logic. */
 
