@@ -43,18 +43,12 @@ bool renderer_draw_texture(const AssetManager *manager, TextureHandle texture, R
         return false;
 
     const TextureResource *resource =
-        asset_manager_resolve_texture(manager, texture);
+        asset_manager_resolve_texture(manager, texture, NULL);
 
     if (resource == NULL)
         return false;
 
-    texture_backend_draw(
-        resource,
-        destination.x,
-        destination.y,
-        destination.width,
-        destination.height
-    );
+    texture_backend_draw(resource, destination);
 
     return true;
 }
@@ -64,11 +58,22 @@ bool renderer_draw_texture_region(const AssetManager *manager, TextureHandle tex
         destination.width <= 0 || destination.height <= 0)
         return false;
 
+    bool is_fallback = false;
+
     const TextureResource *resource =
-        asset_manager_resolve_texture(manager, texture);
+        asset_manager_resolve_texture(manager, texture, &is_fallback);
 
     if (resource == NULL)
         return false;
+
+    if (is_fallback) {
+        int width;
+        int height;
+
+        texture_backend_get_size(resource, &width, &height);
+
+        source = (Rectangle){0, 0, (float)width, (float)height};
+    }
 
     texture_backend_draw_region(
         resource,

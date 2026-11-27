@@ -20,13 +20,12 @@ static void snake_init(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
 
     runtime->texture.assets = asset_manager_create_group(engine->assets);
-    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "src/assets/apple.png");
+    TextureLoadResult fruit = asset_manager_load_texture(engine->assets, runtime->texture.assets, "assets/apple.png");
 
     runtime->texture.fruit_texture = fruit.handle;
 
     animation_clip_init(&runtime->fruit_clip, 0, 0, 7, 7, 1, 448, 448, 0.15f, ANIMATION_PLAY_ONCE);
     animation_player_init(&runtime->fruit_player, &runtime->fruit_clip);
-    animation_player_play(&runtime->fruit_player);
 
     runtime->play_width = SNAKE_WIDTH;
     runtime->play_height = SNAKE_HEIGHT;

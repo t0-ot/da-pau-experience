@@ -48,9 +48,24 @@ void texture_backend_draw_region(const TextureResource *resource, Rectangle sour
     DrawTexturePro(resource->texture, source, destination, origin, rotation, WHITE);
 }
 
-void texture_backend_draw(const TextureResource *resource, float x, float y, float width, float height) {
+void texture_backend_draw(const TextureResource *resource, Rectangle destination) {
     if (resource == NULL)
         return;
 
-    texture_backend_draw_region(resource, (Rectangle){0, 0, (float)resource->texture.width, (float)resource->texture.height}, (Rectangle){x, y, width, height}, (Vector2){0, 0}, 0.0f);
+    texture_backend_draw_region(resource, (Rectangle){0, 0, (float)resource->texture.width, (float)resource->texture.height}, destination, (Vector2){0, 0}, 0.0f);
+}
+
+void texture_backend_get_size(
+    const TextureResource *resource,
+    int *width,
+    int *height
+) {
+    if (resource == NULL)
+        return;
+
+    if (width != NULL)
+        *width = resource->texture.width;
+
+    if (height != NULL)
+        *height = resource->texture.height;
 }
