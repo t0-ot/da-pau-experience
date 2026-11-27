@@ -117,6 +117,7 @@ jobs:
           mkdir -p "$BIN_DIR"
 
           cp dist/linux/Da-Pau-Launching-Experience/Da-Pau-Launching-Experience "$BIN_DIR/"
+          chmod +x "$BIN_DIR/Da-Pau-Launching-Experience"
           cp -a dist/linux/Da-Pau-Launching-Experience/assets "$BIN_DIR/"
 
           cp installer/linux/DaPau.desktop "$APP_DIR/"
