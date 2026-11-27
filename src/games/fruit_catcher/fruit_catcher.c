@@ -47,7 +47,7 @@ static int clamp_int(int val, int min_val, int max_val) {
     return val;
 }
 
-bool spawn_catcher_fruit(Point_list *fruits, int fruitNumber, int play_width, float startY) {
+static bool spawn_catcher_fruit(Point_list *fruits, int fruitNumber, int play_width, float startY) {
     if (!fruits || !fruits->points || fruits->amt <= 0) {
         return false;
     }
@@ -196,7 +196,6 @@ static ModuleAction catcher_upd(void *state, const GameInput *input, float delta
 static void catcher_draw(void *state, EngineContext *engine) {
     catcher_runtime *runtime = state;
 
-    Color GENESIS = {0, 255, 100, 255};
     renderer_draw_texture(engine->assets, runtime->textures.background_texture, (Rectangle){30, 30, 1220, 660});
     renderer_draw_texture(engine->assets, runtime->textures.fruit_catcher_texture, (Rectangle){runtime->catcher.posX, runtime->catcher.posY, 180, 24});
     for (int i = 0; i < runtime->fruits.amt; i++)
