@@ -131,8 +131,8 @@ static ModuleAction catcher_upd(void *state, const GameInput *input, float delta
     if (runtime->player_move_timer >= runtime->player_move_interval) {
         runtime->player_move_timer -= runtime->player_move_interval;
 
-        if (input->right) runtime->catcher.posX = (runtime->catcher.posX + 230 < GetScreenWidth() - 28) ? runtime->catcher.posX + 30 : GetScreenWidth() - 208;
-        if (input->left)  runtime->catcher.posX = (runtime->catcher.posX - 30 > 28) ? runtime->catcher.posX - 30 : 29;
+        if (input->right_held) runtime->catcher.posX = (runtime->catcher.posX + 230 < GetScreenWidth() - 28) ? runtime->catcher.posX + 30 : GetScreenWidth() - 208;
+        if (input->left_held)  runtime->catcher.posX = (runtime->catcher.posX - 30 > 28) ? runtime->catcher.posX - 30 : 29;
     }
 
     if (runtime->fruit_timer >= runtime->fruit_interval) {

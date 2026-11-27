@@ -4,10 +4,10 @@
 bool grid_movement_handler(Point *buffer, const GameInput *input, int *buffered_amt) {
     int dx = 0, dy = 0;
 
-    if (input->up)    dy = -1;
-    if (input->down)  dy = 1;
-    if (input->left)  dx = -1;
-    if (input->right) dx = 1;
+    if (input->up_pressed)    dy = -1;
+    if (input->down_pressed)  dy = 1;
+    if (input->left_pressed)  dx = -1;
+    if (input->right_pressed) dx = 1;
 
     if (dx == 0 && dy == 0) return false;
     if (dx != 0 && dy != 0) dx = 0;
@@ -24,10 +24,10 @@ bool grid_movement_handler(Point *buffer, const GameInput *input, int *buffered_
 bool latch_movement_handler(const Point *target, Point *buffer, const GameInput *input, int *buffered_amt) {
     int dx = 0, dy = 0;
 
-    if (input->up)    dy = -1;
-    if (input->down)  dy = 1;
-    if (input->left)  dx = -1;
-    if (input->right) dx = 1;
+    if (input->up_pressed)    dy = -1;
+    if (input->down_pressed)  dy = 1;
+    if (input->left_pressed)  dx = -1;
+    if (input->right_pressed) dx = 1;
 
     if (dx == 0 && dy == 0) return false;
     if (dx != 0 && dy != 0) dx = 0;
@@ -76,13 +76,13 @@ bool consume_buffer_input(Point *target, Point *buffer, int *buffer_amt) {
 }
 
 bool has_directional_input(const GameInput *input) {
-    if (input->up)
+    if (input->up_pressed)
         return 1;
-    if (input->down)
+    if (input->down_pressed)
         return 1;
-    if (input->left)
+    if (input->left_pressed)
         return 1;
-    if (input->right)
+    if (input->right_pressed)
         return 1;
     return 0;
 }

@@ -107,7 +107,7 @@ static ModuleAction menu_update(
         runtime->input_cooldown -= delta_time;
 
     if (runtime->input_cooldown <= 0.0f) {
-        if (input->up) {
+        if (input->up_pressed) {
             runtime->highlighted_choice--;
 
             if (runtime->highlighted_choice < 0)
@@ -115,7 +115,7 @@ static ModuleAction menu_update(
 
             runtime->input_cooldown = MENU_INPUT_INTERVAL;
         }
-        else if (input->down) {
+        else if (input->down_pressed) {
             runtime->highlighted_choice++;
 
             if (runtime->highlighted_choice >= (int)TOTAL_MENU_ITEMS)

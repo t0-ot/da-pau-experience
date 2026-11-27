@@ -88,7 +88,7 @@ static ModuleAction snake_update(void *state, const GameInput *input, float delt
     if (!runtime->is_moving) {
         if ( !has_directional_input(input) && runtime->buffered_dir_amt == 0) {
             return MODULE_CONTINUE;
-        } else if (!input->left)
+        } else if (!input->left_pressed)
             runtime->is_moving = 1;
     }
     if (runtime->fruit_player.is_finished) {

@@ -18,10 +18,15 @@
  * modules do not need to directly access Raylib's keyboard API.
  */
 typedef struct {
-    bool up;      /**< Whether the up direction is being held. */
-    bool down;    /**< Whether the down direction is being held. */
-    bool left;    /**< Whether the left direction is being held. */
-    bool right;   /**< Whether the right direction is being held. */
+    bool up_held;      /**< Whether the up direction is being held. */
+    bool down_held;    /**< Whether the down direction is being held. */
+    bool left_held;    /**< Whether the left direction is being held. */
+    bool right_held;   /**< Whether the right direction is being held. */
+
+    bool up_pressed;
+    bool down_pressed;
+    bool left_pressed;
+    bool right_pressed;
 
     bool confirm; /**< Whether the confirm key was pressed. */
     bool back;    /**< Whether the back key was pressed. */
