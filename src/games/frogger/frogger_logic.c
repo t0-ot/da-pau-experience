@@ -214,7 +214,7 @@ void frogger_init_state(frogger_runtime *runtime) {
     runtime->fishball_timer = 0.0f;
     runtime->buff_cooldown_timer = 0.0f;
     runtime->buff_window_timer = 0.0f;
-    runtime->buff_spawn_trigger = 5;
+    runtime->buff_spawn_trigger = 5.0f;
     runtime->buff_window_active = true;
 
     runtime->active_pickup_type = PICKUP_NONE;
