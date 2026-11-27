@@ -194,11 +194,13 @@ void frogger_render_game(const frogger_runtime *runtime) {
             }
         }
 
-        /* Street-food pickup skewer (Kwek-Kwek or Fishball) */
-        if (row->pickup_type != PICKUP_NONE &&
-            row->pickup_col >= 0 && row->pickup_col < FROGGER_COLS) {
-            int pick_x = offset_x + row->pickup_col * STREET_CELL_SIZE;
-            draw_street_food_pickup(row->pickup_type, pick_x, row_y);
+ /* Street-food pickup skewer (Kwek-Kwek or Fishball) */
+        if (runtime->active_pickup_type != PICKUP_NONE &&
+            runtime->active_pickup_row == w_row &&
+            runtime->active_pickup_col >= 0 &&
+            runtime->active_pickup_col < FROGGER_COLS) {
+            int pick_x = offset_x + runtime->active_pickup_col * STREET_CELL_SIZE;
+            draw_street_food_pickup(runtime->active_pickup_type, pick_x, row_y);
         }
 
         /* Moving vehicles or floating planks */
