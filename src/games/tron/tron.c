@@ -159,6 +159,7 @@ static void tron_cleanup(void *state, EngineContext *engine) {
 
     for (int i = 0; i < 3; i++)
         free(runtime->enemy[i].segments.points);
+    resource_group_manager_destroy_group(engine->groups, runtime->resources.assets);
 }
 
 const GameModule tron_module = {
