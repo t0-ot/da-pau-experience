@@ -25,8 +25,6 @@ static const char *module_result_to_string(const ModuleResult result) {
 }
 
 void module_print_init_error(ModuleResult result, const char *error_message) {
-    const char *reason;
-
     fprintf(stderr, "[MODULE_INIT_ERROR] %s", module_result_to_string(result));
 
     if (error_message != NULL && error_message[0] != '\0')
