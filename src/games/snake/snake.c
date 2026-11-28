@@ -16,8 +16,11 @@
 #define SNAKE_MOVE_INTERVAL 0.12f
 #define MAX_INPUT_BUFFER 5
 
-static void snake_init(void *state, EngineContext *engine) {
+static ModuleResult snake_init(void *state, EngineContext *engine) {
     snake_runtime *runtime = state;
+
+    if (runtime == NULL)
+        return MODULE_INIT_ERROR_STATE_DATA;
 
     runtime->resources.assets = resource_group_manager_create_group(engine->groups);
     SoundLoadResult fruit_nom = audio_manager_load_sound(engine->audio, runtime->resources.assets, "assets/nom.mp3");
@@ -50,7 +53,7 @@ static void snake_init(void *state, EngineContext *engine) {
     if (runtime->snake.segments.points == NULL ||
         runtime->normalFruitSet.pointList.points == NULL) {
         runtime->snake.alive = false;
-        return;
+        return MODULE_INIT_ERROR_ALLOCATION;
     }
     int start_x = runtime->play_width / 2;
     int start_y = runtime->play_height / 2;
@@ -71,6 +74,8 @@ static void snake_init(void *state, EngineContext *engine) {
     runtime->normalFruitSet.onEat = baseEat;
 
     spawnFruit(runtime->normalFruitSet.pointList, 0, &runtime->snake, runtime->play_width, runtime->play_height);
+
+    return MODULE_INIT_SUCCESS;
 }
 
 static ModuleAction snake_update(void *state, const GameInput *input, float delta_time, EngineContext *engine) {

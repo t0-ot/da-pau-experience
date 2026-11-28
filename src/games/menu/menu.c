@@ -47,7 +47,7 @@ typedef struct {
 static const MenuConfig MENU_REGISTRY[] = {
     { "SNAKE",     MENU_CHOICE_PLAY_SNAKE },
     { "TRON",      MENU_CHOICE_PLAY_TRON },
-    { "FRUIT CATCHER",    MENU_CHOICE_PLAY_FRUITCATCHER},   
+    { "FRUIT CATCHER",    MENU_CHOICE_PLAY_FRUITCATCHER},
     {"TAWID KALSADA", MENU_CHOICE_PLAY_FROGGER},
     { "QUIT GAME", MENU_CHOICE_QUIT }
 };
@@ -62,8 +62,11 @@ static const MenuConfig MENU_REGISTRY[] = {
  *
  * @param state Pointer to allocated menu runtime memory.
  */
-static void menu_init(void *state, EngineContext *engine) {
+static ModuleResult menu_init(void *state, EngineContext *engine) {
     MenuRuntime *runtime = state;
+
+    if (runtime == NULL)
+        return MODULE_INIT_ERROR_STATE_DATA;
 
     runtime->highlighted_choice = 0;
     runtime->selected_choice = MENU_CHOICE_NONE;
@@ -73,6 +76,7 @@ static void menu_init(void *state, EngineContext *engine) {
     runtime->animation_duration = 0.65f;
 
     runtime->is_animating_out = false;
+    return MODULE_INIT_SUCCESS;
 }
 
 /**

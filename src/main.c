@@ -3,7 +3,9 @@
  * @brief Application entry point and engine initialization.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 
 #include "engine/session.h"
@@ -28,6 +30,7 @@
  */
 int main(void) {
     srand((unsigned int)time(NULL));
+    bool initialization_failed = false;
 
     /* Initialize the graphics window. */
     if (!renderer_init(1280, 720, "Da Pau Launching Experience"))
@@ -79,14 +82,24 @@ int main(void) {
 
     /* Initialize the game session. */
     GameSession session;
+
     session_init(&session, &engine);
 
     /* Begin with the main menu. */
     const Game_Entry *next_game = game_registry_fetch_menu();
 
-    while (session.is_running && next_game != NULL) {
+    while (session.is_running) {
+        if (next_game == NULL) {
+            fprintf(stderr, "[GAME_REGISTRY_ERROR] Failed to retrieve the next game module\n");
+            initialization_failed = true;
+            break;
+        }
 
-        if (!session_set_module(&session, next_game->module)) {
+        SessionResult result = session_set_module(&session, next_game->module);
+
+        if (result != SESSION_SUCCESS) {
+            session_print_error(result);
+            initialization_failed = true;
             session.is_running = false;
             break;
         }
@@ -112,5 +125,5 @@ int main(void) {
     audio_device_close();
     renderer_close();
 
-    return EXIT_SUCCESS;
+    return initialization_failed ? EXIT_FAILURE : EXIT_SUCCESS;
 }

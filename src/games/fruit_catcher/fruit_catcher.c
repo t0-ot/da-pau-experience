@@ -82,7 +82,7 @@ static bool spawn_catcher_fruit(Point_list *fruits, int fruitNumber, int play_wi
     return true;
 }
 
-static void catcher_init(void *state, EngineContext *engine) {
+static ModuleResult catcher_init(void *state, EngineContext *engine) {
     catcher_runtime *runtime = state;
 
     runtime->textures.assets = resource_group_manager_create_group(engine->groups);
@@ -101,6 +101,11 @@ static void catcher_init(void *state, EngineContext *engine) {
     runtime->score = 0;
     runtime->fruits.amt = 1;
     runtime->fruits.points = calloc(runtime->fruits.amt, sizeof(Point));
+
+    if (runtime->fruits.points == NULL) {
+        return MODULE_INIT_ERROR_ALLOCATION;
+    }
+
     runtime->fruit_timer = 0;
     runtime->fruit_interval = FRUIT_SPEED;
 
@@ -112,6 +117,8 @@ static void catcher_init(void *state, EngineContext *engine) {
 
     runtime->bad_apple_active = false;
     runtime->bad_apple_timer = (float)(4 + rand() % 6);
+
+    return MODULE_INIT_SUCCESS;
 }
 
 static ModuleAction catcher_upd(void *state, const GameInput *input, float delta_time, EngineContext *engine) {

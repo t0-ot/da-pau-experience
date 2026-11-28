@@ -7,7 +7,7 @@ RAYLIB_DIR = external/raylib/src
 SRC := $(wildcard src/*.c src/*/*.c src/*/*/*.c)
 
 # Common flags
-BASE_CFLAGS = -Wall -Wextra -Iinclude -I$(RAYLIB_DIR)
+BASE_CFLAGS = -std=c23 -Wall -Wextra -Iinclude -I$(RAYLIB_DIR)
 
 # OS-specific configuration
 ifeq ($(OS),Windows_NT)

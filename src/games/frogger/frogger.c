@@ -13,11 +13,11 @@
 #include "engine/assets/asset_manager.h"
 #include "engine/animation/animation.h"
 
-static void frogger_init(void *state, EngineContext *ctx) {
+static ModuleResult frogger_init(void *state, EngineContext *ctx) {
     frogger_runtime *runtime = state;
 
     if (runtime == NULL)
-        return;
+        return MODULE_INIT_ERROR_STATE_DATA;
 
     runtime->asset_group = RESOURCE_GROUP_INVALID;
     runtime->player_tex = TEXTURE_HANDLE_INVALID;
@@ -54,6 +54,7 @@ static void frogger_init(void *state, EngineContext *ctx) {
     animation_player_init(&runtime->hop_anim, &runtime->hop_clip);
 
     frogger_init_state(runtime);
+    return MODULE_INIT_SUCCESS;
 }
 
 static ModuleAction frogger_update(

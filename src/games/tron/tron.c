@@ -12,8 +12,11 @@
 #define TRON_MOVE_INTERVAL 0.10f
 #define MAX_INPUT_BUFFER 5
 
-static void tron_init(void *state, EngineContext *engine) {
+static ModuleResult tron_init(void *state, EngineContext *engine) {
     tron_runtime *runtime = state;
+
+    if (runtime == NULL)
+        return MODULE_INIT_ERROR_STATE_DATA;
 
     runtime->resources.assets = resource_group_manager_create_group(engine->groups);
     TextureLoadResult player_cycle_texture = asset_manager_load_texture(engine->assets, runtime->resources.assets, "assets/lightcycle_player.png");
@@ -25,6 +28,9 @@ static void tron_init(void *state, EngineContext *engine) {
     runtime->player.segments.amt = 1;
     runtime->player.capacity = TRON_WIDTH * TRON_HEIGHT;
     runtime->player.segments.points = calloc(runtime->player.capacity, sizeof(Point));
+
+    if (runtime->player.segments.points == NULL)
+        return MODULE_INIT_ERROR_ALLOCATION;
 
     runtime->view_enemies.enemy = runtime->enemy;
     runtime->view_enemies.enemy_amt = 1;
@@ -42,6 +48,9 @@ static void tron_init(void *state, EngineContext *engine) {
         runtime->enemy[i].capacity = TRON_WIDTH * TRON_HEIGHT;
         runtime->enemy[i].segments.points = calloc(runtime->enemy[i].capacity, sizeof(Point));
         runtime->enemy[i].alive = true;
+
+        if (runtime->enemy[i].segments.points == NULL)
+            return MODULE_INIT_ERROR_ALLOCATION;
 
         runtime->enemy[i].segments.points[0] = (Point){
             enemy_start_x[i], enemy_start_y[i]
@@ -65,6 +74,8 @@ static void tron_init(void *state, EngineContext *engine) {
     runtime->move_interval = TRON_MOVE_INTERVAL;
     runtime->intro_timer = 3.0f;
     runtime->level_starting = 1;
+
+    return MODULE_INIT_SUCCESS;
 }
 
 static ModuleAction tron_update(

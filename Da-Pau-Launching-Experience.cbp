@@ -155,6 +155,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/engine/audio/audio_manager_internal.h" />
+		<Unit filename="src/engine/core/game_module.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/engine/entity.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -190,6 +193,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/games/frogger/frogger_render.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/games/fruit_catcher/fruit_catcher.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/games/menu/menu.c">

@@ -16,6 +16,17 @@ typedef enum ModuleAction ModuleAction;
 typedef struct GameModule GameModule;
 typedef struct EngineContext EngineContext;
 
+typedef enum SessionResult : int {
+    SESSION_SUCCESS,
+    SESSION_ERROR_INVALID_SESSION,
+    SESSION_ERROR_INVALID_MODULE,
+    SESSION_ERROR_INVALID_MODULE_STATE,
+    SESSION_ERROR_MODULE_ALLOCATION,
+    SESSION_ERROR_MODULE_INITIALIZATION
+} SessionResult;
+
+void session_print_error(SessionResult result);
+
 /**
  * @brief Holds the state of the currently active game session.
  *
@@ -46,7 +57,7 @@ void session_init(GameSession *session, EngineContext *engine);
  * @param module Game module to activate.
  * @return true if the module was successfully activated, false otherwise.
  */
-bool session_set_module(
+SessionResult session_set_module(
     GameSession *session,
     const GameModule *module
 );

@@ -13,6 +13,14 @@
 #include "game_input.h"
 typedef struct EngineContext EngineContext;
 
+typedef enum ModuleResult : int {
+    MODULE_INIT_SUCCESS,
+    MODULE_INIT_ERROR_STATE_DATA,
+    MODULE_INIT_ERROR_ALLOCATION,
+    MODULE_INIT_ERROR_RESOURCE_LOAD,
+    MODULE_INIT_ERROR_INITIALIZATION
+} ModuleResult;
+
 /**
  * @brief Describes the result of a game module's update operation.
  */
@@ -21,6 +29,8 @@ typedef enum ModuleAction : int {
     MODULE_QUIT,     /**< Request termination of the application. */
     MODULE_FINISHED  /**< Indicate that the current module has finished. */
 } ModuleAction;
+
+void module_print_init_error(ModuleResult result, const char *error_message);
 
 /**
  * @brief Defines the lifecycle operations and state requirements of a game module.
@@ -36,7 +46,7 @@ typedef struct GameModule {
      * @brief Initializes the module's runtime state.
      * @param state Pointer to the allocated runtime state.
      */
-    void (*init)(void *state, EngineContext *engine);
+    ModuleResult (*init)(void *state, EngineContext *engine);
 
     /**
      * @brief Updates the module's game logic.
